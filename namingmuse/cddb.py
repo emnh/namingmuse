@@ -1,7 +1,7 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.32 2004/09/18 19:40:50 emh Exp $
+$Id: cddb.py,v 1.33 2004/09/18 20:01:40 emh Exp $
 """
 
 import socket
@@ -40,6 +40,7 @@ READ_OK = 210
 # CDDB query reply codes
 QUERY_EXACT = 200
 QUERY_NOMATCH = 202
+QUERY_MULTIPLE_EXACT = 210
 QUERY_INEXACT = 211
 
 # All message codes > 399 are errors
@@ -239,10 +240,10 @@ class CDDBP(object):
 
         if code == QUERY_NOMATCH: 
             return (code, data)
-        elif code == QUERY_EXACT or code == QUERY_INEXACT:
+        elif code in (QUERY_EXACT, QUERY_INEXACT, QUERY_MULTIPLE_EXACT):
             if code == QUERY_EXACT:
                 albumlist = [data]
-            elif code == QUERY_INEXACT:
+            else:
                 albumlist = self.sock.receive(DOTTERM)
                 albumlist = albumlist.splitlines()[:-2]
             data = []
@@ -273,6 +274,8 @@ class CDDBP(object):
             raise CDDBPException(code, resp)
         elif code == READ_OK:
             freedbrecord = self.sock.receive(DOTTERM)
+        elif code == 202: # should this happen at all?
+            raise NotImplementedError("cddb202read: code %u" % code)
         else:
             raise NotImplementedError("cddb read: code %u" % code)
         freedbrecord = freedbrecord.decode('UTF-8')
