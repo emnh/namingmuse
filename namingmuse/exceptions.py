@@ -19,7 +19,7 @@ class NamingMuseWarning(NamingMuseException):
         super.__init__(self, "Warning: " + msg)
 
 class NamingMuseInfo(NamingMuseException):
-    'Class for spitting out green messages considered informational'
+    'Class for spitting out messages considered informational'
     def __init__(self, msg):
         super = NamingMuseInfo.__bases__[0]
         super.__init__(self, "Info: " + msg)
