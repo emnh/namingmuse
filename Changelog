@@ -1,6 +1,9 @@
 2004-08-09
     * terminal: clean up output formattin
     * namingmuse: new option -A, place album in artist/album
+    * albuminfo: added albuminfo class and freedbalbuminfo subclass
+    * albumtag: improved namebinder heuristics using play length
+    * all: using class albuminfo instead of dictionaries
 
 2004-08-04
     * cddb: added seconds information

@@ -10,6 +10,10 @@ TODO
 *argument to create artistdir if non-existing
 *move album into artistdir if existing
 
+*searchfreedb: add option for selecting namebinder
+*searchfreedb: default to using albumdir as search words
+*improve outer approximation namebinder algorithms
+
 *make a smart class for albuminfo:
     -has a CDDB member with uplink
     -two states: thin(cddbid,genreid,title) and thick(full read)

@@ -16,8 +16,8 @@ from optparse import make_option
 
 from exceptions import *
 
-#DEBUG = False
-DEBUG = True
+DEBUG = False
+#DEBUG = True
 
 baseurl = "http://www.freedb.org/"
 allfields = ["artist", "title", "track", "rest"]
@@ -62,7 +62,7 @@ def searchalbums(searchwords, searchfields = ("artist", "title")):
     querystr = urllib.urlencode(query)
     url = doc + "?" + querystr
 
-    if DEBUG: print querystr
+    #if DEBUG: print querystr
     searchres = urllib.urlopen(url)
     htmldata = searchres.read()
     searchres.close()

@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.7 2004/08/06 06:24:59 torh Exp $
+$Id: cddb.py,v 1.8 2004/08/09 04:29:30 emh Exp $
 """
 
 import socket,string
@@ -14,6 +14,9 @@ defaultport = 1863
 #defaultport = 8880
 defaultprotocol = 5 # check locale
 version="0.20"
+
+# cddb read replies
+READ_OK = 210
 
 class CDDBPException(Exception):
 
@@ -167,62 +170,21 @@ class CDDBP:
 
         return code,res
 
-    def extractTrackLengths(self, cddbrecord):
-        'Parse cddb record and calculate track lengths in seconds'
-        readingframes = False
-        readingtotal = False
-        lsecs = []
-        prevsec = 0
-        for item in cddbrecord.split("\r\n")[1:-2]:
-            if readingframes:
-                if not re.match("^#\s*[0-9]+\s*$", item): 
-                    readingframes = False
-                    readingtotal = True
-                else:
-                    strsec = item[1:].strip()
-                    try:
-                        sec = int(round((int(strsec) - prevsec) / 75.0))
-                    except ValueError:
-                        print "valueerror"
-                        print item
-                        print cddbrecord
-                    prevsec = int(strsec)
-                    lsecs.append(sec)
-            elif readingtotal:
-                match = re.search("^# Disc length: ([0-9]*) seconds", item)
-                if match:
-                    totsec = int(match.group(1))
-                    sec = totsec - prevsec / 75
-                    lsecs.append(sec)
-                    readingtotal = False
-            elif "# Track frame offsets:" in item:
-                readingframes = True
-        return lsecs
-        
-    def read(self, genre, cddbid):
-        ''' 
-        Read entry from database
+    def getRecord(self, genre, cddbid):
+        '''
+        Read raw freedb record from database
         '''
         (code,resp)=self.__decode(self.sock.send("cddb read %s %s" \
                 %(genre, cddbid), "\r\n.\r\n"))
-        if code>399:
+        if code > 399:
             raise CDDBPException(code,resp)
-
-        # Convert freedb record to dictionary
-        res = {}
-        for item in resp.split("\r\n")[1:-2]:
-            if not '#' == item[0]:
-                splitted = item.split('=')
-                res[splitted[0]] = string.join(splitted[1:],'=')
-
-        # Extend dictionary with track lengths in seconds
-        lsecs = self.extractTrackLengths(resp)
-        for i in range(1, len(lsecs)):
-            res["LENGTH" + str(i - 1)] = lsecs[i]
-
-        return code, res
+        elif code == READ_OK:
+            # get rid of first line (server header)
+            freedbrecord = resp.split("\r\n", 1)[1]
+        else:
+            raise NotImplementedException("cddb read: code %u" % code)
+        return freedbrecord
         
-
     def motd(self):
         "Returns the message of the day from the server."
         (code,resp)=self.__decode(self.sock.send("motd","\r\n.\r\n"))
@@ -273,6 +235,9 @@ class CDDBP:
         
     def quit(self):
         self.sock.send("quit","\r\n")
+
+    def __del__(self):
+        self.quit()
 
     # Missing: update, write
     

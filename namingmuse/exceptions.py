@@ -23,6 +23,9 @@ class TagIncompleteWarning(NamingMuseWarning):
     def __init__(self, missingtag):
         super = TagIncompleteWarning.__bases__[0]
         super.__init__(self, missingtag + " is missing")
+        self.__missingtag = missingtag
+    def getMissing(self):
+        return self.__missingtag
 
 class NoFilesException(NamingMuseException): pass
 

@@ -24,8 +24,7 @@ DEBUG = False
 
 def footprint(album):
     footprint = tagname + ": " + tagver
-    footprint += "\ncddbid: %s" % album["cddbid"]
-    footprint += "\ngenreid: %s" % album["genreid"]
+    footprint += album.footprint()
     return footprint
 
 def getStoredCDDBId(filelist):
@@ -132,121 +131,127 @@ def distwrap(a, b):
     "Wraps a string distance function"
     a, b = a.lower(), b.lower()
     isjunk = lambda x: not x in string.lowercase
-    return SequenceMatcher(isjunk, a, b).ratio()
+    rat = SequenceMatcher(isjunk, a, b).ratio()
+    return 1.0 - rat
 
-def namebinder_strapprox_time(filelist, namelist):
-    """Bind namelist to filelist by string approximation
-       rate [0-1] multiplied by (timedelta + 1), so that
-       0(+1) offsets get compared only by string approximation."""
-    newnamelist = []
+def namebinder_strapprox_time(filelist, tracks):
+    '''Bind tracks to filelist by a function of string distance
+       and playlength offset. I'm not sure what the best
+       function is, or what the magic numbers are. We'll
+       just have to play with it until it is good.
+    '''
+    newtracks = []
+    for i in range(0, len(filelist)):
+        filePlayLength = getIntLength(filelist[i])
+        file = os.path.basename(filelist[i])
+        least = (distwrap(file, tracks[0].title), 0)
+        for j in range(0, len(tracks)):
+            
+            # make a guess at title format
+            if "-" in file:
+                title = tracks[j].artist + " " + tracks[j].title
+            else:
+                title = tracks[j].title
+            
+            strdist = distwrap(file, title)
+            timedist = abs(filePlayLength - tracks[j].playLength)
+            if timedist < 5 or strdist < 0.3:
+                # greatly favour close proximity matches
+                dist = strdist / 10
+            else:
+                dist = strdist
+            #print "dist: ", dist, file, title
+            if dist < least[0]:
+                least = (dist, j)
+        newtracks.append(tracks[least[1]])
+    return newtracks
+
+def namebinder_strapprox(filelist, tracks):
+    "Bind tracks to filelist by string approximation"
+    newtracks = []
     for i in range(0, len(filelist)):
         file = os.path.basename(filelist[i])
-        least = (distwrap(file, namelist[0]["title"]), 0)
-        for j in range(0, len(namelist)):
-            name = namelist[j]
-            dist = distwrap(file, name["title"])
-            #print "dist: ", dist, file, name["title"]
-            if least[0] < dist:
+        least = (distwrap(file, tracks[0].title), 0)
+        for j in range(0, len(tracks)):
+            title = tracks[j].title
+            dist = distwrap(file, title)
+            if dist < least[0]:
                 least = (dist, j)
-        #print "least: ", least[0]
-        newnamelist.append(namelist[least[1]])
-    return newnamelist
+        newtracks.append(tracks[least[1]])
+    return newtracks
 
-def namebinder_strapprox(filelist, namelist):
-    "Bind namelist to filelist by string approximation"
-    newnamelist = []
-    for i in range(0, len(filelist)):
-        file = os.path.basename(filelist[i])
-        least = (distwrap(file, namelist[0]["title"]), 0)
-        for j in range(0, len(namelist)):
-            name = namelist[j]
-            dist = distwrap(file, name["title"])
-            if least[0] < dist:
-                least = (dist, j)
-        newnamelist.append(namelist[least[1]])
-    return newnamelist
+def namebinder_trackorder(filelist, tracks):
+    "Bind tracks to filelist by track order"
+    tracks.sort(lambda a,b:cmp(a.number, b.number))
+    return tracks
 
-def namebinder_trackorder(filelist, namelist):
-    "Bind namelist to filelist by track order"
-    namelist.sort(lambda a,b:cmp(a["track"], b["track"]))
-    return namelist
+def sortedcmp(a, b):
+    a = a[:]
+    b = b[:]
+    trackcmp = lambda x, y: cmp(x.number, y.number)
+    a.sort(trackcmp)
+    b.sort(trackcmp)
+    return a == b
 
-def sortedcmp(cmp, cmp2):
-    cmp = cmp[:]
-    cmp2 = cmp2[:]
-    cmp.sort()
-    cmp2.sort()
-    return cmp == cmp2
-
-def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
+def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
     '''Rename and tag files using freedb information for
        the specified album.'''
 
+    # XXX: doesn't really belong here
+    missing = album.validate()
+    if len(missing) > 0:
+        if options.strict:
+            amiss = string.join(missing, ",")
+            raise TagIncompleteWarning(amiss)
+        else:
+            for miss in missing:
+                print TagIncompleteWarning(miss)
+            print
+    album.ignoreMissing(True)
+
     albumdir = os.path.abspath(albumdir)
     filelist = getfilelist(albumdir, fullpath = False)
-
-    year = albumdict['year'] 
-    genre = albumdict['genre']
-    albumartist = albumdict['albumartist']
-    albumname = albumdict['album']
-    namelist = albumdict['namelist']
-
-    oldnamelist = namelist
-    namelist = namebinder(filelist, namelist)
-
-    if not sortedcmp(oldnamelist, namelist): 
+    tracks = namebinder(filelist, album.tracks)
+    if not sortedcmp(tracks, album.tracks): 
         options.dryrun = True
         print NamingMuseError("binding was not exact, forcing dry run")
 
-    #XXX: legg til sjekk for missing for alle track
-
-    missing = []
-    try:
-        year = int(year)
-    except ValueError:
-        year = 0
-        missing.append("year")
-    if genre == "":
-        missing.append("genre")
-    if albumname == "":
-        missing.append("albumname")
-    
-    if len(missing) > 0:
-        exmissing = TagIncompleteWarning(string.join(missing, ", "))
-        if options.strict:
-            raise exmissing
-        else:
-            print exmissing, "\n"
-
-    print "Tagging album: %s, %s - %s, %s.\n" % (year, albumartist, albumname, genre)
+    print "Tagging album: %s, %s - %s, %s.\n" % \
+          (album.year, album.artist, album.title, album.genre)
 
     pjoin = os.path.join
     dirname,basename = os.path.split(albumdir)
-    todir = policy.albumdirname(basename, albumartist, albumname, year, genre)
+    todir = policy.albumdirname(basename, \
+            album.artist, album.title, album.year, album.genre)
     newalbumdir = pjoin(dirname, todir)
 
     # Process files
     longestfilename = max(map(lambda x: len(x), filelist))
     renamealbum = True
+
     for i in range(0, len(filelist)):
         file = filelist[i]
         ext = lower(os.path.splitext(file)[1])
         fullpath = pjoin(albumdir, file)
-        title = namelist[i]["title"]
-        if albumartist == "Various":
-            if not "/" in title and "-" in title:
-                # workaround: this is a bug in the freedb entry
-                # (according to submission guidelines)
-                trackartist, title = title.split("-")
-                print NamingMuseWarning("bugged database entry with - instead of /")
-            else:
-                trackartist, title = title.split("/")
-            trackartist, title = trackartist.strip(), title.strip()
-        else:
-            trackartist = albumartist
-        track = namelist[i]["track"]
-        tofile = policy.filename(file, ext, title, track, 
-                                 trackartist, albumname, year, genre, albumartist)
+        # XXX: move bug check to freedbalbuminfo parser
+
+        #if album.isVarious:
+        #    if not "/" in title and "-" in title:
+        #        # workaround: this is a bug in the freedb entry
+        #        # (according to submission guidelines)
+        #        trackartist, title = title.split("-")
+        #        print NamingMuseWarning("bugged database entry with - instead of /")
+        #    else:
+        #        trackartist, title = title.split("/")
+        #    trackartist, title = trackartist.strip(), title.strip()
+        #else:
+        #    trackartist = albumartist
+        track = tracks[i]
+
+        # XXX: pass the whole album thing into policy
+        tofile = policy.filename(file, ext, track.title, track.number, 
+                                 track.artist, album.title, album.year, 
+                                 album.genre, album.artist)
     
         # Tag and rename file
         fileref = TagLib.FileRef(fullpath)
@@ -267,24 +272,15 @@ def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
             fd = tempfile.NamedTemporaryFile()
             tmpfilename = fd.name
             #fd.close()
-            #tmpfile = os.open(tmpfilename,os.O_CREAT)
             shutil.copystat(fullpath, tmpfilename)
 
-            try:
-                year = int(year)
-            except ValueError:
-                year = 0
-            tag.setYear(year)
-            tag.setGenre(genre)
-            tag.setArtist(trackartist)
-            tag.setAlbum(albumname)
-            tag.setTitle(title)
-            try:
-                track = int(track)
-            except ValueError, warn:
-                track = 0
-            tag.setTrack(track)
-            comment = footprint(albumdict)
+            tag.setYear(album.year)
+            tag.setGenre(album.genre)
+            tag.setArtist(track.artist)
+            tag.setAlbum(album.title)
+            tag.setTitle(track.title)
+            tag.setTrack(track.number)
+            comment = footprint(album)
             tag.setComment(comment)
             fileref.save()
             # restore filestat
@@ -296,7 +292,6 @@ def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
                 os.rename(fullpath, newfullpath)
                     
                         
-
     # Rename album (if no "manual" mp3 files in that dir)
     renamesign = (renamealbum and "->" or "-skip->")
     if renamealbum and options.dryrun: renamesign = "-dry->"

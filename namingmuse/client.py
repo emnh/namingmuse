@@ -8,6 +8,8 @@ import terminal
 from sys import exit
 from optparse import OptionParser, make_option
 from optparse import OptionGroup
+from albuminfo import *
+from cddb import CDDBP
 
 from exceptions import *
 
@@ -205,18 +207,26 @@ def doFullTextSearch(albumdir, options):
 
     albums = searchfreedb.filterBySongCount(albums, len(filelist))
 
-    albumdicts = []
+    albuminfos, haveread = [], {}
     for album in albums:
-        albumdicts.append(discmatch.getalbuminfo(album['genreid'],
-                                                 album['cddbid']))
-    
-    albumdict = terminal.choosealbum(albumdicts, albumdir)
+        haveread.setdefault(album['cddbid'], [])
+        if not album['genreid'] in haveread.get(album['cddbid']):
+            freedbrecord = discmatch.cddb.getRecord(album['genreid'], album['cddbid'])
+            albuminfo = FreeDBAlbumInfo(freedbrecord)
+            albuminfo.setFreedbIdentifier(album['genreid'], album['cddbid']) #XXX
+            albuminfos.append(albuminfo)
+            haveread[album['cddbid']].append(album['genreid'])
 
-    if not albumdict:
+    if len(albuminfos) == 0:
+        raise NamingMuseError("No matches in folder %s" % albumdir)
+    
+    albuminfo = terminal.choosealbum(albuminfos, albumdir)
+
+    if not albuminfo:
         raise NamingMuseWarning('Not tagging %s' \
                    %(albumdir))
 
-    albumtag.tagfiles(albumdir, albumdict, options, albumtag.namebinder_strapprox)
+    albumtag.tagfiles(albumdir, albuminfo, options, albumtag.namebinder_strapprox_time)
 
 def doDiscmatch(options,albumdir):
     discmatch = DiscMatch()
@@ -235,29 +245,36 @@ def doDiscmatch(options,albumdir):
         raise NamingMuseWarning('%s already tagged with %s %s, not retagging...' \
                    %(albumdir, albumtag.tagname, albumtag.tagver))
 
-    albumdict = None
-    if options.updatetags:
+    albuminfo = None 
+    cddb = discmatch.cddb
+    #cddb = CDDBP()
+    #cddb.connect()
+    if options.updatetags and not options.force:
         identifier = albumtag.getStoredCDDBId(filelist)
         if identifier:
-            albumdict = discmatch.getalbuminfo(identifier['genreid'], identifier['cddbid'])
+            freedbrecord = cddb.getRecord(identifier['genreid'], identifier['cddbid'])
+            albuminfo = FreeDBAlbumInfo(freedbrecord)
+            albuminfo.setFreedbIdentifier(identifier['genreid'], identifier['cddbid']) #XXX
         else:
             raise NamingMuseError('Broken old tag found, unable to update.')
-    if options.force:
-        albumdict = None
-    if not albumdict:
+    if not albuminfo:
         query = discmatch.files2discid(filelist)
         statusmsg, albums = discmatch.freedbTOCMatchAlbums(query)
         if len(albums) == 0:
             raise NamingMuseError("No freedb match for id %08x in folder %s" % (query[0], albumdir))
-        albumdicts = []
+        albuminfos = []
         for album in albums:
-            albumdicts.append(discmatch.getalbuminfo(album['genreid'],album['cddbid']))
-        albumdict = terminal.choosealbum(albumdicts, albumdir)
-        if not albumdict:
+            freedbrecord = cddb.getRecord(album['genreid'], album['cddbid'])
+            albuminfo = FreeDBAlbumInfo(freedbrecord)
+            albuminfo.setFreedbIdentifier(album['genreid'], album['cddbid']) #XXX
+            albuminfos.append(albuminfo)
+            
+        albuminfo = terminal.choosealbum(albuminfos, albumdir)
+        if not albuminfo:
             raise NamingMuseWarning('Not tagging %s' \
                        %(albumdir))
 
-    albumtag.tagfiles(albumdir, albumdict, options, \
+    albumtag.tagfiles(albumdir, albuminfo, options, \
             albumtag.namebinder_trackorder)
 
 if __name__ == "__main__": cli()

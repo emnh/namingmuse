@@ -6,8 +6,7 @@ QUERY_EXACT = 200
 QUERY_NONE = 202
 QUERY_MULTIPLE = 211
 QUERY_MULTIPLE_EXACT = 210 # protocol 4
-SERVER_ERROR=450
-READ_OK = 210
+READ_OK = 210 # deleteme
 DEBUG = False
 
 class DiscMatch:
@@ -107,44 +106,6 @@ class DiscMatch:
     printTOC = staticmethod(printTOC)
     cddb_sum = staticmethod(cddb_sum)
     files2discid = staticmethod(files2discid)
-
-    def getalbuminfo(self, genreid, cddbid):
-        "Get album info from cddb server"
-
-        if DEBUG: 
-            print "Fetching albuminfo..." 
-
-        read_stat,read_info = self.cddb.read(genreid, cddbid)
-
-        if DEBUG: 
-            print "read_stat, read_info:",read_stat,read_info
-
-        if read_stat == READ_OK:
-            year = read_info["DYEAR"].strip()
-            genre = read_info["DGENRE"].strip() # not limited to the 11 cddb genres
-            albumartist = read_info["DTITLE"].split("/")[0].strip()
-            album = string.join(read_info["DTITLE"].split("/")[1:], "/").strip()
-
-            if re.search("various", albumartist, re.I):
-                albumartist = "Various"
-            
-            namelist = []
-            for key in read_info.keys():
-                if key[:6] == "TTITLE":
-                    track = int(key[6:]) + 1
-                    title = read_info[key]
-                    dict = {"track": track, "title": title}
-                    namelist.append(dict)
-        else:
-            raise NotImplementedException("cddb read: code " + str(read_stat))
-
-        return {"year":year, 
-                "genre":genre, 
-                "genreid":genreid,
-                "cddbid":cddbid,
-                "albumartist":albumartist, 
-                "album":album, 
-                "namelist":namelist}
 
     def freedbTOCMatchAlbums(self, query):
         """Search freedb for album matches for music files in
