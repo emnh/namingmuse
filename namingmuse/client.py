@@ -135,12 +135,10 @@ def readconfig(options):
     home = os.getenv("HOME")
     homeconfdir = FilePath(home, ".namingmuse")
     configfile = homeconfdir + "config"
-    fd = file(str(configfile))
     cp = ConfigParser(defaultconfig)
     if os.access(str(configfile), os.R_OK):
         cp.read([str(configfile)])
     defitems = cp.items("DEFAULT")
-    print defitems
     for key, value in dict(defitems).items():
         options.ensure_value(key, value)
     if options.encoding == "terminal":
