@@ -45,6 +45,11 @@ def choosealbum(albums, matchto, options):
     #mlen = #max(map(lambda x: len(x.title), albums)) + 3
     #mlen = #min(mlen, cols - 30)
     #mlen = 40
+    if 0 <= len(albums) <= 1:
+        if len(albums[0].validate()) == 0:
+            idx = len(albums)
+        else:
+            return None
     
     #fmat = lambda x,y,z: "%10s   %-10s%s\n" % (x, y, z.rjust(mlen))
     fmat = lambda u,v,w,x,y,z: "%3s%6s%5s %-17s%-15s %-10s\n" \
@@ -68,7 +73,8 @@ def choosealbum(albums, matchto, options):
         similarity = "%3.1f%%" % (similarity * 100)
         pager.write(fmat(str(nr) + ":",similarity, 
                     album.year, album.genre, album.artist,album.title))
-    if (pager != stdout): pager.close()
+            
+    #if (pager != stdout): pager.close()
 
     idx = -1 
     # autoselect if none or one album

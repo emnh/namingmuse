@@ -305,7 +305,7 @@ def tagfile(fpath, album, track):
                 oldcomment = id1tag.comment()
                 if oldcomment == "":
                     oldcomment = None
-                if 'namingmuse' in oldcomment:
+                if oldcomment and 'namingmuse' in oldcomment:
                     oldComment = None
 
         #strip id3v1tag, bool freeMemory = False 
