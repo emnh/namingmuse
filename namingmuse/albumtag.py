@@ -231,9 +231,6 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
     print "Tagging album: %s, %s - %s, %s.\n" % \
           (album.year, album.artist, album.title, album.genre)
 
-    todir = policy.genalbumdirname(albumdir, album)
-    newalbumdir = FilePath(albumdir.getParent(), todir)
-
     # Process files
     renamealbum = True
 
@@ -284,23 +281,34 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
             if not options.tagonly:
                 os.rename(str(fpath), str(tofile))
                         
+    # Get new albumdir name
+    newalbum = policy.genalbumdirname(albumdir, album)
+    artistdir = ""
+    if options.artistdir:
+        newalbumdir = FilePath(albumdir.getParent(), album.artist, newalbum)
+    else:
+        newalbumdir = FilePath(albumdir.getParent(), newalbum)
+
+    # Make parent directory of albumdir if needed
+    parent = newalbumdir.getParent()
+    if not os.path.isdir(parent):
+        os.mkdir(parent)
+
     # Rename album (if no "manual" mp3 files in that dir)
-    renamesign = (renamealbum and "->" or "-skip->")
-    if renamealbum and options.dryrun: renamesign = "-dry->"
+    renamesign = "->"
+    if options.dryrun:
+        renamesign = "-dry->"
     if not (options.dryrun or options.tagonly) and renamealbum:
         try:
             os.rename(str(albumdir), str(newalbumdir))
-            albumdir = newalbumdir
-            if options.artistdir:
-                artistdir = FilePath(albumdir.getParent(), album.artist)
-                if not os.path.isdir(str(artistdir)):
-                    os.mkdir(str(artistdir))
-                todir = os.path.basename(str(artistdir)) + "/" + albumdir.getName()
-                shutil.move(str(albumdir), str(todir))
         except OSError, err:
             raise NamingMuseWarning(str(err))
     print "\n", albumdir.getName()
-    print "\t", colorize(renamesign), todir
+    print "\t", colorize(renamesign),
+    if options.artistdir:
+        print os.path.join(album.artist, newalbumdir.getName())
+    else:
+        print newalbumdir.getName()
 
 def cleanOldComment(tag):
     # Preserve ID3v2Tag comments other than our generated ones
