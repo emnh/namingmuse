@@ -1,9 +1,10 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.19 2004/08/17 00:13:22 torh Exp $
+$Id: cddb.py,v 1.20 2004/08/17 00:24:14 emh Exp $
 """
 
 import socket,string
+socket.socket
 import getpass
 import re
 from exceptions import *
@@ -86,8 +87,9 @@ class SmartSocket:
         if self.sock: 
             self.disconnect()
 
-class CDDBP:
-    "This class can speak the CDDBP protocol, level 5/6."
+class CDDBP(object):
+    "This class can speak the CDDBP protocol, level 6."
+    __connecting = False
 
     def __init__(self, user='nmuse', localhost='localhost'):
         self.sock=SmartSocket(0,8192)
@@ -99,6 +101,15 @@ class CDDBP:
         code = int(resp[:3])
         result = resp[4:]
         return (code,result)
+
+    def __getattribute__(self, name):
+        print "getattr: " + name
+        if name in ("lscat", "sites", "query", "setproto", 
+                    "getRecord", "motd", "stat", "ver", "whom")
+            self.__connecting = True
+            self.connect()
+            self.__connecting = False
+        super(CDDBP, self).__getattribute__(name)
         
     def connect(self, server=defaultserver, port=defaultport):
         "Connects to the server and does the initial handshake."
@@ -260,5 +271,5 @@ class CDDBP:
 def retry(cddb):
     reload(cddb)
     c=CDDBP()
-    c.connect()
+    #c.connect() #automagic
     return c
