@@ -26,7 +26,8 @@ def decodeFrame(tag, getfield):
     ('TPE1', 'artist'),
     ('TALB', 'albumtitle'),
     ('TIT2', 'tracktitle'),
-    ('TRCK', 'number') # int
+    ('TRCK', 'number'), # int
+    ('TTPR', 'tagprovider')
     ]
     xiphfields = [
     ('DATE', 'year'),
@@ -34,7 +35,8 @@ def decodeFrame(tag, getfield):
     ('ARTIST', 'artist'),
     ('ALBUM', 'albumtitle'),
     ('TITLE', 'tracktitle'),
-    ('TRACKNUMBER', 'number')
+    ('TRACKNUMBER', 'number'),
+    ('TTPR', 'tagprovider')
     ]
     funcdict, id3v2dict, xiphdict = {}, {}, {}
     for tagfield, common_name in id3v2fields:
@@ -63,11 +65,12 @@ def decodeFrame(tag, getfield):
             # Xiph is always UTF-8
             fval = str(frame).decode('UTF-8')
     elif isinstance(tag, TagLib.ID3v1Tag):
-        funcname = funcdict[getfield]
-        # ID3v1 is always ISO-8859-1
-        fval = str(getattr(tag, funcname)())
-        if isinstance(fval, basestring):
-            fval = fval.decode('ISO-8859-1')
+        funcname = funcdict.get(getfield)
+        if funcname:
+            # ID3v1 is always ISO-8859-1
+            fval = str(getattr(tag, funcname)())
+            if isinstance(fval, basestring):
+                fval = fval.decode('ISO-8859-1')
     else:
         raise NamingMuseError("unsupported tag: " + str(tag))
             
@@ -187,12 +190,11 @@ def getMP3Length(filename):
                     
 class LocalAlbumInfo(AlbumInfo):
 
-    tagprovider = 'local'
     _readtagshort = False
     _readtaglong = False
     
     def __getattribute__(self, name):
-        if name in ('year', 'genre', 'title'):
+        if name in ('year', 'genre', 'title', 'tagprovider'):
             if not self._readtagshort:
                 self._readtagshort = True
                 self._readTagShort()
@@ -219,6 +221,9 @@ class LocalAlbumInfo(AlbumInfo):
         self.year = decodeFrame(tag, 'year')
         self.genre = decodeFrame(tag, 'genre')
         self.title = decodeFrame(tag, 'albumtitle')
+        self.tagprovider = decodeFrame(tag, 'tagprovider')
+        if not self.tagprovider or self.tagprovider == '':
+            self.tagprovider = 'local'
 
     def _readTagLong(self):
         'Uses tag from all tracks to get artist/isVarious'
