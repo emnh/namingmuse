@@ -36,7 +36,7 @@ def getStoredCDDBId(filelist):
     comment = fileref.tag().comment()
     comment = str(comment)
     del fileref
-    regex = '\ncddbid: (?P<cddbdid>([a-f0-9]*))\ngenreid: (?P<genreid>([a-z]*))'
+    regex = '\ncddbid: (?P<cddbid>([a-f0-9]*))\ngenreid: (?P<genreid>([a-z]*))'
     match = re.search(regex, comment)
     if match:
         return match.groupdict()

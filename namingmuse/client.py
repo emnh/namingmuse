@@ -146,12 +146,13 @@ def doDiscmatch(albumdir, options):
         raise NamingMuseWarning('%s already tagged with %s %s, not retagging...' \
                    %(albumdir, albumtag.tagname, albumtag.tagver))
 
-    genreid = None
+    albumdict = None
     if options.updatetags:
-        genreid = albumtag.getStoredCDDBId(filelist)
+        identifier = albumtag.getStoredCDDBId(filelist)
+        albumdict = discmatch.getalbuminfo(identifier['genreid'], identifier['cddbid'])
     if options.force:
-        genreid = None
-    if not genreid:
+        albumdict = None
+    if not albumdict:
         query = discmatch.files2discid(filelist)
         statusmsg, albums = discmatch.freedbTOCMatchAlbums(query)
         if len(albums) == 0:
@@ -159,12 +160,12 @@ def doDiscmatch(albumdir, options):
         albumdicts = []
         for album in albums:
             albumdicts.append(discmatch.getalbuminfo(album['category'],album['disc_id']))
-        taggable = terminal.choosealbum(albumdicts, albumdir)
-        if not taggable:
+        albumdict = terminal.choosealbum(albumdicts, albumdir)
+        if not albumdict:
             raise NamingMuseWarning('Not tagging %s' \
                        %(albumdir))
 
-    albumtag.tagfiles(albumdir,taggable, options, \
+    albumtag.tagfiles(albumdir, albumdict, options, \
             albumtag.namebinder_trackorder)
 
 if __name__ == "__main__": cli()

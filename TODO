@@ -9,3 +9,4 @@ TODO
 *finish namebinder_strapprox_time
 *see if improvements can be made to discid generator
 *use info from cddbid in searchfreedb to filter matches
+*PRI: use cddbid and genreid in dicts everywhere
