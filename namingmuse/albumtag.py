@@ -8,7 +8,7 @@ TAGVER = "0.03"
 import difflib
 import os,re,sys,string,shutil
 import random
-from TagLib import *
+from TagLib import * # get this from http://namingmuse.berlios.de
 import policy
 import tempfile
 from terminal import colorize

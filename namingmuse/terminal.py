@@ -28,19 +28,12 @@ def colorize(msg):
     if color != "": msg = termcolor(color, msg)
     return msg
 
-def gettermsize():
-    s = struct.pack("HHHH", 0, 0, 0, 0)
-    rows,cols = struct.unpack("HHHH", fcntl.ioctl(sys.stdout.fileno(),
-                           termios.TIOCGWINSZ, s))[:2]
-    return rows, cols
-
 def alphadiff(a, b):
     a, b = a.lower(), b.lower()
     isjunk = lambda x: not x.isalnum()
     return SequenceMatcher(isjunk, a, b).ratio()
 
 def choosealbum(albums, matchto, options, cddb):
-    rows,cols = gettermsize()
 
     matchto = matchto.getName()
     matchto = re.sub("^[0-9]{4} ", "", matchto)
@@ -83,6 +76,8 @@ def choosealbum(albums, matchto, options, cddb):
     # XXX: print all albums if none "validated"
             
     idx = -1 
+    if not sys.stdout.isatty():
+        idx = 0
     # autoselect if none or one album
     if 0 <= len(newlist) <= 1:
         idx = len(newlist)
