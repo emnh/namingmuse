@@ -9,7 +9,7 @@ import curses
 DEBUG = False
 
 def termcolor(color, msg):
-    colornum = eval("curses.COLOR_" + color.upper())
+    colornum = getattr(curses, "COLOR_" + color.upper())
     return "\033[1;3%dm%s\033[0;39m" % (colornum, msg)
 
 def colorize(msg):

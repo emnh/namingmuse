@@ -15,7 +15,7 @@ class debugdumper(type):
             s = "OBJECT DUMP of %s:\n" % name
             for key in dir(self):
                 if key != "__init__":
-                    value = eval("self. " + key)
+                    value = getattr(self, key)
                     if not callable(value):
                         if isinstance(value, unicode):
                             value = value.encode(sys.stdout.encoding)
@@ -31,9 +31,9 @@ class TagSafety(type):
 
         def strictGetString(self, prop):
             try:
-                ret = eval("self._%s__%s" % (name, prop))
+                ret = getattr(self, "_%s__%s" % (name, prop))
             except AttributeError:
-                ret = eval("self._%s__%s" % (bases[0].__name__, prop))
+                ret = getattr(self, "_%s__%s" % (bases[0].__name__, prop))
                 
             if isinstance(ret, types.StringTypes):
                 ret = ret.strip()
@@ -45,9 +45,9 @@ class TagSafety(type):
 
         def strictGetInt(self, prop):
             try:
-                ret = eval("self._%s__%s" % (name, prop))
+                ret = getattr(self, "_%s__%s" % (name, prop))
             except AttributeError:
-                ret = eval("self._%s__%s" % (bases[0].__name__, prop))
+                ret = getattr(self, "_%s__%s" % (bases[0].__name__, prop))
 
             try:
                 ret = int(ret)
@@ -108,7 +108,7 @@ class TrackInfo(object):
         missing = []
         for prop in props:
             try:
-                eval("self." + prop)
+                getattr(self, prop)
             except TagIncompleteWarning, warn:
                 missing.append(warn.getMissing())
         return missing
@@ -171,7 +171,7 @@ class AlbumInfo(object):
         missing = []
         for prop in props:
             try:
-                eval("self." + prop)
+                getattr(self, prop)
             except TagIncompleteWarning, warn:
                 missing.append(warn.getMissing())
         for track in self.tracks:

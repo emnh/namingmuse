@@ -14,7 +14,7 @@ def getProviders():
         for subname in dir(obj):
             if '_' in subname: continue
             try:
-                subobj = eval(modname + "." + subname)
+                subobj = getattr(obj, subname)
                 bases = subobj.__bases__
             except AttributeError:
                 continue

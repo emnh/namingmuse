@@ -337,7 +337,7 @@ def doFullTextSearch(albumdir, options, cddb):
     if options.all:
         searchfields = searchfreedb.allfields
     else:
-        optfilter = lambda key, options = options: eval("options." + key)
+        optfilter = lambda key, o = options: getattr(o, key)
         searchfields = filter(optfilter, searchfreedb.allfields)
     searchwords = options.words
 
