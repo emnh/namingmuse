@@ -1,7 +1,7 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.30 2004/09/18 19:10:53 emh Exp $
+$Id: cddb.py,v 1.31 2004/09/18 19:26:31 emh Exp $
 """
 
 import socket
@@ -240,11 +240,12 @@ class CDDBP(object):
             return (code, data)
         elif code == QUERY_EXACT or code == QUERY_INEXACT:
             if code == QUERY_EXACT:
-                albumlist = self.sock.receive(NLTERM)
+                albumlist = [data]
             elif code == QUERY_INEXACT:
                 albumlist = self.sock.receive(DOTTERM)
+                albumlist = albumlist.splitlines()[:-2]
             data = []
-            for line in albumlist.splitlines()[1:-2]:
+            for line in albumlist:
                 genreid, cddbid, title = line.split(" ", 2)
                 data.append({
                         "genreid": genreid,
