@@ -30,7 +30,8 @@ class FreedbSearchParser(HTMLParser):
 
     def __init__(self):
         HTMLParser.__init__(self)
-        self.albums = {}
+        self.albums = []    # for using (keeps sort order)
+        self.albumdict = {} # for uniqueness checking
         adr = baseurl + "freedb_search_fmt.php"
         self.rexadr = re.compile(adr + "\?cat=(?P<genreid>[^\s]+)\&id=(?P<cddbid>[a-f0-9]+)")
 
@@ -40,10 +41,12 @@ class FreedbSearchParser(HTMLParser):
             match = self.rexadr.match(dattrs["href"])
             if match:
                 album = match.groups()
-                self.albums[album] = True
+                if not self.albumdict.has_key(album):
+                    self.albums.append(album)
+                    self.albumdict[album] = True
     
     def getAlbums(self):
-        return self.albums.keys()
+        return self.albums
     
     albums = property(getAlbums)
 
