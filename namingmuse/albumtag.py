@@ -95,7 +95,11 @@ def getMP3Length(filename):
         pread = os.fdopen(pread)
         strlength = pread.readline()
         pread.close()
-    return int(strlength)
+    try:
+        strlength = int(strlength)
+    except:
+        return 0
+    return strlength
 
 def getFloatLength(filename):
     #p = os.popen("/tmp/build/mp3info-0.8.4/playtime.sh " + filename)
