@@ -342,7 +342,9 @@ def cleanOldComment(tag):
     for frame in tag.frameList():
         if frame.frameID() == "COMM":
             cf = CommentsFrame(frame)
-            if not 'namingmuse' in cf.text() and not cf.description() in ["namingmuse", "genreid", "cddbid", "tagprovider"]:
+            if not 'namingmuse' in cf.text() and not cf.description() \
+                    in ["namingmuse", "genreid", "cddbid", "tagprovider"] \
+                    and cf.text().strip() != "":
                 newcf = CommentsFrame()
                 newcf.setDescription(cf.description())
                 newcf.setText(cf.text())
