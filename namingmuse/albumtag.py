@@ -299,9 +299,9 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
         os.rename(albumdir, newalbumdir)
         albumdir = newalbumdir
         if options.artistdir:
-            if not os.path.isdir(albumartist):
-                os.mkdir(albumartist)
-            todir = os.path.join(albumartist, os.path.basename(albumdir))
+            if not os.path.isdir(album.artist):
+                os.mkdir(album.artist)
+            todir = os.path.join(album.artist, os.path.basename(albumdir))
             shutil.move(albumdir, todir)
     print "\n", basename
     print "\t", colorize(renamesign), todir

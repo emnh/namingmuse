@@ -9,7 +9,6 @@ from sys import exit
 from optparse import OptionParser, make_option
 from optparse import OptionGroup
 from albuminfo import *
-from cddb import CDDBP
 
 from exceptions import *
 
@@ -143,6 +142,7 @@ def cli():
 
     try:
         if options.cmd == "discmatch":
+            discmatch = DiscMatch()
             if options.recursive:
                 def walk(top):
                     try:
@@ -150,7 +150,7 @@ def cli():
                     except os.error:
                         return
                     try:
-                        doDiscmatch(options,top)
+                        doDiscmatch(options, top, discmatch)
                     except NamingMuseException,(errstr):
                         print errstr
                     for name in names:
@@ -163,7 +163,7 @@ def cli():
                             walk(name)
                 walk(albumdir)
             else:
-               doDiscmatch(options,albumdir)
+               doDiscmatch(options, albumdir, discmatch)
         elif options.cmd == "search":
             doFullTextSearch(albumdir, options)
         else:
@@ -228,8 +228,7 @@ def doFullTextSearch(albumdir, options):
 
     albumtag.tagfiles(albumdir, albuminfo, options, albumtag.namebinder_strapprox_time)
 
-def doDiscmatch(options,albumdir):
-    discmatch = DiscMatch()
+def doDiscmatch(options, albumdir, discmatch):
     filelist = albumtag.getfilelist(albumdir)
     if len(filelist)== 0:
         raise NoFilesException("Warning: %s contains no music files !" %albumdir)
@@ -247,8 +246,6 @@ def doDiscmatch(options,albumdir):
 
     albuminfo = None 
     cddb = discmatch.cddb
-    #cddb = CDDBP()
-    #cddb.connect()
     if options.updatetags and not options.force:
         identifier = albumtag.getStoredCDDBId(filelist)
         if identifier:

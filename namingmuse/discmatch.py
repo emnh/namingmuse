@@ -7,7 +7,7 @@ QUERY_NONE = 202
 QUERY_MULTIPLE = 211
 QUERY_MULTIPLE_EXACT = 210 # protocol 4
 READ_OK = 210 # deleteme
-DEBUG = False
+DEBUG = True
 
 class DiscMatch:
     """A module for tagging and renaming files.
@@ -16,6 +16,8 @@ class DiscMatch:
     """
     def __init__(self):
         self.cddb = CDDBP()
+        if DEBUG:
+            print "Connecting to CDDB server"
         self.cddb.connect()
 
     def printTOC(filelist):
