@@ -238,8 +238,6 @@ def choosealbum(albuminfos, albumdir, options):
     ''' Returns a single user-chosen album given a list of albums '''
     # if strict, filter out albums with missing genre or year
     if options.strict:
-        for album in albuminfos:
-            print album.validate()
         albuminfos = filter(lambda x: len(x.validate()) == 0 , albuminfos)
     return terminal.choosealbum(albuminfos, albumdir)
 
