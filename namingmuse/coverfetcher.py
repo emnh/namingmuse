@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 This module searches amazon for cover images using their xml webservices.
 It downloads the images found and returns them as binary data.
