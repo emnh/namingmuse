@@ -6,30 +6,75 @@ from albuminfo import *
 class FreeDBAlbumInfo(AlbumInfo):
     'Provides metainfo from freedb.'
     tagprovider = "freedb"
-    __freedbrecord = None
-    __readingrecord = False
-    __cddb = None
-    __freedbdiscid = None
-    __freedbgenre = None
     
+    def __init__(self, *args):
+        '''
+        Initialize FreeDBAlbumInfo.
+
+        init(cddb, genre, discid)
+        For binding to a server record.
+        @param cddb a CDDBP protocol object for communicating with server
+        @genre the cddb lookup genre
+        @discid the cddb lookup id
+
+        init(record)
+        For initializing from a downloaded record.
+        @param record a string representing a freedb record
+        '''
+        self.__freedbrecord = None
+        self.__readingrecord = False
+        self.__cddb = None
+        self.__freedbdiscid = None
+        self.__freedbgenre = None
+        if len(args) > 1:
+            if len(args) == 3:
+                self.__cddb = args[0]
+                self.__freedbgenre = args[1]
+                self.__freedbdiscid  = args[2]
+                return
+            raise TypeError("invalid init arguments")
+        else:
+            if isinstance(args[0], types.StringTypes):
+                freedbrecord = args[0]
+                self.parseFreedbRecord(freedbrecord)
+                return
+            elif isinstance(args[0], dict):
+                footprint = args[0]
+                super(FreeDBAlbumInfo, self).__init__(footprint) 
+                self.fromFootPrint(footprint)
+                return
+        raise TypeError("invalid init arguments")
+
     def getRecord(self):
         if not self.__freedbrecord:
             self.initRecord()
         return self.__freedbrecord
     
+    freedbrecord = property(getRecord)
+    
     def getFreedbDiscID(self):
         return self.__freedbdiscid
+
+    freedbdiscid = property(getFreedbDiscID)
     
     def getFreedbGenre(self):
         return self.__freedbgenre
 
-    freedbrecord = property(getRecord)
-    freedbdiscid = property(getFreedbDiscID)
     freedbgenre = property(getFreedbGenre)
 
+    def setCDDBConnection(self, cddbobj):
+        self.__cddb = cddbobj
+
+    cddb = property(setCDDBConnection)
+
+    def getEncoding(self):
+        return self.__cddb.encoding
+            
+    encoding = property(getEncoding)
+
     def __getattribute__(self, name):
-        #print "getattribute called:", name
         if name in ("year", "genre", "artist", "title", "tracks"):
+            # Read properties from freedb on demand
             if not self.__readingrecord and not self.__freedbrecord:
                 self.__readingrecord = True
                 self.initRecord()
@@ -60,30 +105,6 @@ class FreeDBAlbumInfo(AlbumInfo):
             self.genre = footprint["TGID"]
         else:
             raise TypeError("invalid provider footprint (wrong class)")
-
-    def setCDDBConnection(self, cddbobj):
-        self.__cddb = cddbobj
-
-    def __init__(self, *args):
-        'Initialize albuminfo from freedb record'
-        if len(args) > 1:
-            if len(args) == 3:
-                self.__cddb = args[0]
-                self.__freedbgenre = args[1]
-                self.__freedbdiscid  = args[2]
-                return
-            raise TypeError("invalid init arguments")
-        else:
-            if isinstance(args[0], types.StringTypes):
-                freedbrecord = args[0]
-                self.parseFreedbRecord(freedbrecord)
-                return
-            elif isinstance(args[0], dict):
-                footprint = args[0]
-                super(FreeDBAlbumInfo, self).__init__(footprint) 
-                self.fromFootPrint(footprint)
-                return
-        raise TypeError("invalid init arguments")
 
     def parseFreedbRecord(self, freedbrecord):
 
@@ -170,8 +191,3 @@ class FreeDBAlbumInfo(AlbumInfo):
         secs.append(totalsecs - sum(secs)) # last song
 
         return secs
-
-    def getEncoding(self):
-        return self.__cddb.encoding
-            
-    encoding = property(getEncoding)
