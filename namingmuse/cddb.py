@@ -1,7 +1,7 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.26 2004/09/16 20:12:32 emh Exp $
+$Id: cddb.py,v 1.27 2004/09/16 20:36:29 emh Exp $
 """
 
 import socket
@@ -16,6 +16,8 @@ defaultprotocol = 6
 version="0.20"
 
 DEBUG = False
+
+DOTTERM = '\r\n.\r\n'
 
 BUFFERSIZE = 8192
 
@@ -77,7 +79,7 @@ class SmartSocket:
         """Sends a string to the server, returning the response terminated
         by 'term'."""
         if not self.sock:
-            raise CDDBException("trying to use smartsocket with no connection")
+            raise CDDBPException("trying to use smartsocket with no connection")
 	self.sock.send(message+"\n")
 	if self.dbg:
 	    print "Send: "+message
@@ -94,14 +96,6 @@ class SmartSocket:
                 break
             newdata = self.sock.recv(self.recvsize)
             data = data + newdata
-            if data[-len(term):]==term or data.startswith(str(CDDB_QUIT) + ' ') \
-                    or data.startswith(str(CDDB_ERROR_401) + ' ') \
-                    or data.startswith(str(CDDB_ALREADY_READ) + ' '):
-                # 230 means that we did something nasty and the server is
-                # hanging up on us. It doesn't provide the needed terminator
-                # then.
-                # 401 most likely means a CD read failed. It doesn't provide terminator.
-                break
             
 	if self.dbg:
 	    print "Recv: "+data
@@ -142,15 +136,16 @@ class CDDBP(object):
         
     def connect(self, server=defaultserver, port=defaultport):
         "Connects to the server and does the initial handshake."
-        self.server=server
-        self.port=port
-        self.sock.connect(self.server,self.port)
+        self.server = server
+        self.port = port
+        self.sock.connect(self.server, self.port)
         self.__connected = True
-        (code,resp)=self.__decode(self.sock.receive("\r\n"))
+        code, resp = self.__decode(self.sock.receive("\r\n"))
+
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)
 
-        (code,resp)=self.__decode(self.sock.send("cddb hello %s %s %s %s" % \
+        code, resp = self.__decode(self.sock.send("cddb hello %s %s %s %s" % \
                                                  (self.user,self.localhost,
                                                   self.client,version),
                                                  "\r\n"))
@@ -161,6 +156,7 @@ class CDDBP(object):
         self.setproto()
 
     def reconnect(self, server=defaultserver, port=defaultport):
+        'Disconnect from server and connect again.'
         self.sock.disconnect()
         self.connect(server, port)
 
@@ -177,7 +173,7 @@ class CDDBP(object):
 
     def lscat(self):
         "Returns a list of the CDDB music categories."
-        code, resp = self.__decode(self.sock.send("cddb lscat", "\r\n.\r\n"))
+        code, resp = self.__decode(self.sock.send("cddb lscat", DOTTERM))
 
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)
@@ -187,7 +183,7 @@ class CDDBP(object):
     def sites(self):
         """Returns a list of the public CDDB servers, as (server, port,
         latitude, longitude, description) tuples."""
-        (code,resp)=self.__decode(self.sock.send("sites","\r\n.\r\n"))
+        code, resp = self.__decode(self.sock.send("sites", DOTTERM))
 
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)       
@@ -219,7 +215,7 @@ class CDDBP(object):
         if code == QUERY_NOMATCH: 
             return (code, data)
         elif code == QUERY_EXACT or code == QUERY_INEXACT:
-            albumlist = self.sock.receive("\r\n.\r\n")
+            albumlist = self.sock.receive(DOTTERM)
             data = []
             for line in albumlist.splitlines()[1:-2]:
                 genreid, cddbid, title = line.split(" ", 2)
@@ -234,29 +230,29 @@ class CDDBP(object):
             raise NotImplementedError("unimplemented cddb code.\n" +
                 "please notify namingmuse developers.\n" +
                 "cddb code: %u, message: %s" % (code, data))
-
         
         return (code, data)
 
     def getRecord(self, genre, cddbid):
-        '''
-        Read raw freedb record from database
-        '''
-        data = self.sock.send("cddb read %s %s" \
-                %(genre, cddbid), "\r\n.\r\n")
-        code, resp = self.__decode(data)
+        'Read raw freedb record from database'
+        response = self.sock.send("cddb read %s %s" \
+                %(genre, cddbid), '\r\n')
+
+        code, resp = self.__decode(response)
+
         if code > ERROR_THRESHOLD:
-            raise CDDBPException(code,resp)
+            raise CDDBPException(code, resp)
         elif code == READ_OK:
-            # get rid of first line (server header)
-            freedbrecord = resp.split("\r\n", 1)[1]
+            freedbrecord = self.sock.receive(DOTTERM)
         else:
-            raise NotImplementedException("cddb read: code %u" % code)
-        return freedbrecord.decode('UTF-8').encode(self.encoding, 'replace')
+            raise NotImplementedError("cddb read: code %u" % code)
+        freedbrecord = freedbrecord.decode('UTF-8')
+        freedbrecord = freedbrecord.encode(self.encoding, 'replace')
+        return freedbrecord
         
     def motd(self):
         "Returns the message of the day from the server."
-        (code,resp)=self.__decode(self.sock.send("motd","\r\n.\r\n"))
+        code, resp = self.__decode(self.sock.send("motd", DOTTERM))
 
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)
@@ -266,7 +262,7 @@ class CDDBP(object):
 
     def stat(self):
         "Returns a hash table of the different server properties."
-        (code,resp)=self.__decode(self.sock.send("stat","\r\n.\r\n"))
+        code, resp = self.__decode(self.sock.send("stat", DOTTERM))
 
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)
@@ -283,7 +279,7 @@ class CDDBP(object):
 
     def ver(self):
         "Returns a (servername, version, copyright) tuple."
-        (code,resp)=self.__decode(self.sock.send("ver","\r\n"))
+        code, resp = self.__decode(self.sock.send("ver","\r\n"))
 
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)
@@ -296,7 +292,7 @@ class CDDBP(object):
 
     def whom(self):
         "Returns a list of (pid, client, user, ip) tuples."
-        (code,resp)=self.__decode(self.sock.send("whom","\r\n.\r\n"))
+        code, resp = self.__decode(self.sock.send("whom", DOTTERM))
 
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)
