@@ -38,16 +38,6 @@ def choosealbum(albums, matchto, options, cddb):
     matchto = matchto.getName()
     matchto = re.sub("^[0-9]{4} ", "", matchto)
 
-    if len(albums) == 1:
-        if options.strict:
-            if len(albums[0].validate()) == 0:
-                idx = 1
-            else:
-                return None
-        else:
-            albums[0].ignoreMissing(True)
-            idx = 1
-    
     fmat = lambda u,v,w,x,y,z: "%3s%6s%5s %-17s%-15s %-10s\n" \
                 % (u, v, w, x, y, z)
     
@@ -78,9 +68,15 @@ def choosealbum(albums, matchto, options, cddb):
     idx = -1 
     if not sys.stdout.isatty():
         idx = 0
-    # autoselect if none or one album
-    if 0 <= len(newlist) <= 1:
-        idx = len(newlist)
+    
+    # Auto-select album
+    if options.autoselect:
+        if len(newlist) == 1:
+            idx = len(newlist)
+            print "Auto-selected:", idx
+        elif len(newlist) == 0:
+            idx = 0
+        
     while idx < 0 or idx > len(newlist):
         print "Pick an album (number):",
         try:
