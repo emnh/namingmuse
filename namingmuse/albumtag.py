@@ -376,7 +376,7 @@ def tagfile(fpath, album, track):
                     oldComment = None
 
         # strip id3v1tag, bool freeMemory = False 
-        fileref.strip(MPEGFile.ID3v1,False)
+        fileref.strip(MPEGFile.ID3v1, False)
 
         cleanOldComment(tag)
 
