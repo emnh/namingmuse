@@ -14,20 +14,26 @@ def namefix(filename):
     name, ext = os.path.splitext(filename)
     ext = ext.lower()
 
-    
-    def wordcap(matchobj):
+    def wordcap(matchobj, words = []):
+        '''Fix capitalization of words.'''
         abbreviations = ("CD", "DJ")
         lcaseword = ("for", "and", "a", "as", "at", "it", "the",
                      "in", "of", "into", "from", "or", "us", 
                      "are", "to", "be", "your")
         word = matchobj.group(1)
         tail = matchobj.group(2)
+        tailword = re.search("\w+\s+$", "".join(words))
         if word.upper() in abbreviations:
             word = word.upper()
-        elif word.lower() in lcaseword:
+        elif word.lower() in lcaseword and tailword:
             word = word.lower()
         else:
             word = word.capitalize()
+        if tail.strip() == "":
+            print "false"
+            firstword = False
+        words.append(word)
+        words.append(tail)
         return word + tail
 
     regexes = {
@@ -40,7 +46,7 @@ def namefix(filename):
         "-*$":            "",          #remove trailing dashes
         "\s+":            " ",         #remove duplicate spaces
 
-        "(\w+)(\W*)":     wordcap,  #capitalize first char in each word
+        "(\w+)(\W*)":     wordcap,     #capitalize first char in each word
 
         " -\s*(- )+":        " - ",    #no double dashes
         "- (\d\d) - ":    "- \\1 /",   #no dash after track numbers
@@ -58,6 +64,7 @@ def namefix(filename):
         "\(([^)]*)$":     "\\1",       #kill stray right parantheses
         "\d{3}\s*kbps(\s*\+)?":"",     #erase bitrate info in filename
         "\((\d+)\)":      "\\1",       #no paranthesized numbers
+        " Dont ":         " Don't ",   #spelling error
         "(.*-.*) - (Bke|Bmi|Bpm|Chr|Cmg|Cms|CSR|Csr|Dmg|Dps|Ego|ENT|Esc|Fnt|Fsp|Fua|Hcu|Idx|Its|Jce|Ksi|LLF|Mod|Nbd|OSi|PMS|Pms|Rev|Rns|Sdc|Sdr|Ser|Sms|Ssr|Sur|Sut|TiS|Twc|Wcr|Wlm)":    "\\.\\1\\."   #mp3 gang advertisements
         }
 
