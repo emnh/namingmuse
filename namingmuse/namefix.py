@@ -12,15 +12,14 @@ def namefix(filename):
 
     regexes = {
         "%20":            " ",         #replace %20 with space
-        "^[^[:alnum:]]*": "",          #remove non-alnum starting chars
-        "warez":          "",          #unwanted words
+        "^\W*":           "",          #remove non-alnum starting chars
+        #"warez":          "",          #unwanted words
         " *- *":          " - ",       #surround dash with spaces
         " *& *":          " & ",       #surround ampersand with spaces
         "^\s+":           "",          #trim left space
         "\s+$":           "",          #trim right space
         "-*$":            "",          #remove trailing dashes
         "\s+":            "",          #remove duplicate spaces
-        "\s*\.\s*":       "",          #no spaces surrounding extension dot
         #"(\..*)$/\L$1/g;              #lowercase extension
         #"(^|\s|\()(\w+)"\u$1\u$2/g;   #capitalize first char in each word
         " -.- ":          " - ",       #no double dashes
@@ -35,15 +34,18 @@ def namefix(filename):
         "\(\)":           "",          #kill empty parantheses
         #s/^([^(]*)\)/$1/g;            #kill stray right parantheses
         #s/\(([^)]*)$/$1/g;            #kill stray right parantheses
-        "\d{3}kbps":      "",          #erase bitrate info in filename
+        "\d{3}\s*kbps":      "",          #erase bitrate info in filename
         #s/\((\d\d)\)/$1/;             #no paranthesized track numbers
         #"(for|and|a|as|at|it|the|in|of|into|from|or|us|are|to|be|your)":/ \l$1 /i; #decapitalize short common words
         "/":              "",
         }
 
+    oldname = name
     for regex in regexes.keys():
         #print "reggie:",regex
         name = re.sub(regex,regexes[regex],name)
+        if (name == oldname): break
+        oldname = name
 
     name = re.sub("\\\\","",name)
     
