@@ -15,7 +15,6 @@ import tempfile
 from terminal import colorize
 from cddb import *
 from string import lower
-from sys import exit
 from difflib import SequenceMatcher
 
 from exceptions import *
