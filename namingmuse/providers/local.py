@@ -138,8 +138,9 @@ class LocalAlbumInfo(AlbumInfo):
             raise NamingMuseError('Read access denied to path: %s' %path)
 
 if __name__ == "__main__":
-    #l = LocalAlbumInfo('/mnt/sda1/musikk/accepted/Air/1998 Moon Safari')
-    l = LocalAlbumInfo('/mnt/sda1/musikk/accepted/Morcheeba/2002 Charango')
+    if len(sys.argv) < 2:
+        sys.exit("usage: %s <album>" % sys.argv[0])
+    l = LocalAlbumInfo(sys.argv[1])
     l.ignoreMissing(True)
     for i in l.tracks:
         i.ignoreMissing(True)
