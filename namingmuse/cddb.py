@@ -1,7 +1,7 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.33 2004/09/18 20:01:40 emh Exp $
+$Id: cddb.py,v 1.34 2004/09/21 20:09:15 emh Exp $
 """
 
 import socket
@@ -23,7 +23,7 @@ DOTTERM = '\r\n.\r\n'
 # Socket options
 BUFFERSIZE = 8192
 FLUSHTIMEOUT = 0.5
-REPLYTIMEOUT = 10
+REPLYTIMEOUT = 20
 
 # General CDDB codes
 CDDB_CONNECTION_TIMEOUT = 530
