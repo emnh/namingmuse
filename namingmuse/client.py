@@ -8,6 +8,7 @@ $Id:
 """
 import sys,os,stat
 import albumtag
+import copy
 from discmatch import DiscMatch
 import searchfreedb
 import terminal
@@ -37,7 +38,7 @@ def makeOptionParser():
                   action = "store_const",
                   const = "namefix",
                   dest = "cmd",
-                  help = "Namefix given files"
+                  help = "rename files according to predefined rules"
                   )
 
     op.add_option("-t",
@@ -353,6 +354,11 @@ def doDiscmatch(options, albumdir, cddb):
     albuminfo = None
     if not options.force:
         albuminfo = albumtag.getNmuseTag(filelist)
+        if albuminfo:
+            # may have used --loose to get the album
+            options = copy.copy(options)
+            options.strict = False
+
     if albuminfo \
        and albuminfo.getTagVersion() == albumtag.TAGVER \
        and not options.updatetags: 
