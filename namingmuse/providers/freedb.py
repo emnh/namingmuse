@@ -145,8 +145,8 @@ class FreeDBAlbumInfo(AlbumInfo):
                                   "couldn't parse frame offsets")
         
         # Convert frame comments to python list
-        framestub = re.sub("\s*#\s*", ",", framestub)[2:-2]
-        frames = eval("[" + framestub + "]")
+        frames = re.split("\s*#\s*", framestub)
+        frames = [int(x) for x in frames if x != '']
 
         # Convert frame offsets to track playlengths
         secs = []
