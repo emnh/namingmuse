@@ -156,6 +156,7 @@ class LocalAlbumInfo(AlbumInfo):
         'Uses tag from first track to get year, genre and title'
         # assume all tracks have same album info
         tag = self.tracks[0].readTag()
+        if not tag: return
         self.year = decodeFrame(tag, 'year')
         self.genre = decodeFrame(tag, 'genre')
         self.title = decodeFrame(tag, 'albumtitle')
@@ -164,6 +165,7 @@ class LocalAlbumInfo(AlbumInfo):
         'Uses tag from all tracks to get artist/isVarious'
         # Check artist on all tracks; if they aren't all equal use Various
         tag = self.tracks[0].readTag()
+        if not tag: return
         oldartist = decodeFrame(tag, 'artist')
         self.artist = oldartist
         self.isVarious = False
