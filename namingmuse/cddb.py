@@ -1,17 +1,18 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.6 2004/08/05 03:14:19 emh Exp $
+$Id: cddb.py,v 1.7 2004/08/06 06:24:59 torh Exp $
 """
 
 import socket,string
 import getpass
 import re
+from exceptions import *
 
 defaultserver = "bash.no"
 defaultport = 1863
 #defaultserver = "freedb.freedb.org"
 #defaultport = 8880
-defaultprotocol = 6 # check locale
+defaultprotocol = 5 # check locale
 version="0.20"
 
 class CDDBPException(Exception):
@@ -35,7 +36,11 @@ class SmartSocket:
     def connect(self, server, port):
         "Connects to the server at the given port."
         self.sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	self.sock.connect((server, port))
+        try:
+            self.sock.connect((server, port))
+        except socket.error, (errno, errstr):
+            raise NamingMuseError(errstr)
+            
 
     def send(self, message, term):
         """Sends a string to the server, returning the response terminated
@@ -53,7 +58,10 @@ class SmartSocket:
         data=""
         while 1:
             data=data+self.sock.recv(self.recvsize)
-            if data[-len(term):]==term:
+            if data[-len(term):]==term or '230 ' in data:
+                # 230 means that we did something nasty and the server is
+                # hanging up on us. It doesn't provide the needed terminator
+                # then.
                 break
             
 	if self.dbg:
@@ -182,10 +190,11 @@ class CDDBP:
                     lsecs.append(sec)
             elif readingtotal:
                 match = re.search("^# Disc length: ([0-9]*) seconds", item)
-                totsec = int(match.group(1))
-                sec = totsec - prevsec / 75
-                lsecs.append(sec)
-                readingtotal = False
+                if match:
+                    totsec = int(match.group(1))
+                    sec = totsec - prevsec / 75
+                    lsecs.append(sec)
+                    readingtotal = False
             elif "# Track frame offsets:" in item:
                 readingframes = True
         return lsecs
