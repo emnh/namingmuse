@@ -319,10 +319,15 @@ def tagfiles(albumdir, album, options):
     if options.dryrun:
         renamesign = "-dry->"
     if not (options.dryrun or options.tagonly) and renamealbum:
+        if os.path.exists(str(newalbumdir)):
+            raise NamingMuseWarning("Directory already exists (dup album?): " +
+                  str(newalbumdir))
         try:
             os.rename(str(albumdir), str(newalbumdir))
         except OSError, err:
             raise NamingMuseWarning(str(err))
+
+    # Print rename message
     print "\n", albumdir.getName()
     print "\t", colorize(renamesign),
     if options.artistdir:
