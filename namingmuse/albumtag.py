@@ -7,7 +7,7 @@ tagname = "namingmusetag"
 tagver = "0.02"
 
 import difflib
-import os,re,sys,string
+import os,re,sys,string,shutil
 import random
 import TagLib
 import policy
@@ -213,6 +213,14 @@ def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
         print file.ljust(longestfilename)
         print "\t", colorize(renamesign), tofile
         if not (options.dryrun or str(comment) == "manual"):
+            #preserve stat
+            try:
+                tmpfilename = os.tempnam()
+            except RuntimeWarning:
+                pass
+            tmpfile = os.open(tmpfilename,os.O_CREAT)
+            shutil.copystat(fullpath, tmpfilename)
+
             try:
                 year = int(year)
             except ValueError:
@@ -230,8 +238,13 @@ def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
             comment = footprint(albumdict)
             tag.setComment(comment)
             fileref.save()
+            #restore filestat
+            shutil.copystat(tmpfilename, fullpath)
+            #delete tempfile
+            os.unlink(tmpfilename)
             if not options.tagonly:
-                os.rename(fullpath, pjoin(albumdir, tofile))
+                newfullpath = pjoin(albumdir, tofile)
+                os.rename(fullpath, newfullpath)
 
     # Rename album (if no "manual" mp3 files in that dir)
     renamesign = (renamealbum and "->" or "-skip->")
