@@ -302,7 +302,7 @@ def tagfiles(albumdir, album, options):
     artistdir = ""
     # Check if parent dir name matches fairly well with
     # artistname. If it does, we ignore options.artistdir
-    parent = albumdir.getParent()
+    parent = albumdir.getParent().getName()
     artistdirdiff = distwrap(parent, album.artist)
     if DEBUG: print "Distance between %s and %s is : %s" \
             %(parent, album.artist, artistdirdiff)
