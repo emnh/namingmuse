@@ -148,7 +148,7 @@ def cli():
     try: 
         os.listdir(str(albumdir))
     except OSError, (errno, strerror):
-        exit(strerror + ": " + albumdir)
+        exit(strerror + ": " + str(albumdir))
 
     exitstatus = 0
 

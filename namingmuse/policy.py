@@ -2,30 +2,26 @@
 
 import os, re, sys, string
 
-def filename(original, ext, title, track, trackartist, albumname, year, genre, albumartist):
-    if trackartist:
-        if albumartist == "Various":
-            # Track number first
-            tofile = "%.2u %s - %s%s" % (track, trackartist, title, ext)
-        else:
-            # Track number behind artist 
-            tofile = "%s - %.2u %s%s" % (trackartist, track, title, ext)
+def genfilename(original, album, track):
+    ext = original.getExt()
+    if album.isVarious:
+        # Track number first
+        tofile = "%.2u %s - %s%s" % \
+                (track.number, track.artist, track.title, ext)
     else:
-        # No artist
-        tofile = "%.2u %s%s" % (track, title, ext)
-        
+        # Track number behind artist 
+        tofile = "%s - %.2u %s%s" % \
+                (track.artist, track.number, track.title, ext)
     tofile = tofile.replace("/", " ")
     return tofile
 
-def albumdirname(original, artist, albumname, year, genre):
-    albumname = albumname.replace("/", " ")
-    if int(year) > 1800:
-        newdirname = "%s %s" % (year, albumname)
+def genalbumdirname(original, album):
+    if album.year != 0:
+        newdirname = "%s %s" % (album.year, album.title)
     else:
-        newdirname = "%s" % (albumname)
+        newdirname = "%s" % (album.title)
     newdirname = newdirname.replace("/", " ")
     return newdirname
-    # return original # no change
 
 # Overwrite global functions defined above with local ones
 home = os.getenv("HOME")

@@ -226,8 +226,7 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
     print "Tagging album: %s, %s - %s, %s.\n" % \
           (album.year, album.artist, album.title, album.genre)
 
-    todir = policy.albumdirname(albumdir.getName(), \
-            album.artist, album.title, album.year, album.genre)
+    todir = policy.genalbumdirname(albumdir, album)
     newalbumdir = FilePath(albumdir.getParent(), todir)
 
     # Process files
@@ -252,10 +251,7 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
         #    trackartist = albumartist
         track = tracks[i]
 
-        # XXX: pass the whole album thing into policy
-        tofile = policy.filename(fpath.getName(), ext, track.title, track.number, 
-                                 track.artist, album.title, album.year, 
-                                 album.genre, album.artist)
+        tofile = policy.genfilename(fpath, album, track)
         tofile = FilePath(albumdir, tofile)
     
         # Tag and rename file
