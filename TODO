@@ -1,0 +1,11 @@
+TODO
+*fix save/restore ctime (stat copy)
+*proper locale support (including utf8 and protocol 6)
+*recursive
+*move some searchfreedb stuff to namingmuse.py
+*get rid of taglib warning messages (done?)
+*download cover art
+*namefixing
+*finish namebinder_strapprox_time
+*see if improvements can be made to discid generator
+*use info from cddbid in searchfreedb to filter matches
