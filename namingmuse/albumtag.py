@@ -236,7 +236,6 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
     newalbumdir = FilePath(albumdir.getParent(), todir)
 
     # Process files
-    longestfilename = max(map(lambda x: len(x), filelist))
     renamealbum = True
 
     for i in range(0, len(filelist)):
@@ -269,7 +268,7 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
         #if "manual" in comment:
         #   renamesign = "-skip->"
         #    renamealbum = False
-        print fpath.getName().ljust(longestfilename)
+        print fpath.getName()
         print "\t", colorize(renamesign), tofile.getName()
         if not options.dryrun:
             #preserve stat
