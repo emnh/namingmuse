@@ -1,0 +1,7 @@
+2004-08-02 (version 0.6)
+    * cddb: new module for doing freedb lookups
+
+2004-07-14 (version 0.5)
+    * initial release: freedb renaming of albums working ok
+    * discmatch: added module for generating and searching freedb using discmatch
+    * searchfreedb: fulltext search of freedb parsing the web interface

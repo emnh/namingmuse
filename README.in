@@ -1,0 +1,33 @@
+
+NAMINGMUSE
+
+The overall goal is to automatically provide good and plentiful
+metainformation for music libraries from an online source, especially
+focused on automating the selection of "good" metainformation such that
+large music libraries can be tagged speedily with the least possible
+user intervention. Consistent naming policies and automated touchup
+of downloaded metainformation will be supported. Good default naming
+policies will be a priority, but they will be made configurable. In
+its current incarnation, namingmuse is a library/application for
+accessing the online discography site freedb (http://www.freedb.org)
+and renaming and tagging music albums with the metainformation from
+the site (such as year, genre, album name, title, artist etc). It
+supports freedb disc id generation from the music file types supported
+by taglib, and full text search using a HTML-parser on the freedb website.
+
+
+FEATURES
+
+*Using the abstract taglib API makes music format support easily extensible.
+*Local charset support (including UTF-8) (not done)
+*Written in python
+
+TODO
+
+see TODO
+
+REFERENCES
+
+*freedb: http://www.freedb.org
+*taglib: http://developer.kde.org/~wheeler/taglib.html
+*python: http://www.python.org
