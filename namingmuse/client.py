@@ -26,28 +26,13 @@ def makeOptionParser():
     op = OptionParser()
     op.set_usage("%prog <actionopt> [options] <albumdir>")
 
-    op.add_option("", 
-                  "--dry-run",
-                  action = "store_true",
-                  dest = "dryrun",
-                  help= "don't modify anything, just pretend"
-                  )
-
+    
     op.add_option("-n",
                   "--namefix",
                   action = "store_const",
                   const = "namefix",
                   dest = "cmd",
-                  help = "rename files according to predefined rules"
-                  )
-
-    op.add_option("",
-                  "--stats",
-                  action = "store_const",
-                  const = "stats",
-                  dest = "cmd",
-                  help = "print out statistics on local files"
-                  )
+                  help = "rename files according to predefined rules")
 
     op.add_option("-t",
                   "--tag-only",
@@ -65,6 +50,7 @@ def makeOptionParser():
                   action = "store_true",
                   dest = "updatetags",
                   help = "update files already tagged with same version")
+
     op.add_option("-r",
                   "--recursive",
                   action = "store_true",
@@ -75,6 +61,12 @@ def makeOptionParser():
                   action = "store_true",
                   dest = "artistdir",
                   help = "place albumdir in artist/albumdir")
+    
+    op.add_option("", 
+                  "--dry-run",
+                  action = "store_true",
+                  dest = "dryrun",
+                  help= "don't modify anything, just pretend")
 
     op.add_option("", 
                   "--loose",
@@ -86,8 +78,14 @@ def makeOptionParser():
     op.add_option("",
                   "--doc",
                   action = "store_true",
-                  help = "print module documentation"
-                  )
+                  help = "print module documentation")
+
+    op.add_option("",
+                  "--namebinder",
+                  action = "store",
+                  dest = "namebinder",
+                  help = "select namebinder: trackorder/filenames/" +
+                         "filenames+time")
 
     actionopts = OptionGroup(op,
                              "action options",
@@ -95,18 +93,27 @@ def makeOptionParser():
 
     op.add_option_group(actionopts)
 
-    actionopts.add_option("-d", "--discmatch",
-                                const = "discmatch",
-                                action = "store_const",
-                                dest = "cmd",
-                                help = "tag and rename files using discid toc match (default)"
-                                )
+    actionopts.add_option("-d",
+                          "--discmatch",
+                          const = "discmatch",
+                          action = "store_const",
+                          dest = "cmd",
+                          help = "tag and rename files using discid" +
+                                 " toc match (default)")
                                 
-    actionopts.add_option("-s", "--search",
-                                action = "append",
-                                dest = "words",
-                                help = "tag and rename files using fulltext search"
-                                )
+    actionopts.add_option("-s", 
+                          "--search",
+                          action = "append",
+                          dest = "words",
+                          help = "tag and rename files using fulltext search")
+
+    actionopts.add_option("",
+                          "--stats",
+                          action = "store_const",
+                          const = "stats",
+                          dest = "cmd",
+                          help = "print out statistics on local files"
+                         )
 
     dopts = OptionGroup(op, "discmatch options")
     op.add_option_group(dopts)

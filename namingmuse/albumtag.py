@@ -207,10 +207,10 @@ def sortedcmp(a, b):
     return a == b
 
 def get_namebinder(options, filelist):
-    '''Function used by tagfiles to determine which namebinding algorithm to 
-    use. In the future it will also be possible to select this by the cli.
+    '''Automatically determine which namebinding algorithm to use,
+    if one was not specified explicitly by the user.
 
-    For now it only checks if every track in the filelist has a tracknumber,
+    It checks if every track in the filelist has a tracknumber,
     and they are in sequence, without gaps. If so, it chooses 
     namebinder_trackorder. Else, namebinder_strapprox_time.
     '''
@@ -220,8 +220,11 @@ def get_namebinder(options, filelist):
     'filenames+time': namebinder_strapprox_time,
     'filenames': namebinder_strapprox
     }
-    if options.namebinder and bindfunctions.has_key(options.namebinder):
-        return bindfunctions[options.namebinder]
+    if options.namebinder:
+        if bindfunctions.has_key(options.namebinder):
+            return bindfunctions[options.namebinder]
+        else:
+            raise NamingMuseError("Error: invalid namebinder: %s" % options.namebinder)
     
     for i, filename in enumerate(filelist):
         if not str(i+1) in str(filename):

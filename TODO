@@ -4,7 +4,6 @@ TODO
 * do smart namefixing (knowing artist/title parts) and allow combining
   namefix option with freedb get
 * see if improvements can be made to discid generator
-* searchfreedb: add option for selecting namebinder
 * searchfreedb: default to using albumdir as search words
 * improve outer namebinder approximation algorithms
 * support "manual" tags (=namingmuse shouldn't touch it)
