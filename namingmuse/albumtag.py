@@ -74,6 +74,7 @@ def getfilelist(path, fullpath = True):
 
 def getMP3Length(filename):
     mp3info = "/usr/bin/mp3info"
+    strlength = "0"
     if os.access(mp3info, os.X_OK):
         pread,pwrite = os.pipe()
         childid = os.fork()
