@@ -1,14 +1,11 @@
 TODO
-*fix save/restore ctime (stat copy)
 *proper locale support (including utf8 and protocol 6)
-*recursive
 *download cover art
 *namefixing
 *finish namebinder_strapprox_time
 *see if improvements can be made to discid generator
 *use info from cddbid in searchfreedb to filter matches
 *argument to create artistdir if non-existing
-*move album into artistdir if existing
 
 *pass all filenames around using FilePath
 
