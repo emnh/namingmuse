@@ -111,6 +111,19 @@ class LocalTrackInfo(TrackInfo):
 class LocalAlbumInfo(AlbumInfo):
 
     tagprovider = 'local'
+    _readtagshort = False
+    _readtaglong = False
+    
+    def __getattribute__(self, name):
+        if name in ('year', 'genre', 'title'):
+            if not self._readtagshort:
+                self._readtagshort = True
+                self._readTagShort()
+        if name in ('artist', 'isVarious'):
+            if not self._readtaglong:
+                self._readtaglong = True
+                self._readTagLong()
+        return super(LocalAlbumInfo, self).__getattribute__(name)
 
     def __init__(self, albumdir):
         super(LocalAlbumInfo, self).__init__()
@@ -118,12 +131,30 @@ class LocalAlbumInfo(AlbumInfo):
         for fpath in filelist:
             tr = LocalTrackInfo(fpath)
             self.tracks.append(tr)
+
+    def _readTagShort(self):
+        'Uses tag from first track to get year, genre and title'
         # assume all tracks have same album info
         tag = self.tracks[0].readTag()
         self.year = decodeFrame(tag, 'year')
         self.genre = decodeFrame(tag, 'genre')
-        self.artist = decodeFrame(tag, 'artist') # XXX: check all
         self.title = decodeFrame(tag, 'albumtitle')
+
+    def _readTagLong(self):
+        'Uses tag from all tracks to get artist/isVarious'
+        # Check artist on all tracks; if they aren't all equal use Various
+        tag = self.tracks[0].readTag()
+        oldartist = decodeFrame(tag, 'artist')
+        self.artist = oldartist
+        self.isVarious = False
+        for track in self.tracks:
+            tag = track.readTag()
+            artist = decodeFrame(tag, 'artist')
+            if artist != oldartist:
+                self.artist = "Various"
+                self.isVarious = True
+                break
+            oldartist = artist
 
     def getfilelist(self, path):
         """Get sorted list of files supported by taglib 
