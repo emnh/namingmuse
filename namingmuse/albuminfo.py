@@ -152,17 +152,17 @@ class TrackInfo(object):
 
 class AlbumInfo(object):
     __tagversion = TAGVER
-    __year = 0
-    __genre = ""
-    __artist = ""
-    __title = ""
-    __tracks = []
     tagprovider = 'none'
 
     __metaclass__ = debugTagSafe
 
-    def __init__(self, footprint):
-        if footprint.has_key("TNMU"): 
+    def __init__(self, footprint = None):
+        self.__year = 0
+        self.__genre = ""
+        self.__artist = ""
+        self.__title = ""
+        self.__tracks = []
+        if footprint and footprint.has_key("TNMU"): 
             self.__tagversion = footprint["TNMU"]
 
     def validate(self):
