@@ -12,10 +12,13 @@ class FilePath(object):
        """ 
 
     def __init__(self, path, *filep):
-        path = os.path.abspath(str(path))
+        if isinstance(path, FilePath):
+            path = path.fullpath
+        else:
+            path = os.path.abspath(path)
         if len(filep) > 0:
             for f in filep:
-                path = os.path.join(path, str(f))
+                path = os.path.join(path, f)
         self.fullpath = path
     
     def getName(self):
@@ -31,19 +34,21 @@ class FilePath(object):
         return self.getExt()[1:].lower()
 
     def __add__(self, other):
-        return FilePath(str(self), str(other))
+        return FilePath(self, other)
         
     def __len__(self):
-        return len(str(self))
+        return len(self.fullpath)
         
     def __str__(self):
         return self.fullpath
     
     def __repr__(self):
-        return str(self)
+        return self.__str__()
     
     def __cmp__(self, other):
         if not isinstance(other, (FilePath, StringTypes)): 
             raise TypeError(\
                     "can't compare FilePath with non-FilePath/string object")
-        return cmp(str(self), str(other))
+        if isinstance(other, FilePath):
+            other = other.fullpath
+        return cmp(self.fullpath, other)
