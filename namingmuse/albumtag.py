@@ -314,14 +314,15 @@ def tagfile(fpath, album, track):
         
         #fetch footprintdict
         footprintdict = album.footprint()
-        footprintdict["namingmuse"] = TAGVER
+        # Add namingmuse tag with version
+        footprintdict["TNMU"] = TAGVER 
 
         # Preserve ID3v2Tag comments other than our generated ones
         oldcommentlist = []
         for frame in tag.frameList():
             if frame.frameID() == "COMM":
                 cf = CommentsFrame(frame)
-                if not 'namingmuse' in cf.text() and not cf.description() in footprintdict.keys():
+                if not 'namingmuse' in cf.text() and not cf.description() in ["namingmuse", "genreid", "cddbid", "tagprovider"]:
                     newcf = CommentsFrame()
                     newcf.setDescription(cf.description())
                     newcf.setText(cf.text())
@@ -339,23 +340,33 @@ def tagfile(fpath, album, track):
             cf = CommentsFrame()
             cf.setText(oldcomment)
             tag.addFrame(cf)
+
+        framedict = {}
+        framedict.update(footprintdict)
+        del footprintdict
+        framedict.update({
+                "TDRC": str(album.year),
+                "TCON": album.genre,
+                "TPE1": track.artist,
+                "TALB": album.title,
+                "TIT2": track.title,
+                "TRCK": "%s/%s" % (track.number, len(album.tracks))
+                })
                     
-        tag.setYear(album.year)
-        tag.setGenre(album.genre)
-        tag.setArtist(track.artist)
-        tag.setAlbum(album.title)
-        tag.setTitle(track.title)
-        tag.setTrack(track.number)
+        if 'UTF' in album.encoding.upper():
+            taglibencoding = String.UTF8 
+        else:
+            taglibencoding = String.Latin1
         
         # append namingmuse footprint
-        for description,text in footprintdict.items():
-            cf = CommentsFrame()
-            cf.setDescription(description)
-            cf.setText(text)
-            tag.addFrame(cf)
+        for key,text in framedict.items():
+            tag.removeFrames(key)
+            if not text == "":
+                tf = TextIdentificationFrame(key, taglibencoding)
+                tf.setText(text)
+                tag.addFrame(tf)
 
-        #save only version 2 tag
-        fileref.save(MPEGFile.ID3v2)
+        return fileref.save()
         
     else:
         fileref = FileRef(str(fpath))

@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.18 2004/08/16 18:59:01 emh Exp $
+$Id: cddb.py,v 1.19 2004/08/17 00:13:22 torh Exp $
 """
 
 import socket,string
@@ -87,7 +87,7 @@ class SmartSocket:
             self.disconnect()
 
 class CDDBP:
-    "This class can speak the CDDBP protocol, level 6."
+    "This class can speak the CDDBP protocol, level 5/6."
 
     def __init__(self, user='nmuse', localhost='localhost'):
         self.sock=SmartSocket(0,8192)
