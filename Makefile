@@ -15,7 +15,8 @@ dist: clean
 	./setup.py sdist
 
 doc:
-	./nmuse --doc > README
+	cat README.in > README
+	./nmuse --doc >> README
 
 rpm:
 	./setup.py bdist_rpm
