@@ -41,6 +41,7 @@ def choosealbum(albums, matchto, options, cddb):
     rows,cols = gettermsize()
 
     matchto = matchto.getName()
+    matchto = re.sub("^[0-9]{4} ", "", matchto)
 
     if len(albums) == 1:
         if options.strict:
