@@ -11,3 +11,6 @@ TODO
 * clean up discmatch module and strip it for cddb knowledge
 * detect exact duplicate albums and warn user about it
 * NEVER autoselect 1 when using search
+* don't tag albums with 1 song since the probability is very high that
+  they will match only a lot of incorrect albums
+* trackorder means alphabetical order, make new function to order by track nr
