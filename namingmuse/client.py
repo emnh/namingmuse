@@ -214,8 +214,7 @@ def cli():
                     except CDDBPException, err:
                         if err.code == CDDB_CONNECTION_TIMEOUT:
                             print "Connection timed out, reconnecting.."
-                            cddb = CDDBP()
-                            cddb.encoding = options.encoding
+                            cddb.reconnect()
                         else:
                             print err 
                             cddb = CDDBP()

@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.23 2004/08/22 16:57:00 torh Exp $
+$Id: cddb.py,v 1.24 2004/09/10 22:21:33 emh Exp $
 """
 
 import socket,string
@@ -135,6 +135,10 @@ class CDDBP(object):
 
         #set the server proto
         self.setproto()
+
+    def reconnect(self, server=defaultserver, port=defaultport):
+        self.sock.disconnect()
+        self.connect(server, port)
 
     def setproto(self,proto=defaultprotocol):
         '''Sets the proto level on the server.
@@ -276,9 +280,3 @@ class CDDBP(object):
             pass
 
     # Missing: update, write
-    
-def retry(cddb):
-    reload(cddb)
-    c=CDDBP()
-    #c.connect() #automagic
-    return c
