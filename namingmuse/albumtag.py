@@ -37,23 +37,32 @@ def getNmuseTag(filelist):
         if not tag or tag.isEmpty():
             return None
         framelistmap = tag.frameListMap()
-        if not framelistmap.has_key("COMM"):
-            return None
-        comms = framelistmap["COMM"]
-        commdict = {}
-        for comm in comms:
-            cf = CommentsFrame(comm)
-            key = cf.description()
-            value = cf.text()
-            commdict[key] = value
-        if not commdict.has_key("namingmuse"):
-            return None
-        if commdict.has_key("tagprovider"):
-            tagprovider = commdict["tagprovider"]
-        else:
-            tagprovider = "default"
+
+        if framelistmap.has_key("TTPR"): #new school
+            tagprovider = framelistmap["TTPR"][0]
+            fdict = {}
+            for frame in tag.frameList():
+                key = frame.frameID()
+                if key.startswith('T'):
+                    fdict[key] = TextIdentificationFrame(frame)
+            providerclass = providers[tagprovider]
+            providerobj = providerclass(fdict)
+        else: #old school
+            comms = framelistmap["COMM"]
+            fdict = {}
+            for comm in comms:
+                cf = CommentsFrame(comm)
+                key = cf.description()
+                value = cf.text()
+                fdict[key] = value
+            if not fdict.has_key("namingmuse"):
+                return None
+            if fdict.has_key("tagprovider"):
+                tagprovider = fdict["tagprovider"]
+            else:
+                tagprovider = "default"
         providerclass = providers[tagprovider]
-        providerobj = providerclass(commdict)
+        providerobj = providerclass(fdict)
         return providerobj
     return None
 
