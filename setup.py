@@ -31,12 +31,12 @@ and full text search with string approximation
 in binding the freedb metainfo to files."""
 
 classifiers = [
-'Development Status :: 4 - Beta',
+'Development Status :: 5 - Production/Stable',
 'Environment :: Console',
 'Intended Audience :: End Users/Desktop',
 'License :: OSI Approved :: GNU General Public License (GPL)',
 'Natural Language :: English'
-'Operating System :: OS Independent',
+'Operating System :: Linux',
 'Programming Language :: Python',
 'Topic :: Multimedia :: Sound/Audio',
 ]
