@@ -51,9 +51,11 @@ def makeOptionParser():
                   help = "place albumdir in artist/albumdir")
 
     op.add_option("", 
-                  "--strict",
-                  action = "store_true",
-                  help = "bail out if any tag information is missing")
+                  "--loose",
+                  dest = "strict",
+                  action = "store_false",
+                  default = True,
+                  help = "allow nmuse to work with missing tag information")
 
     op.add_option("",
                   "--doc",
@@ -212,22 +214,34 @@ def doFullTextSearch(albumdir, options):
     for album in albums:
         haveread.setdefault(album['cddbid'], [])
         if not album['genreid'] in haveread.get(album['cddbid']):
-            freedbrecord = discmatch.cddb.getRecord(album['genreid'], album['cddbid'])
+            freedbrecord = discmatch.cddb.getRecord(album['genreid'], 
+                                                    album['cddbid'])
             albuminfo = FreeDBAlbumInfo(freedbrecord)
-            albuminfo.setFreedbIdentifier(album['genreid'], album['cddbid']) #XXX
+            albuminfo.setFreedbIdentifier(album['genreid'], 
+                                          album['cddbid']) #XXX
             albuminfos.append(albuminfo)
             haveread[album['cddbid']].append(album['genreid'])
 
     if len(albuminfos) == 0:
         raise NamingMuseError("No matches in folder %s" % albumdir)
+
     
-    albuminfo = terminal.choosealbum(albuminfos, albumdir)
+    albuminfo = choosealbum(albuminfos, albumdir, options)
 
     if not albuminfo:
         raise NamingMuseWarning('Not tagging %s' \
                    %(albumdir))
 
     albumtag.tagfiles(albumdir, albuminfo, options, albumtag.namebinder_strapprox_time)
+
+def choosealbum(albuminfos, albumdir, options):
+    ''' Returns a single user-chosen album given a list of albums '''
+    # if strict, filter out albums with missing genre or year
+    if options.strict:
+        for album in albuminfos:
+            print album.validate()
+        albuminfos = filter(lambda x: len(x.validate()) == 0 , albuminfos)
+    return terminal.choosealbum(albuminfos, albumdir)
 
 def doDiscmatch(options, albumdir, discmatch):
     filelist = albumtag.getfilelist(albumdir)
@@ -250,16 +264,19 @@ def doDiscmatch(options, albumdir, discmatch):
     if options.updatetags and not options.force:
         identifier = albumtag.getStoredCDDBId(filelist)
         if identifier:
-            freedbrecord = cddb.getRecord(identifier['genreid'], identifier['cddbid'])
+            freedbrecord = cddb.getRecord(identifier['genreid'], 
+                                          identifier['cddbid'])
             albuminfo = FreeDBAlbumInfo(freedbrecord)
-            albuminfo.setFreedbIdentifier(identifier['genreid'], identifier['cddbid']) #XXX
+            albuminfo.setFreedbIdentifier(identifier['genreid'], 
+                                          identifier['cddbid']) #XXX
         else:
             raise NamingMuseError('Broken old tag found, unable to update.')
     if not albuminfo:
         query = discmatch.files2discid(filelist)
         statusmsg, albums = discmatch.freedbTOCMatchAlbums(query)
         if len(albums) == 0:
-            raise NamingMuseError("No freedb match for id %08x in folder %s" % (query[0], albumdir))
+            raise NamingMuseError("No freedb match for id %08x in folder %s" \
+                                    %(query[0], albumdir))
         albuminfos = []
         for album in albums:
             freedbrecord = cddb.getRecord(album['genreid'], album['cddbid'])
@@ -267,7 +284,7 @@ def doDiscmatch(options, albumdir, discmatch):
             albuminfo.setFreedbIdentifier(album['genreid'], album['cddbid']) #XXX
             albuminfos.append(albuminfo)
             
-        albuminfo = terminal.choosealbum(albuminfos, albumdir)
+        albuminfo = choosealbum(albuminfos, albumdir, options)
         if not albuminfo:
             raise NamingMuseWarning('Not tagging %s' \
                        %(albumdir))

@@ -3,7 +3,6 @@
 import sys, os, re, string
 import struct, fcntl, termios
 from sys import stdout
-from sys import exit
 from difflib import SequenceMatcher
 import curses
 

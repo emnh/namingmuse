@@ -27,8 +27,11 @@ def namefix(filename):
         #"- (\d\d) - ":"- $1 /;        #no dash after track numbers
         #"(\d\d)([A-Z])"$1 $2/;        #space after track numbers
         #s/[- ]*(\.|$)"$1/g;           #kill off inappropriate ending chars
-        #tr/[{/(/;                     #translate [,{ to ()
-        #tr/]}/)/;                     #translate },] to ()
+        "/":"(":,
+        "[":"(":,
+        "{":"(";,                      #translate [,{ to ()
+        "]":")",
+        "}":")",
         "\(\)":           "",          #kill empty parantheses
         #s/^([^(]*)\)/$1/g;            #kill stray right parantheses
         #s/\(([^)]*)$/$1/g;            #kill stray right parantheses
