@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.10 2004/08/09 19:21:32 torh Exp $
+$Id: cddb.py,v 1.11 2004/08/09 20:00:56 torh Exp $
 """
 
 import socket,string
@@ -240,7 +240,10 @@ class CDDBP:
         self.sock.send("quit","\r\n")
 
     def __del__(self):
-        self.quit()
+        try:
+            self.quit()
+        except:
+            pass
 
     # Missing: update, write
     
