@@ -131,7 +131,6 @@ def getIntLength(fpath):
 def distwrap(a, b):
     "Wraps a string distance function"
     a, b = a.lower(), b.lower()
-    str
     isjunk = lambda x: not x.islower()
     rat = SequenceMatcher(isjunk, a, b).ratio()
     return 1.0 - rat
@@ -301,7 +300,13 @@ def tagfiles(albumdir, album, options):
     # Get new albumdir name
     newalbum = policy.genalbumdirname(albumdir, album)
     artistdir = ""
-    if options.artistdir:
+    # Check if parent dir name matches fairly well with
+    # artistname. If it does, we ignore options.artistdir
+    parent = albumdir.getParent()
+    artistdirdiff = distwrap(parent, album.artist)
+    if DEBUG: print "Distance between %s and %s is : %s" \
+            %(parent, album.artist, artistdirdiff)
+    if options.artistdir and artistdirdiff < 0.5: #XXX 0.5 sane value?
         newalbumdir = FilePath(albumdir.getParent(), album.artist, newalbum)
     else:
         newalbumdir = FilePath(albumdir.getParent(), newalbum)
