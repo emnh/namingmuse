@@ -412,7 +412,9 @@ def doDiscmatch(options, albumdir, cddb):
     else:
         albuminfo.setCDDBConnection(cddb)
 
-    albumtag.tagfiles(albumdir, albuminfo, options, \
-            albumtag.namebinder_trackorder)
+    # Trackorder is the only one that makes sense here
+    # (if they weren't in track order we wouldn't have matched)
+    options.ensure_value('namebinder', 'trackorder')
+    albumtag.tagfiles(albumdir, albuminfo, options)
 
 if __name__ == "__main__": cli()

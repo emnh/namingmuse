@@ -168,7 +168,7 @@ def namebinder_strapprox_time(filelist, tracks):
             
             strdist = distwrap(file, title)
             timedist = abs(filePlayLength - tracks[j].playLength)
-            if timedist < 5 or strdist < 0.3:
+            if timedist < 2 or strdist < 0.3:
                 # greatly favour close proximity matches
                 dist = strdist / 10
             else:
@@ -215,6 +215,14 @@ def get_namebinder(options, filelist):
     namebinder_trackorder. Else, namebinder_strapprox_time.
     '''
 
+    bindfunctions = {
+    'trackorder': namebinder_trackorder,
+    'filenames+time': namebinder_strapprox_time,
+    'filenames': namebinder_strapprox
+    }
+    if options.namebinder and bindfunctions.has_key(options.namebinder):
+        return bindfunctions[options.namebinder]
+    
     for i, filename in enumerate(filelist):
         if not str(i+1) in str(filename):
             if DEBUG: print 'Using strapprox_time as namebinder'
