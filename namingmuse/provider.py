@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 
-import providers.__init__
-from providers import *
-from providers.albuminfo import *
+# XXX: this module should be integrated in providers/__init__.py
+
 import inspect
+from glob import glob
+
+from namingmuse import providers
+from namingmuse.providers import *
+from namingmuse.providers.albuminfo import AlbumInfo
 
 providerclasses = {}
 
 def getProviders():
     providerclasses = {}
-    for modname in providers.__init__.__all__:
+    for modname in providers.__all__:
         obj = eval(modname)
         for subname in dir(obj):
             if '_' in subname: continue

@@ -6,21 +6,22 @@ a namefixer module which just tries to prettify filenames.
 
 $Id: 
 """
-import sys,os,stat
-import albumtag
 import copy
-from discmatch import DiscMatch
-import searchfreedb
-import terminal
+import os
+import stat
+import sys
 from sys import exit
-from optparse import OptionParser, make_option
-from optparse import OptionGroup
-from provider import *
-from filepath import FilePath
+from optparse import OptionParser, OptionGroup, make_option
 from ConfigParser import *
 
-from musexceptions import *
-from cddb import CDDBP, CDDBPException, CDDB_CONNECTION_TIMEOUT
+from namingmuse import albumtag
+from namingmuse import searchfreedb
+from namingmuse import terminal
+from namingmuse.discmatch import DiscMatch
+from namingmuse.provider import *
+from namingmuse.filepath import FilePath
+from namingmuse.musexceptions import *
+from namingmuse.cddb import CDDBP, CDDBPException, CDDB_CONNECTION_TIMEOUT
 
 def makeOptionParser():
     op = OptionParser()

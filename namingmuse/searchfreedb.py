@@ -4,22 +4,20 @@ with the resulting information. Fields that can be
 searched are artist, title, track and rest.
 """
 
-import sys, os ,re
 import htmllib
-import urllib
-import albumtag
+import os
+import re
+import sys
 import terminal
-from sys import exit
+import urllib
 from HTMLParser import HTMLParser
-from optparse import make_option
 
-from provider import LocalAlbumInfo
-from provider import FreeDBAlbumInfo
+from namingmuse.provider import FreeDBAlbumInfo
+from namingmuse.provider import LocalAlbumInfo
 
 from musexceptions import *
 
-DEBUG = False
-#DEBUG = True
+DEBUG = os.getenv('DEBUG')
 
 baseurl = "http://www.freedb.org/"
 allfields = ("artist", "title", "track", "rest")

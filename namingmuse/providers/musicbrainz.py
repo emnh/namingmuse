@@ -1,8 +1,10 @@
+
 import os
 import re
 import sys
-#from albuminfo import AlbumInfo
+#from namingmuse.providers.albuminfo import AlbumInfo
 from time import sleep
+
 try:
     from tunepimp import tunepimp, metadata, track
 except ImportError, err:

@@ -8,7 +8,9 @@ defined here.
 $Id: 
 """
 
-import os, re, sys, string
+import os
+import re
+import sys
 
 def genfilename(original, album, track):
     ext = original.getExt()

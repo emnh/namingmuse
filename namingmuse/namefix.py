@@ -5,7 +5,9 @@ Example: MOBY_--_01_-_honEY.MP3
 Becomes: Moby - 01 - Honey.mp3
 
 """
-import sys,re,os
+import os
+import re
+import sys
 
 def namefix(filename):
     ''' Tries to prettify a MP3 filename '''

@@ -1,7 +1,9 @@
 """ A module that defines the base albuminfo class.
 An albuminfo class is a class that contains metdata about an album.
 """
-import os, re, sys
+import os
+import re
+import sys
 from namingmuse.constants import TAGVER
 from namingmuse.musexceptions import *
 

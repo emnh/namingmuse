@@ -4,23 +4,25 @@ information.
 """
 
 import difflib
-import os, re, sys, shutil
+import os
 import random
-from TagLib import * # get this from http://namingmuse.berlios.de
-import policy
+import re
+import shutil
+import sys
 import tempfile
-import provider
 
 from difflib import SequenceMatcher
+from TagLib import * # get this from http://namingmuse.berlios.de
 
-from terminal import colorize
-from cddb import *
-from filepath import FilePath
-from constants import *
-from musexceptions import *
+from namingmuse import policy
+from namingmuse import provider
+from namingmuse.cddb import *
+from namingmuse.constants import *
+from namingmuse.filepath import FilePath
+from namingmuse.musexceptions import *
+from namingmuse.terminal import colorize
 
-
-DEBUG = False
+DEBUG = os.getenv('DEBUG')
 
 def getNmuseTag(filelist):
     import types

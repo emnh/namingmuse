@@ -4,7 +4,12 @@ This module searches amazon for cover images using their xml webservices.
 It downloads the images found and returns them as binary data.
 $Id: 
 """
-import os,re,sys,types,urllib2,urllib
+import os
+import re
+import sys
+import types
+import urllib
+import urllib2
 from xml.dom import minidom
 
 class CoverFetcher:

@@ -1,10 +1,13 @@
 """
 Statistics
 """
-import sys,re,os
-import albumtag
-from musexceptions import *
-from provider import LocalAlbumInfo
+import os
+import re
+import sys
+
+from namingmuse import albumtag
+from namingmuse.musexceptions import *
+from namingmuse.provider import LocalAlbumInfo
 
 def dirstat(dir, stats, verbose = False): 
     filelist = albumtag.getfilelist(dir)

@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 'Classes for getting metainfo from local albums.'
 
-import os, re, sys
+import os
+import re
+import sys
 import TagLib
 
-from albuminfo import *
+from namingmuse.providers.albuminfo import *
 from namingmuse.filepath import FilePath
 
 # XXX: move somewhere? make better bindings to do this stuff?

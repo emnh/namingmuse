@@ -2,10 +2,11 @@
 
 # this file is almost a verbatim copy from a python-musicbrainz distribution example
 
-import sys, os, getopt
+import mad          # get this from http://spacepants.org/src/pymad/
 import musicbrainz  # get this from http://www.musicbrainz.org
 import ogg.vorbis   # get this from http://www.andrewchatham.com/pyogg/
-import mad          # get this from http://spacepants.org/src/pymad/
+import os
+import sys
 import wave         # should come with python
 
 def getSignature(filename):

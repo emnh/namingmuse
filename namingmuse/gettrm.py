@@ -2,13 +2,14 @@
 
 # this file is heavily inspired from a python-musicbrainz distribution example
 
+import os
 import sys
 import musicbrainz
 
 #so query names are shorter
 q = musicbrainz
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG)
 
 def main():
     mb = musicbrainz.mb()

@@ -1,12 +1,14 @@
 """ A module for functions closely knit to terminal io """
 
-import sys, os, re
-import struct, fcntl, termios
-from sys import stdout
-from difflib import SequenceMatcher
 import curses
+import os
+import re
+import struct
+import sys
+from difflib import SequenceMatcher
+from sys import stdout
 
-DEBUG = False
+DEBUG = os.getenv('DEBUG')
 
 def termcolor(color, msg):
     colornum = getattr(curses, "COLOR_" + color.upper())

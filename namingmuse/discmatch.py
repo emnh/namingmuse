@@ -1,12 +1,18 @@
-import re, sys, os, string
-import albumtag, terminal, exceptions
+import os
+import re
+import sys
+
+from namingmuse import albumtag
+from namingmuse import musexceptions
+from namingmuse import terminal
 
 QUERY_EXACT = 200
 QUERY_NONE = 202
 QUERY_MULTIPLE = 211
 QUERY_MULTIPLE_EXACT = 210 # protocol 4
 READ_OK = 210 # deleteme
-DEBUG = False
+
+DEBUG = os.getenv('DEBUG')
 
 class DiscMatch(object):
     """A module that provides some static methods relevant to converting music files to a cdrom TOC.  It generates a discid from album TOC to acquire matching metainfo for an album from freedb.

@@ -1,21 +1,21 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.35 2004/10/09 15:16:40 emh Exp $
+$Id: cddb.py,v 1.36 2005/01/17 20:32:52 emh Exp $
 """
 
-import socket
-socket.socket
 import getpass
+import os
 import re
-from musexceptions import *
+import socket
+from namingmuse.musexceptions import *
 
 defaultserver = "freedb.freedb.org"
 defaultport = 8880
 defaultprotocol = 6
 version = '1.28'
 
-DEBUG = False
+DEBUG = os.getenv('DEBUG')
 
 NLTERM = '\r\n'
 DOTTERM = '\r\n.\r\n'

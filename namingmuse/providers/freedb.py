@@ -1,6 +1,6 @@
 
-import os, re, sys
-from albuminfo import *
+import re
+from namingmuse.providers.albuminfo import *
 
 class FreeDBAlbumInfo(AlbumInfo):
     'Provides metainfo from freedb.'

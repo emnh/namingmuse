@@ -5,7 +5,7 @@ __all__ = [
             'cddb', 
             'coverfetcher',
             'discmatch', 
-            'exceptions'
+            'exceptions',
             'filepath',
             'namefix',
             'policy',
