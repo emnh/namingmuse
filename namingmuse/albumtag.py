@@ -362,7 +362,6 @@ def tagfile(fpath, album, track):
         fileref = MPEGFile(str(fpath))
 
         hadID3v2Tag = fileref.ID3v2Tag(False) and True
-        tag = fileref.ID3v2Tag(True)
        
         # Preserve old idv1 comments
         oldcomment = None
@@ -377,6 +376,13 @@ def tagfile(fpath, album, track):
 
         # strip id3v1tag, bool freeMemory = False 
         fileref.strip(MPEGFile.ID3v1, False)
+
+        # Have to make new fileref, since the old one still contains an ID3v1
+        # tag (in memory) which we do not want to merge into our new tag
+        del fileref
+        fileref = MPEGFile(str(fpath))
+
+        tag = fileref.ID3v2Tag(True)
 
         cleanOldComment(tag)
 
