@@ -30,7 +30,6 @@ def namefix(filename):
         else:
             word = word.capitalize()
         if tail.strip() == "":
-            print "false"
             firstword = False
         words.append(word)
         words.append(tail)
