@@ -1,14 +1,14 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.34 2004/09/21 20:09:15 emh Exp $
+$Id: cddb.py,v 1.35 2004/10/09 15:16:40 emh Exp $
 """
 
 import socket
 socket.socket
 import getpass
 import re
-from exceptions import *
+from musexceptions import *
 
 defaultserver = "freedb.freedb.org"
 defaultport = 8880
