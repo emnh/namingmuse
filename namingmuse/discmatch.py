@@ -1,10 +1,11 @@
-import re,sys,os,string
+import re, sys, os, string
 import albumtag, terminal, exceptions
 from cddb import *
 
 QUERY_EXACT = 200
 QUERY_NONE = 202
 QUERY_MULTIPLE = 211
+QUERY_MULTIPLE_EXACT = 210 # protocol 4
 SERVER_ERROR=450
 READ_OK = 210
 DEBUG = False
@@ -154,6 +155,9 @@ class DiscMatch:
             query_stat,query_info = self.cddb.query(query)
             if query_stat == QUERY_MULTIPLE:
                 statusmsg = "multiple matches." 
+            elif query_stat == QUERY_MULTIPLE_EXACT:
+                # this happens mostly on albums with very few songs
+                statusmsg = "multiple exact matches"
             elif query_stat == QUERY_EXACT: 
                 statusmsg = "exact match!"
                 pass
