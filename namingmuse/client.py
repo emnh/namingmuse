@@ -44,7 +44,7 @@ def makeOptionParser():
                   action = "store_true",
                   help = "force new lookup and retagging")
     
-    op.add_option("",
+    op.add_option("-u",
                   "--force-update",
                   action = "store_true",
                   dest = "updatetags",
@@ -293,7 +293,6 @@ def doDiscmatch(options, albumdir, discmatch):
     albuminfo = None
     if not options.force:
         albuminfo = albumtag.getNmuseTag(filelist)
-        albuminfo.setCDDBConnection(cddb)
     if albuminfo \
        and albuminfo.getTagVersion() == albumtag.TAGVER \
        and not options.updatetags: 
@@ -316,6 +315,8 @@ def doDiscmatch(options, albumdir, discmatch):
         if not albuminfo:
             raise NamingMuseWarning('Not tagging %s' \
                        %(albumdir))
+    else:
+        albuminfo.setCDDBConnection(cddb)
 
     albumtag.tagfiles(albumdir, albuminfo, options, \
             albumtag.namebinder_trackorder)

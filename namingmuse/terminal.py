@@ -42,11 +42,6 @@ def choosealbum(albums, matchto, options):
 
     matchto = matchto.getName()
 
-    #if len(albums) == 1: return albums[0]
-    #import pprint
-    #pprint.pprint(albums)
-
-    
     #mlen = #max(map(lambda x: len(x.title), albums)) + 3
     #mlen = #min(mlen, cols - 30)
     #mlen = 40
@@ -76,6 +71,9 @@ def choosealbum(albums, matchto, options):
     if (pager != stdout): pager.close()
 
     idx = -1 
+    # autoselect if none or one album
+    if 0 <= len(newlist) <= 1:
+        idx = len(newlist)
     while idx < 0 or idx > len(newlist):
         print "Pick an album (number):",
         try:
