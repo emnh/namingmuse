@@ -306,7 +306,9 @@ def tagfiles(albumdir, album, options):
     artistdirdiff = distwrap(parent, album.artist)
     if DEBUG: print "Distance between %s and %s is : %s" \
             %(parent, album.artist, artistdirdiff)
-    if options.artistdir and artistdirdiff < 0.5: #XXX 0.5 sane value?
+    needartistdirmove = options.artistdir and \
+            (artistdirdiff > 0.5) #XXX 0.5 sane value?
+    if needartistdirmove: 
         newalbumdir = FilePath(albumdir.getParent(), album.artist, newalbum)
     else:
         newalbumdir = FilePath(albumdir.getParent(), newalbum)
@@ -333,7 +335,7 @@ def tagfiles(albumdir, album, options):
     # Print rename message
     print "\n", albumdir.getName()
     print "\t", colorize(renamesign),
-    if options.artistdir:
+    if needartistdirmove: 
         print os.path.join(album.artist, newalbumdir.getName())
     else:
         print newalbumdir.getName()
