@@ -271,7 +271,7 @@ def namefix(albumdir, options):
         print filepath
         print "\t", colorize(renamesign), tofile
         if not options.dryrun:
-            os.rename(filename, str(tofile))
+            os.rename(str(filepath), str(tofile))
 
     todir = namefix(albumdir.getName())
     print "\n", albumdir.getName()
