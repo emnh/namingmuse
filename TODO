@@ -14,3 +14,4 @@ TODO
 * don't tag albums with 1 song since the probability is very high that
   they will match only a lot of incorrect albums
 * trackorder means alphabetical order, make new function to order by track nr
+* use ENV instead of a flag in each file defining if you want DEBUG or not
