@@ -171,7 +171,7 @@ def getDoc():
 
 defaultconfig = {
 'encoding': 'iso-8859-15',
-'autoselect': False
+'autoselect': 'False'
 }
 
 def readconfig(options):
@@ -190,8 +190,6 @@ def readconfig(options):
         options.ensure_value(key, value)
     if options.encoding == "terminal":
         options.encoding = sys.stdout.encoding
-    #from pprint import pprint
-    #pprint(options.__dict__)
 
 def cli():
     op = makeOptionParser()
