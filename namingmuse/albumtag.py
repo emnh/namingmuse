@@ -307,7 +307,7 @@ def tagfiles(albumdir, album, options):
     if DEBUG: print "Distance between %s and %s is : %s" \
             %(parent, album.artist, artistdirdiff)
     needartistdirmove = options.artistdir and \
-            (artistdirdiff > 0.5) #XXX 0.5 sane value?
+            (artistdirdiff > 0.25) #XXX sane value?
     if needartistdirmove: 
         newalbumdir = FilePath(albumdir.getParent(), album.artist, newalbum)
     else:
