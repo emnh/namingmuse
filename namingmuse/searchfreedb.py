@@ -14,7 +14,7 @@ from sys import exit
 from HTMLParser import HTMLParser
 from optparse import make_option
 
-from exceptions import *
+from musexceptions import *
 
 DEBUG = False
 #DEBUG = True
