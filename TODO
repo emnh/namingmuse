@@ -9,6 +9,7 @@ TODO
 *searchfreedb: add option for selecting namebinder
 *searchfreedb: default to using albumdir as search words
 *improve outer namebinder approximation algorithms
+*support "manual" tags (=namingmuse shouldn't touch it)
 
 *make a smart class for albuminfo:
     -has a CDDB member with uplink
