@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.15 2004/08/13 10:11:47 emh Exp $
+$Id: cddb.py,v 1.16 2004/08/15 00:00:28 torh Exp $
 """
 
 import socket,string
@@ -17,6 +17,7 @@ version="0.20"
 
 # cddb read replies
 READ_OK = 210
+CDDB_CONNECTION_TIMEOUT = 530
 
 class CDDBPException(Exception):
 

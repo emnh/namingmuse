@@ -42,44 +42,41 @@ def choosealbum(albums, matchto, options):
 
     matchto = matchto.getName()
 
-    if len(albums) == 1: return albums[0]
-    import pprint
-    pprint.pprint(albums)
+    #if len(albums) == 1: return albums[0]
+    #import pprint
+    #pprint.pprint(albums)
 
     
     #mlen = #max(map(lambda x: len(x.title), albums)) + 3
     #mlen = #min(mlen, cols - 30)
-    mlen = 40
+    #mlen = 40
     
     #fmat = lambda x,y,z: "%10s   %-10s%s\n" % (x, y, z.rjust(mlen))
     fmat = lambda u,v,w,x,y,z: "%3s%6s%5s %-17s%-15s %-10s\n" \
                 % (u, v, w, x, y, z)
-    pagerapp = os.getenv("PAGER") or "less"
-    pager = (len(albums) < rows and sys.stdout or os.popen(pagerapp, "w"))
     
-    try:
-        pager.write("\n")
-        pager.write("Pick a number that matches '%s':\n" % matchto)
-        pager.write(fmat("Nr", "Match", "Year", "Genre", "Artist", "Title"))
-        pager.write(fmat(str(0) + ":","", "", "", "Don't tag this album", ""))
-        nr = 0
-        for album in albums:
-            if options.strict:
-                if not len(album.validate()) == 0:
-                    continue
-            nr += 1
-            album.ignoreMissing(True)
-            similarity = alphadiff(album.title, matchto)
-            similarity = "%3.1f%%" % (similarity * 100)
-            pager.write(fmat(str(nr) + ":",similarity, 
-                        album.year, album.genre, album.artist,album.title))
-        if (pager != stdout): pager.close()
-    except IOError, (nr, strerr):
-        if strerr != "Broken pipe": 
-            raise
+    pager = sys.stdout
+    pager.write("\n")
+    pager.write("Pick a number that matches '%s':\n" % matchto)
+    pager.write(fmat("Nr", "Match", "Year", "Genre", "Artist", "Title"))
+    pager.write(fmat(str(0) + ":","", "", "", "Don't tag this album", ""))
+    nr = 0
+    newlist = []
+    for album in albums:
+        if options.strict:
+            if not len(album.validate()) == 0:
+                continue
+        nr += 1
+        newlist.append(album)
+        album.ignoreMissing(True)
+        similarity = alphadiff(album.title, matchto)
+        similarity = "%3.1f%%" % (similarity * 100)
+        pager.write(fmat(str(nr) + ":",similarity, 
+                    album.year, album.genre, album.artist,album.title))
+    if (pager != stdout): pager.close()
 
     idx = -1 
-    while idx < 0 or idx > len(albums)+1:
+    while idx < 0 or idx > len(newlist):
         print "Pick an album (number):",
         try:
             idx = int(raw_input())
@@ -88,4 +85,4 @@ def choosealbum(albums, matchto, options):
     print
     if idx == 0: #we dont want any of the suggested
         return None
-    return albums[idx - 1]
+    return newlist[idx - 1]

@@ -12,7 +12,7 @@ from albuminfo import *
 from filepath import FilePath
 
 from exceptions import *
-from cddb import CDDBPException
+import cddb
 
 def makeOptionParser():
     op = OptionParser()
@@ -164,8 +164,8 @@ def cli():
                     try:
                         if top.getName() != "nonalbum":
                             doDiscmatch(options, top, discmatch)
-                    except CDDBPException, err:
-                        if err.code == CDDB_CONNECTION_TIMEOUT:
+                    except cddb.CDDBPException, err:
+                        if err.code == cddb.CDDB_CONNECTION_TIMEOUT:
                             print "Connection timed out, reconnecting.."
                             discmatch.cddb.connect()
                     except NoFilesException:
@@ -198,7 +198,7 @@ def cli():
     except NoFilesException, strerr:
         print strerr 
         exitstatus = 3
-    except CDDBPException, strerr:
+    except cddb.CDDBPException, strerr:
         print strerr
         exitstatus = 4
         
