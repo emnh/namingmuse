@@ -127,19 +127,24 @@ def getDoc():
     doc += DiscMatch.__doc__ + "\n"
     return doc
 
+defaultconfig = {
+'encoding': 'iso-8859-15'
+}
+
 def readconfig(options):
     home = os.getenv("HOME")
     homeconfdir = FilePath(home, ".namingmuse")
     configfile = homeconfdir + "config"
-    if not os.access(str(configfile), os.R_OK):
-        return
     fd = file(str(configfile))
-    cp = ConfigParser()
-    cp.read([str(configfile)])
+    cp = ConfigParser(defaultconfig)
+    if os.access(str(configfile), os.R_OK):
+        cp.read([str(configfile)])
     defitems = cp.items("DEFAULT")
     print defitems
     for key, value in dict(defitems).items():
         options.ensure_value(key, value)
+    if options.encoding == "terminal":
+        options.encoding = sys.stdout.encoding
     #from pprint import pprint
     #pprint(options.__dict__)
     fd.close()
@@ -180,6 +185,7 @@ def cli():
     try:
         if options.cmd == "discmatch":
             discmatch = DiscMatch()
+            discmatch.cddb.encoding = options.encoding
             if options.recursive:
                 def walk(top):
                     try:
@@ -252,6 +258,7 @@ def namefix(albumdir, options):
 #XXX: merge common stuff of fulltextsearch and discmatch
 def doFullTextSearch(albumdir, options):
     discmatch = DiscMatch()
+    discmatch.cddb.encoding = options.encoding
     filelist = albumtag.getfilelist(albumdir)
     if len(filelist) == 0:
         raise NoFilesException("Warning: %s contains no music files !" %albumdir)
@@ -311,6 +318,7 @@ def doDiscmatch(options, albumdir, discmatch):
         exit()
 
     cddb = discmatch.cddb
+    cddb.encoding = options.encoding
 
     # Check/retrieve already tagged
     albuminfo = None

@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.17 2004/08/16 18:34:08 emh Exp $
+$Id: cddb.py,v 1.18 2004/08/16 18:59:01 emh Exp $
 """
 
 import socket,string
@@ -8,11 +8,11 @@ import getpass
 import re
 from exceptions import *
 
-#defaultserver = "bash.no"
-#defaultport = 1863
-defaultserver = "freedb.freedb.org"
-defaultport = 8880
-defaultprotocol = 6 # check locale
+defaultserver = "bash.no"
+defaultport = 1863
+#defaultserver = "freedb.freedb.org"
+#defaultport = 8880
+defaultprotocol = 6
 version="0.20"
 
 # cddb read replies
@@ -88,7 +88,7 @@ class SmartSocket:
 
 class CDDBP:
     "This class can speak the CDDBP protocol, level 6."
-    
+
     def __init__(self, user='nmuse', localhost='localhost'):
         self.sock=SmartSocket(0,8192)
         self.user=getpass.getuser()
@@ -196,7 +196,7 @@ class CDDBP:
             freedbrecord = resp.split("\r\n", 1)[1]
         else:
             raise NotImplementedException("cddb read: code %u" % code)
-        return freedbrecord
+        return freedbrecord.decode('UTF-8').encode(self.encoding, 'replace')
         
     def motd(self):
         "Returns the message of the day from the server."
