@@ -141,7 +141,8 @@ def makeOptionParser():
 
 def getDoc():
     """ Return documentation in the various modules. """
-    import albuminfo, cddb, policy, coverfetcher
+    from provider import albuminfo
+    import cddb, policy, coverfetcher
     doc = "\n"
     doc += "ALBUMTAG\n"
     doc += albumtag.__doc__ + "\n"
