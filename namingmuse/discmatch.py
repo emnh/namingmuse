@@ -7,7 +7,7 @@ QUERY_NONE = 202
 QUERY_MULTIPLE = 211
 QUERY_MULTIPLE_EXACT = 210 # protocol 4
 READ_OK = 210 # deleteme
-DEBUG = True
+DEBUG = False
 
 class DiscMatch:
     """A module for tagging and renaming files.

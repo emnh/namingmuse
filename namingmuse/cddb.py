@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.8 2004/08/09 04:29:30 emh Exp $
+$Id: cddb.py,v 1.9 2004/08/09 15:43:46 torh Exp $
 """
 
 import socket,string
@@ -60,7 +60,8 @@ class SmartSocket:
         received."""
         data=""
         while 1:
-            data=data+self.sock.recv(self.recvsize)
+            newdata = self.sock.recv(self.recvsize)
+            data = data + newdata
             if data[-len(term):]==term or '230 ' in data:
                 # 230 means that we did something nasty and the server is
                 # hanging up on us. It doesn't provide the needed terminator
@@ -79,13 +80,15 @@ class CDDBP:
     "This class can speak the CDDBP protocol, level 6."
     
     def __init__(self, user='nmuse', localhost='localhost'):
-        self.sock=SmartSocket(0,128)
+        self.sock=SmartSocket(0,8192)
         self.user=getpass.getuser()
         self.localhost=socket.gethostname()
         self.client="PyCDDBPlib"
 
     def __decode(self,resp):
-        return (string.atoi(resp[:3]),resp[4:])
+        code = int(resp[:3])
+        result = resp[4:]
+        return (code,result)
         
     def connect(self, server=defaultserver, port=defaultport):
         "Connects to the server and does the initial handshake."
