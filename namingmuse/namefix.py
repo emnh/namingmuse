@@ -39,10 +39,10 @@ def namefix(filename):
 
     oldname = "" 
     while oldname != name:
+        oldname = name
         for regex in regexes.keys():
             #print "reggie:",regex
             name = re.sub(regex,regexes[regex],name)
-            oldname = name
 
     #([A-Z])\.(?![^A-Z])/$1/gx;     #R.E.M -> REM
     ##if ($nametype == $type_file) {

@@ -11,6 +11,7 @@ from optparse import OptionGroup
 from albuminfo import *
 
 from exceptions import *
+from cddb import CDDBPException
 
 def makeOptionParser():
     op = OptionParser()
@@ -190,7 +191,7 @@ def cli():
     except NoFilesException, strerr:
         print strerr 
         exitstatus = 3
-    except CDDBException, strerr:
+    except CDDBPException, strerr:
         print strerr
         exitstatus = 4
         
