@@ -35,11 +35,11 @@ class DiscMatch:
                 filen = "lead in"
                 length = frameidx / 75 - oldlength
             else:
-                filen = filelist[i - 1]
+                filep = filelist[i - 1]
                 length = frameidx / 75 - oldlength
                 #length = albumtag.getlength(filen)
             print "length: %4us = %2um %2us, frameidx: %8u: %s" % \
-                (length, length / 60, length % 60, framelist[i], filen)
+                (length, length / 60, length % 60, framelist[i], str(filep))
             oldlength += length
         print "nb! last frameidx not sent to server (just totsecs * 75)"
 
@@ -65,9 +65,9 @@ class DiscMatch:
         roundsecs = lambda x: int(x + 0.5)
 
         floatrest = 0
-        for file in filelist:
-            secs = albumtag.getIntLength(file)
-            #secs = albumtag.getFloatLength(file)
+        for filep in filelist:
+            secs = albumtag.getIntLength(filep)
+            #secs = albumtag.getFloatLength(filep)
             if type(secs) is int:
                 # i'm pretty confident this is the correct way to calculate checksum
                 # because it seems to be what both the freedb reference implementation

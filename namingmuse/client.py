@@ -9,6 +9,7 @@ from sys import exit
 from optparse import OptionParser, make_option
 from optparse import OptionGroup
 from albuminfo import *
+from filepath import FilePath
 
 from exceptions import *
 from cddb import CDDBPException
@@ -142,10 +143,10 @@ def cli():
     if options.words:
         options.cmd = "search"
 
-    albumdir = args[0]
+    albumdir = FilePath(args[0])
 
     try: 
-        os.listdir(albumdir)
+        os.listdir(str(albumdir))
     except OSError, (errno, strerror):
         exit(strerror + ": " + albumdir)
 
@@ -157,22 +158,24 @@ def cli():
             if options.recursive:
                 def walk(top):
                     try:
-                        names = os.listdir(top)
+                        names = os.listdir(str(top))
                     except os.error:
                         return
                     try:
-                        if os.path.basename(top) != "nonalbum":
+                        if top.getName() != "nonalbum":
                             doDiscmatch(options, top, discmatch)
                     except CDDBPException, err:
                         if err.code == CDDB_CONNECTION_TIMEOUT:
                             print "Connection timed out, reconnecting.."
                             discmatch.cddb.connect()
+                    except NoFilesException:
+                        pass
                     except NamingMuseException,(errstr):
                         print errstr
                     for name in names:
-                        name = os.path.join(top, name)
+                        name = FilePath(top, name)
                         try:
-                            st = os.lstat(name)
+                            st = os.lstat(str(name))
                         except os.error:
                             continue
                         if stat.S_ISDIR(st.st_mode):
@@ -205,25 +208,21 @@ def namefix(albumdir, options):
     from namefix import namefix
     from terminal import colorize
     filelist = albumtag.getfilelist(albumdir)
-    longestfilename = max(map(lambda x: len(x), filelist))
-    for filename in filelist:
-        tofile = namefix(os.path.basename(filename))
-        tofile = os.path.join(albumdir, tofile)
+    for filepath in filelist:
+        tofile = albumdir + namefix(filepath.getName())
         renamesign = "->"
         if options.dryrun:
             renamesign = "-dry->" 
-        print filename.ljust(longestfilename)
+        print filepath
         print "\t", colorize(renamesign), tofile
         if not options.dryrun:
-            os.rename(filename, tofile)
+            os.rename(filename, str(tofile))
 
-    abspath = os.path.abspath(albumdir)
-    basename = os.path.basename(abspath)
-    todir = namefix(basename)
-    print "\n", basename
+    todir = namefix(albumdir.getName())
+    print "\n", albumdir.getName()
     print "\t", colorize(renamesign), todir
     if not options.dryrun:
-        os.rename(albumdir, todir) 
+        os.rename(str(albumdir), str(FilePath(albumdir.getParent(), todir)))
 
 #XXX: merge common stuff of fulltextsearch and discmatch
 def doFullTextSearch(albumdir, options):

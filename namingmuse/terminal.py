@@ -40,8 +40,7 @@ def alphadiff(a, b):
 def choosealbum(albums, matchto):
     rows,cols = gettermsize()
 
-    # XXX: do this elsewhere
-    matchto = os.path.basename(os.path.abspath(matchto))
+    matchto = matchto.getName()
 
     if len(albums) == 1: return albums[0]
     #import pprint

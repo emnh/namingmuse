@@ -16,6 +16,7 @@ from terminal import colorize
 from cddb import *
 from string import lower
 from difflib import SequenceMatcher
+from filepath import FilePath
 
 from exceptions import *
 
@@ -30,7 +31,7 @@ def footprint(album):
 def getStoredCDDBId(filelist):
     'Get the cddb id stored in comment in a previous run'
     filename = filelist[0]
-    fileref = TagLib.FileRef(filename)
+    fileref = TagLib.FileRef(str(filename))
     comment = fileref.tag().comment()
     comment = str(comment)
     del fileref
@@ -46,7 +47,7 @@ def needTag(filelist):
     Check if we need to write new tags to this album
     '''
     filename = filelist[0]
-    fileref = TagLib.FileRef(filename)
+    fileref = TagLib.FileRef(str(filename))
     tag = fileref.tag()
     if not tag:
         return True
@@ -62,15 +63,13 @@ def needTag(filelist):
             return False
     return True
 
-def getfilelist(path, fullpath = True):
+def getfilelist(path):
     """Get sorted list of files supported by taglib 
        from specified directory"""
+    path = str(path)
     rtypes = re.compile("\.(mp3|ogg|flac)$", re.I)
-    if fullpath:
-        filelist = map(lambda x: os.path.join(path, x), os.listdir(path))
-    else:
-        filelist = os.listdir(path)
-    filelist = filter(rtypes.search, filelist)
+    filelist = filter(lambda x: rtypes.search(str(x)), os.listdir(path))
+    filelist = map(lambda x: FilePath(path, x), filelist)
     filelist.sort()
     return filelist
 
@@ -112,7 +111,7 @@ def getFloatLength(filename):
 
 def getIntLength(filename):
     "Get length of a music file via taglib"
-    # XXX: make accuracy an option
+    filename = str(filename)
     tagfile = TagLib.FileRef(filename, True, TagLib.AudioProperties.Accurate)
     audioproperties = tagfile.audioProperties()
     
@@ -152,7 +151,7 @@ def namebinder_strapprox_time(filelist, tracks):
     newtracks = []
     for i in range(0, len(filelist)):
         filePlayLength = getIntLength(filelist[i])
-        file = os.path.basename(filelist[i])
+        file = filelist[i].getName()
         least = (distwrap(file, tracks[0].title), 0)
         for j in range(0, len(tracks)):
             
@@ -179,7 +178,7 @@ def namebinder_strapprox(filelist, tracks):
     "Bind tracks to filelist by string approximation"
     newtracks = []
     for i in range(0, len(filelist)):
-        file = os.path.basename(filelist[i])
+        file = filelist[i].getName()
         least = (distwrap(file, tracks[0].title), 0)
         for j in range(0, len(tracks)):
             title = tracks[j].title
@@ -218,8 +217,7 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
             print
     album.ignoreMissing(True)
 
-    albumdir = os.path.abspath(albumdir)
-    filelist = getfilelist(albumdir, fullpath = False)
+    filelist = getfilelist(albumdir)
     tracks = namebinder(filelist, album.tracks)
     if not sortedcmp(tracks, album.tracks): 
         options.dryrun = True
@@ -228,20 +226,17 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
     print "Tagging album: %s, %s - %s, %s.\n" % \
           (album.year, album.artist, album.title, album.genre)
 
-    pjoin = os.path.join
-    dirname,basename = os.path.split(albumdir)
-    todir = policy.albumdirname(basename, \
+    todir = policy.albumdirname(albumdir.getName(), \
             album.artist, album.title, album.year, album.genre)
-    newalbumdir = pjoin(dirname, todir)
+    newalbumdir = FilePath(albumdir.getParent(), todir)
 
     # Process files
     longestfilename = max(map(lambda x: len(x), filelist))
     renamealbum = True
 
     for i in range(0, len(filelist)):
-        file = filelist[i]
-        ext = lower(os.path.splitext(file)[1])
-        fullpath = pjoin(albumdir, file)
+        fpath = filelist[i]
+        ext = fpath.getExt()
         # XXX: move bug check to freedbalbuminfo parser
 
         #if album.isVarious:
@@ -258,12 +253,13 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
         track = tracks[i]
 
         # XXX: pass the whole album thing into policy
-        tofile = policy.filename(file, ext, track.title, track.number, 
+        tofile = policy.filename(fpath.getName(), ext, track.title, track.number, 
                                  track.artist, album.title, album.year, 
                                  album.genre, album.artist)
+        tofile = FilePath(albumdir, tofile)
     
         # Tag and rename file
-        fileref = TagLib.FileRef(fullpath)
+        fileref = TagLib.FileRef(str(fpath))
         tag = fileref.tag()
         comment = tag.comment()
         renamesign = "->"
@@ -274,14 +270,13 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
         if str(comment) == "manual":
             renamesign = "-skip->"
             renamealbum = False
-        print file.ljust(longestfilename)
-        print "\t", colorize(renamesign), tofile
+        print fpath.getName().ljust(longestfilename)
+        print "\t", colorize(renamesign), tofile.getName()
         if not (options.dryrun or str(comment) == "manual"):
             #preserve stat
             fd = tempfile.NamedTemporaryFile()
             tmpfilename = fd.name
-            #fd.close()
-            shutil.copystat(fullpath, tmpfilename)
+            shutil.copystat(str(fpath), tmpfilename)
 
             tag.setYear(album.year)
             tag.setGenre(album.genre)
@@ -293,25 +288,24 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
             tag.setComment(comment)
             fileref.save()
             # restore filestat
-            shutil.copystat(tmpfilename, fullpath)
+            shutil.copystat(tmpfilename, str(fpath))
             # deletes tempfile
             fd.close()
             if not options.tagonly:
-                newfullpath = pjoin(albumdir, tofile)
-                os.rename(fullpath, newfullpath)
-                    
+                os.rename(str(fpath), str(tofile))
                         
     # Rename album (if no "manual" mp3 files in that dir)
     renamesign = (renamealbum and "->" or "-skip->")
     if renamealbum and options.dryrun: renamesign = "-dry->"
     if not (options.dryrun or options.tagonly) and renamealbum:
-        os.rename(albumdir, newalbumdir)
+        os.rename(str(albumdir), str(newalbumdir))
         albumdir = newalbumdir
         if options.artistdir:
-            if not os.path.isdir(album.artist):
-                os.mkdir(album.artist)
-            todir = os.path.join(album.artist, os.path.basename(albumdir))
-            shutil.move(albumdir, todir)
-    print "\n", basename
+            artistdir = FilePath(albumdir.getParent(), album.artist)
+            if not os.path.isdir(str(artistdir)):
+                os.mkdir(str(artistdir))
+            todir = artistdir + albumdir.getName()
+            shutil.move(str(albumdir), str(todir))
+    print "\n", albumdir.getName()
     print "\t", colorize(renamesign), todir
 
