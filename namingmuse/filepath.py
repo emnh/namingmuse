@@ -22,7 +22,7 @@ class FilePath(object):
         return os.path.basename(self.fullpath)
     
     def getParent(self):
-        return os.path.dirname(self.fullpath)
+        return FilePath(os.path.dirname(self.fullpath))
 
     def getExt(self):
         return os.path.splitext(self.fullpath)[1]
