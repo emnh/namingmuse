@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.22 2004/08/17 01:10:34 emh Exp $
+$Id: cddb.py,v 1.23 2004/08/22 16:57:00 torh Exp $
 """
 
 import socket,string
@@ -9,16 +9,17 @@ import getpass
 import re
 from exceptions import *
 
-defaultserver = "bash.no"
-defaultport = 1863
-#defaultserver = "freedb.freedb.org"
-#defaultport = 8880
+#defaultserver = "bash.no"
+#defaultport = 1863
+defaultserver = "freedb.freedb.org"
+defaultport = 8880
 defaultprotocol = 6
 version="0.20"
 
 # cddb read replies
 READ_OK = 210
 CDDB_CONNECTION_TIMEOUT = 530
+CDDB_ALREADY_READ = "502"
 
 class CDDBPException(Exception):
 
@@ -73,7 +74,8 @@ class SmartSocket:
             newdata = self.sock.recv(self.recvsize)
             data = data + newdata
             if data[-len(term):]==term or data.startswith('230 ') \
-                    or data.startswith('401 '):
+                    or data.startswith('401 ') \
+                    or data.startswith(CDDB_ALREADY_READ + " "):
                 # 230 means that we did something nasty and the server is
                 # hanging up on us. It doesn't provide the needed terminator
                 # then.
@@ -269,7 +271,7 @@ class CDDBP(object):
 
     def __del__(self):
         try:
-            self.quit()
+            self.sock.disconnect()
         except:
             pass
 

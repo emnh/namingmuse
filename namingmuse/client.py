@@ -198,10 +198,10 @@ def cli():
     exitstatus = 0
 
     try:
+        cddb = CDDBP()
+        cddb.encoding = options.encoding
         if options.cmd == "discmatch":
             discmatch = DiscMatch()
-            cddb = CDDBP()
-            cddb.encoding = options.encoding
             if options.recursive:
                 def walk(top):
                     try:
@@ -217,6 +217,8 @@ def cli():
                             cddb.retry()
                         else:
                             print err 
+                            del cddb
+                            cddb = CDDBP()
                     except NoFilesException:
                         pass
                     except NamingMuseException,(errstr):
@@ -233,7 +235,7 @@ def cli():
             else:
                doDiscmatch(options, albumdir, cddb)
         elif options.cmd == "search":
-            doFullTextSearch(albumdir, options)
+            doFullTextSearch(albumdir, options, cddb)
         elif options.cmd == "namefix":
             namefix(albumdir,options)
         else:
@@ -277,12 +279,12 @@ def namefix(albumdir, options):
         os.rename(str(albumdir), str(FilePath(albumdir.getParent(), todir)))
 
 #XXX: merge common stuff of fulltextsearch and discmatch
-def doFullTextSearch(albumdir, options):
+def doFullTextSearch(albumdir, options, cddb):
     """
     Searches the cddb database given an albumdir and searchstrings.
     """
     discmatch = DiscMatch()
-    discmatch.cddb.encoding = options.encoding
+    cddb.encoding = options.encoding
     filelist = albumtag.getfilelist(albumdir)
     if len(filelist) == 0:
         raise NoFilesException("Warning: %s contains no music files !" %albumdir)
@@ -305,15 +307,16 @@ def doFullTextSearch(albumdir, options):
     if len(albums) == 0:
         raise NamingMuseError("No match for text search %s" % (searchwords))
 
-    albums = searchfreedb.filterBySongCount(albums, len(filelist))
+    #albums = searchfreedb.filterBySongCount(albums, len(filelist))
 
     albuminfos, haveread = [], {}
     for album in albums:
         haveread.setdefault(album['cddbid'], [])
+        #haveread[album['cddbid']].append(album['genreid'])
         if not album['genreid'] in haveread.get(album['cddbid']):
-            freedbrecord = discmatch.cddb.getRecord(album['genreid'], 
+            freedbrecord = cddb.getRecord(album['genreid'], 
                                                     album['cddbid'])
-            albuminfo = FreeDBAlbumInfo(discmatch.cddb,
+            albuminfo = FreeDBAlbumInfo(cddb,
                                         album['genreid'], album['cddbid'])
             albuminfos.append(albuminfo)
             haveread[album['cddbid']].append(album['genreid'])
@@ -321,7 +324,7 @@ def doFullTextSearch(albumdir, options):
     if len(albuminfos) == 0:
         raise NamingMuseError("No matches in folder %s" % albumdir)
     
-    albuminfo = choosealbum(albuminfos, albumdir, options, discmatch.cddb)
+    albuminfo = terminal.choosealbum(albuminfos, albumdir, options, cddb)
 
     if not albuminfo:
         raise NamingMuseWarning('Not tagging %s' \

@@ -89,4 +89,7 @@ def filterBySongCount(albums, songcount):
         #print "%s has %u songs" % (album["title"], sct)
         if sct == songcount:
             retalbums.append(album)
+        elif DEBUG:
+            print "%s filtered, uneven songcount" %album["title"]
+           
     return retalbums
