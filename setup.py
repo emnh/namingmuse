@@ -20,7 +20,7 @@ description = "A toolkit for dealing with music tags."
 license = "GPL"
 url = 'http://namingmuse.berlios.de/' 
 download_url = url + name + "-" + version + ".tar.gz"
-packages = [name]
+packages = [ 'namingmuse', 'namingmuse.providers' ]
 platforms = ['OS Independent']
 scripts = ['nmuse']
 
