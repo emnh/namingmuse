@@ -1,10 +1,10 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.25 2004/09/16 19:12:44 emh Exp $
+$Id: cddb.py,v 1.26 2004/09/16 20:12:32 emh Exp $
 """
 
-import socket,string
+import socket
 socket.socket
 import getpass
 import re
@@ -14,6 +14,10 @@ defaultserver = "freedb.freedb.org"
 defaultport = 8880
 defaultprotocol = 6
 version="0.20"
+
+DEBUG = False
+
+BUFFERSIZE = 8192
 
 # General CDDB codes
 CDDB_CONNECTION_TIMEOUT = 530
@@ -49,10 +53,11 @@ class SmartSocket:
     """Simple socket-like class with some extra intelligence for telnet-based
     protocols."""
 
-    def __init__(self,dbg=1,recvsize=1024):
+    def __init__(self, dbg = False, recvsize = BUFFERSIZE):
         self.dbg = dbg
         self.recvsize = recvsize
         self.sock = None
+        self.restdata = ""
 
     def connect(self, server, port):
         "Connects to the server at the given port."
@@ -83,12 +88,14 @@ class SmartSocket:
     def receive(self,term):
         """Receives a string from the server. Blocks until 'term' has been
         received."""
-        data=""
-        while 1:
+        data = self.restdata
+        while True:
+            if term in data:
+                break
             newdata = self.sock.recv(self.recvsize)
             data = data + newdata
             if data[-len(term):]==term or data.startswith(str(CDDB_QUIT) + ' ') \
-                    or data.startswith(str(ERROR_401) + ' ') \
+                    or data.startswith(str(CDDB_ERROR_401) + ' ') \
                     or data.startswith(str(CDDB_ALREADY_READ) + ' '):
                 # 230 means that we did something nasty and the server is
                 # hanging up on us. It doesn't provide the needed terminator
@@ -98,7 +105,10 @@ class SmartSocket:
             
 	if self.dbg:
 	    print "Recv: "+data
-	return data
+
+        data, rest = data.split(term, 1)
+        self.restdata = rest
+        return data
 
     def disconnect(self):
         "Disconnects from the remote server."
@@ -113,15 +123,12 @@ class CDDBP(object):
     __connected = False
 
     def __init__(self, user='nmuse', localhost='localhost'):
-        self.sock = SmartSocket(0,8192)
+        self.sock = SmartSocket(DEBUG, BUFFERSIZE)
         self.user = getpass.getuser()
         self.localhost = socket.gethostname()
         self.client = "PyCDDBPlib"
         
     def __decode(self,resp):
-        #print "RESP:", resp
-        import sys
-        sys.stdout.flush()
         code = int(resp[:3])
         result = resp[4:]
         return (code,result)
@@ -170,23 +177,26 @@ class CDDBP(object):
 
     def lscat(self):
         "Returns a list of the CDDB music categories."
-        (code,resp)=self.__decode(self.sock.send("cddb lscat","\r\n.\r\n"))
+        code, resp = self.__decode(self.sock.send("cddb lscat", "\r\n.\r\n"))
+
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)
-        return string.split(resp,"\r\n")[1:-2]
+
+        return resp.splitlines()[1:-2]
 
     def sites(self):
         """Returns a list of the public CDDB servers, as (server, port,
         latitude, longitude, description) tuples."""
         (code,resp)=self.__decode(self.sock.send("sites","\r\n.\r\n"))
+
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)       
 
-        res=[]
-        for item in string.split(resp,"\r\n")[1:-2]:
-            items=string.split(item)
+        res = []
+        for item in resp.splitlines()[1:-2]:
+            items = item.split()
             res.append((items[0],items[1],items[2],items[3],
-                        string.join(items[4:])))
+                        ' '.join(items[4:])))
 
         return res
 
@@ -203,34 +213,30 @@ class CDDBP(object):
         for i in query[2:]:
             query_str = query_str + ('%d ' % i)
 
-        decodeable =self.sock.send("cddb query %s" %query_str, "\r\n")
-        (code,resp)=self.__decode(decodeable)
+        response = self.sock.send("cddb query %s" % query_str, "\r\n")
+        code, data = self.__decode(response)
 
         if code == QUERY_NOMATCH: 
-            return (code,resp)
+            return (code, data)
         elif code == QUERY_EXACT or code == QUERY_INEXACT:
-            pass
+            albumlist = self.sock.receive("\r\n.\r\n")
+            data = []
+            for line in albumlist.splitlines()[1:-2]:
+                genreid, cddbid, title = line.split(" ", 2)
+                data.append({
+                        "genreid": genreid,
+                        "cddbid": cddbid,
+                        "title": title
+                        })
         elif code > ERROR_THRESHOLD:
-            raise CDDBPException(code,resp)
+            raise CDDBPException(code, data)
         else:
             raise NotImplementedError("unimplemented cddb code.\n" +
                 "please notify namingmuse developers.\n" +
-                "cddb code: %u, message: %s" % (code, resp))
+                "cddb code: %u, message: %s" % (code, data))
 
-        # QUERY_EXACT OR QUERY_INEXACT, process matches and return
-        res=[]
-        for item in resp.split("\r\n")[1:-2]:
-            splitted = item.split() 
-            genreid = splitted[0]
-            cddbid = splitted[1]
-            title = string.join(splitted[2:])
-            res.append({
-                    "genreid": genreid,
-                    "cddbid": cddbid,
-                    "title": title
-                    })
-
-        return code,res
+        
+        return (code, data)
 
     def getRecord(self, genre, cddbid):
         '''
@@ -251,36 +257,39 @@ class CDDBP(object):
     def motd(self):
         "Returns the message of the day from the server."
         (code,resp)=self.__decode(self.sock.send("motd","\r\n.\r\n"))
+
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)
 
-        pos=string.find(resp,"\n")
+        pos = resp.find("\n")
         return resp[pos+1:-3]
 
     def stat(self):
         "Returns a hash table of the different server properties."
         (code,resp)=self.__decode(self.sock.send("stat","\r\n.\r\n"))
+
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)
 
         res={}
-        for item in string.split(resp,"\r\n")[1:-2]:
-            items=string.split(item,":")
-            if len(items)>=2:
-                item1=string.strip(items[1])
-                if item1!="":
-                    res[string.strip(items[0])]=item1
+        for item in resp.split("\r\n")[1:-2]:
+            items = item.split(":")
+            if len(items) >= 2:
+                item1 = items[1].strip()
+                if item1 != "":
+                    res[items[0].strip()] = item1
 
         return res
 
     def ver(self):
         "Returns a (servername, version, copyright) tuple."
         (code,resp)=self.__decode(self.sock.send("ver","\r\n"))
+
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)
 
-        items=string.split(resp)
-        return (items[0],items[1],string.join(items[2:]))
+        items = resp.split(2)
+        return items
 
     def flush(self):
         return self.sock.flush()
@@ -288,13 +297,14 @@ class CDDBP(object):
     def whom(self):
         "Returns a list of (pid, client, user, ip) tuples."
         (code,resp)=self.__decode(self.sock.send("whom","\r\n.\r\n"))
+
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)
         
-        res=[]
-        for item in string.split(resp,"\r\n")[2:-2]:
-            items=string.split(item)
-            if len(items)>3:
+        res = []
+        for item in resp.splitlines()[2:-2]:
+            items = item.split()
+            if len(items) > 3:
                 res.append((items[0],items[1],items[2],items[3][1:-1]))
 
         return res
