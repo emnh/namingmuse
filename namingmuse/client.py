@@ -18,7 +18,7 @@ from namingmuse import albumtag
 from namingmuse import searchfreedb
 from namingmuse import terminal
 from namingmuse.discmatch import DiscMatch
-from namingmuse.provider import *
+from namingmuse.providers import LocalAlbumInfo, FreeDBAlbumInfo
 from namingmuse.filepath import FilePath
 from namingmuse.musexceptions import *
 from namingmuse.cddb import CDDBP, CDDBPException, CDDB_CONNECTION_TIMEOUT
@@ -154,7 +154,7 @@ def makeOptionParser():
 
 def getDoc():
     """ Return documentation in the various modules. """
-    from provider import albuminfo
+    from namingmuse import albuminfo
     import cddb, policy, coverfetcher
     doc = "\n"
     doc += "ALBUMTAG\n"

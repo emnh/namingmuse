@@ -15,7 +15,7 @@ from difflib import SequenceMatcher
 from TagLib import * # get this from http://namingmuse.berlios.de
 
 from namingmuse import policy
-from namingmuse import provider
+from namingmuse import providers
 from namingmuse.cddb import *
 from namingmuse.constants import *
 from namingmuse.filepath import FilePath
@@ -26,6 +26,7 @@ DEBUG = os.getenv('DEBUG')
 
 def getNmuseTag(filelist):
     import types
+    assert isinstance(filelist, list)
     fpath = filelist[0]
     tagprovider, fdict = None, {}
     if fpath.getFileType() == "mp3":
@@ -60,10 +61,10 @@ def getNmuseTag(filelist):
                     fdict[fieldname] = str(stringlist[0])
     if tagprovider:
         if tagprovider == 'local':
-            providerclass = provider.lookup('none')
+            providerclass = providers.lookup('none')
             providerobj = providerclass(fdict)
         else:
-            providerclass = provider.lookup(tagprovider)
+            providerclass = providers.lookup(tagprovider)
             providerobj = providerclass(fdict)
         return providerobj
     else:
@@ -99,7 +100,7 @@ def namebinder_strapprox_time(filelist, tracks):
     '''
     newtracks = []
     for i in range(0, len(filelist)):
-        from providers import local
+        from namingmuse.providers import local
         filePlayLength = local.getIntLength(filelist[i])
         file = filelist[i].getName()
         least = (distwrap(file, tracks[0].title), 0)

@@ -2,7 +2,7 @@
 import os
 import re
 import sys
-#from namingmuse.providers.albuminfo import AlbumInfo
+#from namingmuse.albuminfo import AlbumInfo
 from time import sleep
 
 try:

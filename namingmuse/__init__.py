@@ -9,7 +9,7 @@ __all__ = [
             'filepath',
             'namefix',
             'policy',
-            'provider',
+            'providers',
             'searchfreedb', 
             'terminal'
           ]

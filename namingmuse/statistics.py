@@ -7,7 +7,7 @@ import sys
 
 from namingmuse import albumtag
 from namingmuse.musexceptions import *
-from namingmuse.provider import LocalAlbumInfo
+from namingmuse.providers import LocalAlbumInfo
 
 def dirstat(dir, stats, verbose = False): 
     filelist = albumtag.getfilelist(dir)
