@@ -291,14 +291,14 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
     if renamealbum and options.dryrun: renamesign = "-dry->"
     if not (options.dryrun or options.tagonly) and renamealbum:
         try:
-        os.rename(str(albumdir), str(newalbumdir))
-        albumdir = newalbumdir
-        if options.artistdir:
-            artistdir = FilePath(albumdir.getParent(), album.artist)
-            if not os.path.isdir(str(artistdir)):
-                os.mkdir(str(artistdir))
-            todir = artistdir + albumdir.getName()
-            shutil.move(str(albumdir), str(todir))
+            os.rename(str(albumdir), str(newalbumdir))
+            albumdir = newalbumdir
+            if options.artistdir:
+                artistdir = FilePath(albumdir.getParent(), album.artist)
+                if not os.path.isdir(str(artistdir)):
+                    os.mkdir(str(artistdir))
+                todir = artistdir + albumdir.getName()
+                shutil.move(str(albumdir), str(todir))
         except OSError, err:
             raise NamingMuseWarning(err)
     print "\n", albumdir.getName()
