@@ -266,11 +266,11 @@ def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
         print "\t", colorize(renamesign), tofile
         if not (options.dryrun or str(comment) == "manual"):
             #preserve stat
-            try:
-                tmpfilename = os.tempnam()
-            except RuntimeWarning:
-                pass
-            tmpfile = os.open(tmpfilename,os.O_CREAT)
+            import tempfile
+            fd = tempfile.NamedTemporaryFile()
+            tmpfilename = fd.name
+            #fd.close()
+            #tmpfile = os.open(tmpfilename,os.O_CREAT)
             shutil.copystat(fullpath, tmpfilename)
 
             try:
@@ -290,10 +290,10 @@ def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
             comment = footprint(albumdict)
             tag.setComment(comment)
             fileref.save()
-            #restore filestat
+            # restore filestat
             shutil.copystat(tmpfilename, fullpath)
-            #delete tempfile
-            os.unlink(tmpfilename)
+            # deletes tempfile
+            fd.close()
             if not options.tagonly:
                 newfullpath = pjoin(albumdir, tofile)
                 os.rename(fullpath, newfullpath)
