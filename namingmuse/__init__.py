@@ -1,15 +1,18 @@
 
 
-__all__ = [ 'discmatch', 
-            'searchfreedb', 
-            'albuminfo,'
+__all__ = [ 
             'albumtag', 
-            'filepath',
-            'terminal', 
-            'policy',
-            'coverfetcher',
             'cddb', 
-            'namefix' 
+            'coverfetcher',
+            'discmatch', 
+            'exceptions'
+            'filepath',
+            'namefix',
+            'policy',
+            'provider,',
+         #   'providers/',
+            'searchfreedb', 
+            'terminal'
           ]
 
 
