@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.21 2004/08/17 00:27:02 torh Exp $
+$Id: cddb.py,v 1.22 2004/08/17 01:10:34 emh Exp $
 """
 
 import socket,string
@@ -35,8 +35,8 @@ class SmartSocket:
     protocols."""
 
     def __init__(self,dbg=0,recvsize=1024):
-        self.dbg=dbg
-        self.recvsize=recvsize
+        self.dbg = dbg
+        self.recvsize = recvsize
         self.sock = None
 
     def connect(self, server, port):
@@ -94,13 +94,13 @@ class SmartSocket:
 
 class CDDBP(object):
     "This class can speak the CDDBP protocol, level 6."
-    __connecting = False
+    __connected = False
 
     def __init__(self, user='nmuse', localhost='localhost'):
-        self.sock=SmartSocket(0,8192)
-        self.user=getpass.getuser()
-        self.localhost=socket.gethostname()
-        self.client="PyCDDBPlib"
+        self.sock = SmartSocket(0,8192)
+        self.user = getpass.getuser()
+        self.localhost = socket.gethostname()
+        self.client = "PyCDDBPlib"
         
     def __decode(self,resp):
         code = int(resp[:3])
@@ -108,19 +108,18 @@ class CDDBP(object):
         return (code,result)
 
     def __getattribute__(self, name):
-        print "getattr: " + name
         if name in ("lscat", "sites", "query", "setproto", 
-                    "getRecord", "motd", "stat", "ver", "whom")
-            self.__connecting = True
-            self.connect()
-            self.__connecting = False
-        super(CDDBP, self).__getattribute__(name)
+                    "getRecord", "motd", "stat", "ver", "whom"):
+            if not self.__connected:
+                self.connect()
+        return super(CDDBP, self).__getattribute__(name)
         
     def connect(self, server=defaultserver, port=defaultport):
         "Connects to the server and does the initial handshake."
         self.server=server
         self.port=port
         self.sock.connect(self.server,self.port)
+        self.__connected = True
         (code,resp)=self.__decode(self.sock.receive("\r\n"))
         if code>399:
             raise CDDBPException(code,resp)

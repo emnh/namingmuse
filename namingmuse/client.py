@@ -13,7 +13,7 @@ from filepath import FilePath
 from ConfigParser import *
 
 from exceptions import *
-import cddb
+from cddb import CDDBP, CDDBPException, CDDB_CONNECTION_TIMEOUT
 
 def makeOptionParser():
     op = OptionParser()
@@ -182,7 +182,8 @@ def cli():
     try:
         if options.cmd == "discmatch":
             discmatch = DiscMatch()
-            discmatch.cddb.encoding = options.encoding
+            cddb = CDDBP()
+            cddb.encoding = options.encoding
             if options.recursive:
                 def walk(top):
                     try:
@@ -191,11 +192,13 @@ def cli():
                         return
                     try:
                         if top.getName() != "nonalbum":
-                            doDiscmatch(options, top, discmatch)
-                    except cddb.CDDBPException, err:
-                        if err.code == cddb.CDDB_CONNECTION_TIMEOUT:
+                            doDiscmatch(options, top, cddb)
+                    except CDDBPException, err:
+                        if err.code == CDDB_CONNECTION_TIMEOUT:
                             print "Connection timed out, reconnecting.."
-                            discmatch.cddb.connect()
+                            cddb.retry()
+                        else:
+                            raise
                     except NoFilesException:
                         pass
                     except NamingMuseException,(errstr):
@@ -210,7 +213,7 @@ def cli():
                             walk(name)
                 walk(albumdir)
             else:
-               doDiscmatch(options, albumdir, discmatch)
+               doDiscmatch(options, albumdir, cddb)
         elif options.cmd == "search":
             doFullTextSearch(albumdir, options)
         elif options.cmd == "namefix":
@@ -226,7 +229,7 @@ def cli():
     except NoFilesException, strerr:
         print strerr 
         exitstatus = 3
-    except cddb.CDDBPException, strerr:
+    except CDDBPException, strerr:
         print strerr
         exitstatus = 4
         
@@ -304,17 +307,16 @@ def doFullTextSearch(albumdir, options):
             albumtag.namebinder_strapprox_time)
 
 
-def doDiscmatch(options, albumdir, discmatch):
+def doDiscmatch(options, albumdir, cddb):
     filelist = albumtag.getfilelist(albumdir)
     if len(filelist)== 0:
         raise NoFilesException("Warning: %s contains no music files !" \
                 %albumdir)
     
     if options.printtoc:
-        discmatch.printTOC(filelist)
+        DiscMatch.printTOC(filelist)
         exit()
 
-    cddb = discmatch.cddb
     cddb.encoding = options.encoding
 
     # Check/retrieve already tagged
@@ -329,8 +331,8 @@ def doDiscmatch(options, albumdir, discmatch):
                    %(albumdir, "namingmuse", albumtag.TAGVER))
 
     if not albuminfo:
-        query = discmatch.files2discid(filelist)
-        statusmsg, albums = discmatch.freedbTOCMatchAlbums(query)
+        query = DiscMatch.files2discid(filelist)
+        statusmsg, albums = DiscMatch.freedbTOCMatchAlbums(cddb, query)
         if len(albums) == 0:
             raise NamingMuseError("No freedb match for id %08x in folder %s" \
                                     %(query[0], albumdir))
@@ -339,7 +341,7 @@ def doDiscmatch(options, albumdir, discmatch):
             albuminfo = FreeDBAlbumInfo(cddb, album['genreid'], album['cddbid'])
             albuminfos.append(albuminfo)
             
-        albuminfo = terminal.choosealbum(albuminfos, albumdir, options, discmatch.cddb)
+        albuminfo = terminal.choosealbum(albuminfos, albumdir, options, cddb)
         if not albuminfo:
             raise NamingMuseWarning('Not tagging %s' \
                        %(albumdir))

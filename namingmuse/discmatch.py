@@ -1,6 +1,5 @@
 import re, sys, os, string
 import albumtag, terminal, exceptions
-from cddb import *
 
 QUERY_EXACT = 200
 QUERY_NONE = 202
@@ -14,12 +13,6 @@ class DiscMatch:
     It generates a discid from album toc to acquire
     matching metainfo for an album from freedb.
     """
-    def __init__(self):
-        self.cddb = CDDBP()
-        if DEBUG:
-            print "Connecting to CDDB server"
-        self.cddb.connect()
-
     def printTOC(filelist):
         'print nicely formatted toc, mostly for debugging'
         toc = files2discid(filelist)
@@ -105,17 +98,13 @@ class DiscMatch:
 
         return [discid, filect] + framelist + [totalsecs]
 
-    printTOC = staticmethod(printTOC)
-    cddb_sum = staticmethod(cddb_sum)
-    files2discid = staticmethod(files2discid)
-
-    def freedbTOCMatchAlbums(self, query):
+    def freedbTOCMatchAlbums(cddb, query):
         """Search freedb for album matches for music files in
            an album(directory) in track order, using discid
            calculation."""
         
         if query:
-            query_stat,query_info = self.cddb.query(query)
+            query_stat,query_info = cddb.query(query)
             if query_stat == QUERY_MULTIPLE:
                 statusmsg = "multiple matches." 
             elif query_stat == QUERY_MULTIPLE_EXACT:
@@ -135,3 +124,8 @@ class DiscMatch:
             return (statusmsg, query_info)
         else:
             return (None, None)
+
+    printTOC = staticmethod(printTOC)
+    cddb_sum = staticmethod(cddb_sum)
+    files2discid = staticmethod(files2discid)
+    freedbTOCMatchAlbums = staticmethod(freedbTOCMatchAlbums)
