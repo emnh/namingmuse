@@ -373,7 +373,7 @@ def tagfile(fpath, album, track):
                 if oldcomment == "":
                     oldcomment = None
                 if oldcomment and 'namingmuse' in oldcomment:
-                    oldComment = None
+                    oldcomment = None
 
         # strip id3v1tag, bool freeMemory = False 
         fileref.strip(MPEGFile.ID3v1, False)
