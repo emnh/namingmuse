@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.2 2004/08/04 20:39:18 emh Exp $
+$Id: cddb.py,v 1.3 2004/08/05 00:28:29 emh Exp $
 """
 
 import socket,string
@@ -128,10 +128,10 @@ class CDDBP:
         return res
 
     def query(self, query):
-        disc_id = query[0]
+        cddbid = query[0]
         num_tracks = query[1]
 
-        query_str = (('%08lx %d ') % (disc_id, num_tracks))
+        query_str = (('%08lx %d ') % (cddbid, num_tracks))
         for i in query[2:]:
             query_str = query_str + ('%d ' % i)
 
@@ -147,12 +147,12 @@ class CDDBP:
         res=[]
         for item in resp.split("\r\n")[1:-2]:
             splitted = item.split() 
-            category = splitted[0]
-            disc_id = splitted[1]
+            genreid = splitted[0]
+            cddbid = splitted[1]
             title = string.join(splitted[2:])
             res.append({
-                    "category": category,
-                    "disc_id": disc_id,
+                    "genreid": genreid,
+                    "cddbid": cddbid,
                     "title": title
                     })
 

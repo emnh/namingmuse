@@ -156,10 +156,10 @@ def doDiscmatch(albumdir, options):
         query = discmatch.files2discid(filelist)
         statusmsg, albums = discmatch.freedbTOCMatchAlbums(query)
         if len(albums) == 0:
-            raise NamingMuseError("No freedb match in folder %s" %albumdir)
+            raise NamingMuseError("No freedb match for id %08x in folder %s" % (query[0], albumdir))
         albumdicts = []
         for album in albums:
-            albumdicts.append(discmatch.getalbuminfo(album['category'],album['disc_id']))
+            albumdicts.append(discmatch.getalbuminfo(album['genreid'],album['cddbid']))
         albumdict = terminal.choosealbum(albumdicts, albumdir)
         if not albumdict:
             raise NamingMuseWarning('Not tagging %s' \

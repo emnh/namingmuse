@@ -26,7 +26,7 @@ class searchparser(HTMLParser):
     album = None
     albums = []
     adr = baseurl + "freedb_search_fmt.php"
-    rexadr = re.compile(adr + "\?cat=(?P<category>.*)\&id=(?P<disc_id>[a-f0-9]*)")
+    rexadr = re.compile(adr + "\?cat=(?P<genreid>.*)\&id=(?P<cddbid>[a-f0-9]*)")
 
     def getalbums(self):
         return self.albums
@@ -42,8 +42,8 @@ class searchparser(HTMLParser):
     def handle_data(self, data):
         if self.album:
             self.album["title"] = string.strip(data)
-            self.album["category"] = self.album["category"].strip()
-            self.album["disc_id"] = self.album["disc_id"].strip()
+            self.album["genreid"] = self.album["genreid"].strip()
+            self.album["cddbid"] = self.album["cddbid"].strip()
             self.albums.append(self.album)
             album = None
 
