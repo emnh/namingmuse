@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.4 2004/08/05 02:19:43 emh Exp $
+$Id: cddb.py,v 1.5 2004/08/05 02:32:38 emh Exp $
 """
 
 import socket,string
@@ -174,14 +174,12 @@ class CDDBP:
                     sec = int(round((int(strsec) - prevsec) / 75.0))
                     prevsec = int(strsec)
                     lsecs.append(sec)
-                    print "%u" % sec
             elif readingtotal:
                 import re
                 match = re.search("^# Disc length: ([0-9]*) seconds", item)
                 totsec = int(match.group(1))
                 sec = totsec - prevsec / 75
                 lsecs.append(sec)
-                print sec
                 readingtotal = False
             elif "# Track frame offsets:" in item:
                 readingframes = True
