@@ -73,7 +73,6 @@ def choosealbum(albums, matchto, options, cddb):
     except KeyboardInterrupt:
         cddb.flush()
 
-
     # XXX: print all albums if none "validated"
             
     idx = -1 
@@ -87,7 +86,7 @@ def choosealbum(albums, matchto, options, cddb):
         except ValueError:
             pass
         except KeyboardInterrupt:
-            pass
+            continue
     print
     if idx == 0: #we dont want any of the suggested
         return None
