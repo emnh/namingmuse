@@ -23,6 +23,7 @@ def colorize(msg):
     color = (msg in tr.keys() and tr[msg] or "")
     msg = re.sub("^Warning",termcolor('yellow', "Warning"), msg)
     msg = re.sub("^Error",termcolor('red', "Error"), msg)
+    msg = re.sub("^Info",termcolor('green', "Info"), msg)
     msg = re.sub("^CDDBP exception", termcolor('yellow', "CDDBP Exception"), msg)
     if color != "": msg = termcolor(color, msg)
     return msg

@@ -18,6 +18,12 @@ class NamingMuseWarning(NamingMuseException):
         super = NamingMuseWarning.__bases__[0]
         super.__init__(self, "Warning: " + msg)
 
+class NamingMuseInfo(NamingMuseException):
+    'Class for spitting out green messages considered informational'
+    def __init__(self, msg):
+        super = NamingMuseInfo.__bases__[0]
+        super.__init__(self, "Info: " + msg)
+
 class TagIncompleteWarning(NamingMuseWarning):
     "Warning for incomplete tag info"
     def __init__(self, missingtag):

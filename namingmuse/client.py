@@ -362,7 +362,7 @@ def doDiscmatch(options, albumdir, cddb):
     if albuminfo \
        and albuminfo.getTagVersion() == albumtag.TAGVER \
        and not options.updatetags: 
-        raise NamingMuseWarning(\
+        raise NamingMuseInfo(\
                 '%s already tagged with %s %s, not retagging.' \
                    %(albumdir, "namingmuse", albumtag.TAGVER))
 
