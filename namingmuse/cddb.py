@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.9 2004/08/09 15:43:46 torh Exp $
+$Id: cddb.py,v 1.10 2004/08/09 19:21:32 torh Exp $
 """
 
 import socket,string
@@ -9,9 +9,9 @@ import re
 from exceptions import *
 
 defaultserver = "bash.no"
-defaultport = 1863
-#defaultserver = "freedb.freedb.org"
-#defaultport = 8880
+#defaultport = 1863
+defaultserver = "freedb.freedb.org"
+defaultport = 8880
 defaultprotocol = 5 # check locale
 version="0.20"
 

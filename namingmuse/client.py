@@ -16,11 +16,19 @@ def makeOptionParser():
     op = OptionParser()
     op.set_usage("%prog <actionopt> [options] <albumdir>")
 
-    op.add_option("-n", 
+    op.add_option("", 
                   "--dry-run",
                   action = "store_true",
                   dest = "dryrun",
                   help= "don't modify anything, just pretend"
+                  )
+
+    op.add_option("-n",
+                  "--namefix",
+                  action = "store_const",
+                  const = "namefix",
+                  dest = "cmd",
+                  help = "Namefix given files"
                   )
 
     op.add_option("-t",
@@ -169,6 +177,8 @@ def cli():
                doDiscmatch(options, albumdir, discmatch)
         elif options.cmd == "search":
             doFullTextSearch(albumdir, options)
+        elif options.cmd == "namefix":
+            namefix(albumdir,options)
         else:
             exit("error: no action option specified")
     except NamingMuseException, strerr:
@@ -182,6 +192,30 @@ def cli():
         exitstatus = 3
         
     exit(exitstatus)
+
+def namefix(albumdir, options):
+    from namefix import namefix
+    from terminal import colorize
+    filelist = albumtag.getfilelist(albumdir)
+    longestfilename = max(map(lambda x: len(x), filelist))
+    for filename in filelist:
+        tofile = namefix(os.path.basename(filename))
+        tofile = os.path.join(albumdir, tofile)
+        renamesign = "->"
+        if options.dryrun:
+            renamesign = "-dry->" 
+        print filename.ljust(longestfilename)
+        print "\t", colorize(renamesign), tofile
+        if not options.dryrun:
+            os.rename(filename, tofile)
+
+    abspath = os.path.abspath(albumdir)
+    basename = os.path.basename(abspath)
+    todir = namefix(basename)
+    print "\n", basename
+    print "\t", colorize(renamesign), todir
+    if not options.dryrun:
+        os.rename(albumdir, todir) 
 
 #XXX: merge common stuff of fulltextsearch and discmatch
 def doFullTextSearch(albumdir, options):

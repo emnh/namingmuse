@@ -6,9 +6,6 @@ def namefix(filename):
 
     name, ext = os.path.splitext(filename)
     ext = ext.lower()
-    name = re.escape(name)
-    print "name:",name
-
 
     regexes = {
         "%20":            " ",         #replace %20 with space
@@ -19,25 +16,25 @@ def namefix(filename):
         "^\s+":           "",          #trim left space
         "\s+$":           "",          #trim right space
         "-*$":            "",          #remove trailing dashes
-        "\s+":            "",          #remove duplicate spaces
-        #"(\..*)$/\L$1/g;              #lowercase extension
-        #"(^|\s|\()(\w+)"\u$1\u$2/g;   #capitalize first char in each word
-        " -.- ":          " - ",       #no double dashes
-        #"- (\d\d) - ":"- $1 /;        #no dash after track numbers
+        "\s+":            " ",         #remove duplicate spaces
+        #"(^|\s|\()(\w+)": "\\1\\2",    #capitalize first char in each word
+        " -\s*(- )+":        " - ",    #no double dashes
+        "- (\d\d) - ":    "- \\1 /",   #no dash after track numbers
         #"(\d\d)([A-Z])"$1 $2/;        #space after track numbers
         #s/[- ]*(\.|$)"$1/g;           #kill off inappropriate ending chars
-        "/":"(":,
-        "[":"(":,
-        "{":"(";,                      #translate [,{ to ()
-        "]":")",
-        "}":")",
+        "\/":             "(",
+        "\[":             "(",
+        "\{":             "(",         #translate [,{ to ()
+        "\]":             ")",
+        "\}":             ")",
+        "\.":             " ",         #replace dot and underscore with space
+        "_":              " ",
         "\(\)":           "",          #kill empty parantheses
-        #s/^([^(]*)\)/$1/g;            #kill stray right parantheses
-        #s/\(([^)]*)$/$1/g;            #kill stray right parantheses
-        "\d{3}\s*kbps":      "",          #erase bitrate info in filename
-        #s/\((\d\d)\)/$1/;             #no paranthesized track numbers
-        #"(for|and|a|as|at|it|the|in|of|into|from|or|us|are|to|be|your)":/ \l$1 /i; #decapitalize short common words
-        "/":              "",
+        "^([^(]*)\)":     "\\1",       #kill stray right parantheses
+        "\(([^)]*)$":     "\\1",       #kill stray right parantheses
+        "\d{3}\s*kbps(\s*\+)?":"",     #erase bitrate info in filename
+        "\((\d+)\)":      "\\1",       #no paranthesized numbers
+        "(.*-.*) - (Bke|Bmi|Bpm|Chr|Cmg|Cms|CSR|Csr|Dmg|Dps|Ego|ENT|Esc|Fnt|Fsp|Fua|Hcu|Idx|Its|Jce|Ksi|LLF|Mod|Nbd|OSi|PMS|Pms|Rev|Rns|Sdc|Sdr|Ser|Sms|Ssr|Sur|Sut|TiS|Twc|Wcr|Wlm)":    "\\.\\1\\."   #mp3 gang advertisements
         }
 
     oldname = name
@@ -47,15 +44,12 @@ def namefix(filename):
         if (name == oldname): break
         oldname = name
 
-    name = re.sub("\\\\","",name)
-    
     #([A-Z])\.(?![^A-Z])/$1/gx;     #R.E.M -> REM
     ##if ($nametype == $type_file) {
     #        $lastdot = rindex($_, '.');    #save position of extension dot
     #} else {
     #        $lastdot = 0;
     #}
-    #tr/._/ /;                        #replace dot and underscore with space
     #if ($lastdot > 0) { 
     #        substr($_, $lastdot, 1) = '.'; #restore extension dot
     #} 
@@ -71,8 +65,6 @@ def namefix(filename):
 #            }
 #    }
 #    
-    #mp3 gang advertisements
-#    s/(.*-.*) - (Bke|Bmi|Bpm|Chr|Cmg|Cms|CSR|Csr|Dmg|Dps|Ego|ENT|Esc|Fnt|Fsp|Fua|Hcu|Idx|Its|Jce|Ksi|LLF|Mod|Nbd|OSi|PMS|Pms|Rev|Rns|Sdc|Sdr|Ser|Sms|Ssr|Sur|Sut|TiS|Twc|Wcr|Wlm)\./$1./;
 #
 #    #some case fixing stuff
 #    s/(^|\s)(Cd|Dj)(\s|\.|$)/$1\U$2$3/;      #uppercase words like CD, DJ
