@@ -43,10 +43,14 @@ def choosealbum(albums, matchto, options, cddb):
     matchto = matchto.getName()
 
     if len(albums) == 1:
-        if len(albums[0].validate()) == 0:
-            idx = len(albums)
+        if options.strict:
+            if len(albums[0].validate()) == 0:
+                idx = 1
+            else:
+                return None
         else:
-            return None
+            albums[0].ignoreMissing(True)
+            idx = 1
     
     fmat = lambda u,v,w,x,y,z: "%3s%6s%5s %-17s%-15s %-10s\n" \
                 % (u, v, w, x, y, z)
