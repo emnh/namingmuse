@@ -1,4 +1,6 @@
 2004-08-04
+    * cddb: added seconds information
+    * albumtag: rough implementation of preserving atime/mtime
     * searchfreedb: filter matches by song count
     * all: consistent use of cddbid and genreid as dict keys
 

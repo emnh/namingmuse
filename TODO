@@ -2,11 +2,15 @@ TODO
 *fix save/restore ctime (stat copy)
 *proper locale support (including utf8 and protocol 6)
 *recursive
-*move some searchfreedb stuff to namingmuse.py
-*get rid of taglib warning messages (done?)
 *download cover art
 *namefixing
 *finish namebinder_strapprox_time
 *see if improvements can be made to discid generator
 *use info from cddbid in searchfreedb to filter matches
-*PRI: use cddbid and genreid in dicts everywhere
+
+*make a smart class for albuminfo:
+    -has a CDDB member with uplink
+    -two states: thin(cddbid,genreid,title) and thick(full read)
+    -access to thick members in a thin albuminfo triggers automatic lookup
+     (use the new python property class)
+    -preserve freedb record in object
