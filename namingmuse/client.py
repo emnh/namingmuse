@@ -383,7 +383,7 @@ def checkAlreadyTagged(albumdir, filelist, options):
         raise NamingMuseInfo(\
                 '%s already tagged with %s %s, not retagging.' \
                    %(albumdir, "namingmuse", albumtag.TAGVER))
-
+    return albuminfo
 
 #XXX: merge common stuff of fulltextsearch and discmatch
 def doFullTextSearch(albumdir, options, cddb):
