@@ -3,7 +3,11 @@ import re
 import sys
 #from albuminfo import AlbumInfo
 from time import sleep
-from tunepimp import tunepimp, metadata, track
+try:
+    from tunepimp import tunepimp, metadata, track
+except ImportError, err:
+    #XXX: How do we want to handle this?
+    print Disabling musicbrainz support. Missing python bindings for tunepimp.
 
 trackStatus = [
     "Unrecognized",
