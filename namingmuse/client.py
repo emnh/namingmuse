@@ -44,11 +44,11 @@ def makeOptionParser():
                   action = "store_true",
                   help = "force new lookup and retagging")
     
-    op.add_option("-u",
-                  "--update-tags",
+    op.add_option("",
+                  "--force-update",
                   action = "store_true",
                   dest = "updatetags",
-                  help = "update files already tagged, using stored discid")
+                  help = "update files already tagged with same version")
     op.add_option("-r",
                   "--recursive",
                   action = "store_true",
@@ -273,46 +273,34 @@ def doFullTextSearch(albumdir, options):
         raise NamingMuseWarning('Not tagging %s' \
                    %(albumdir))
 
-    albumtag.tagfiles(albumdir, albuminfo, options, albumtag.namebinder_strapprox_time)
+    albumtag.tagfiles(albumdir, albuminfo, options, \
+            albumtag.namebinder_strapprox_time)
 
-def choosealbum(albuminfos, albumdir, options):
-    ''' Returns a single user-chosen album given a list of albums '''
-    # if strict, filter out albums with missing genre or year
-    if options.strict:
-        albuminfos = filter(lambda x: len(x.validate()) == 0 , albuminfos)
-    if len(albuminfos) == 0:
-        return None
-    return terminal.choosealbum(albuminfos, albumdir)
 
 def doDiscmatch(options, albumdir, discmatch):
     filelist = albumtag.getfilelist(albumdir)
     if len(filelist)== 0:
-        raise NoFilesException("Warning: %s contains no music files !" %albumdir)
+        raise NoFilesException("Warning: %s contains no music files !" \
+                %albumdir)
     
     if options.printtoc:
         discmatch.printTOC(filelist)
         exit()
 
-    # Check if it is already tagged
-    albuminfo = albumtag.checkT
-    if not albumtag.needTag(filelist) \
-       and not options.updatetags \
-       and not options.force:
-        raise NamingMuseWarning('%s already tagged with %s %s, not retagging...' \
+    cddb = discmatch.cddb
+
+    # Check/retrieve already tagged
+    albuminfo = None
+    if not options.force:
+        albuminfo = albumtag.getNmuseTag(filelist)
+        albuminfo.setCDDBConnection(cddb)
+    if albuminfo \
+       and albuminfo.getTagVersion() == albumtag.TAGVER \
+       and not options.updatetags: 
+        raise NamingMuseWarning(\
+                '%s already tagged with %s %s, not retagging.' \
                    %(albumdir, "namingmuse", albumtag.TAGVER))
 
-    albuminfo = None 
-    cddb = discmatch.cddb
-    if options.updatetags and not options.force:
-        identifier = albumtag.getStoredCDDBId(filelist)
-        if identifier:
-            freedbrecord = cddb.getRecord(identifier['genreid'], 
-                                          identifier['cddbid'])
-            albuminfo = FreeDBAlbumInfo(freedbrecord)
-            albuminfo.setFreedbIdentifier(identifier['genreid'], 
-                                          identifier['cddbid']) #XXX
-        else:
-            raise NamingMuseError('Broken old tag found, unable to update.')
     if not albuminfo:
         query = discmatch.files2discid(filelist)
         statusmsg, albums = discmatch.freedbTOCMatchAlbums(query)
@@ -321,12 +309,10 @@ def doDiscmatch(options, albumdir, discmatch):
                                     %(query[0], albumdir))
         albuminfos = []
         for album in albums:
-            freedbrecord = cddb.getRecord(album['genreid'], album['cddbid'])
-            albuminfo = FreeDBAlbumInfo(freedbrecord)
-            albuminfo.setFreedbIdentifier(album['genreid'], album['cddbid']) #XXX
+            albuminfo = FreeDBAlbumInfo(cddb, album['genreid'], album['cddbid'])
             albuminfos.append(albuminfo)
             
-        albuminfo = choosealbum(albuminfos, albumdir, options)
+        albuminfo = terminal.choosealbum(albuminfos, albumdir, options)
         if not albuminfo:
             raise NamingMuseWarning('Not tagging %s' \
                        %(albumdir))

@@ -24,27 +24,32 @@ from exceptions import *
 DEBUG = False
 
 # XXX: move
-providers = [
+providers = {
 "default": AlbumInfo,
 "freedb": FreeDBAlbumInfo
-]
+}
 
 def getNmuseTag(filelist):
     fpath = filelist[0]
     if fpath.getFileType() == "mp3":
-        tag = MPEGFile(fpath)
-        if not tag:
+        fileref = MPEGFile(str(fpath))
+        tag = fileref.ID3v2Tag()
+        if not tag or tag.isEmpty():
             return None
-        comms = tag.frameListMap()["COMM"]
+        framelistmap = tag.frameListMap()
+        if not framelistmap.has_key("COMM"):
+            return None
+        comms = framelistmap["COMM"]
         commdict = {}
         for comm in comms:
-            key = comm.description()
-            value = comm.text()
+            cf = CommentsFrame(comm)
+            key = cf.description()
+            value = cf.text()
             commdict[key] = value
         if not commdict.has_key("namingmuse"):
             return None
-        if comm.has_key("tagprovider"):
-            tagprovider = comm["tagprovider"]
+        if commdict.has_key("tagprovider"):
+            tagprovider = commdict["tagprovider"]
         else:
             tagprovider = "default"
         providerclass = providers[tagprovider]
@@ -258,7 +263,8 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
             fd = tempfile.NamedTemporaryFile()
             tmpfilename = fd.name
             shutil.copystat(str(fpath), tmpfilename)
-
+            
+            # tag the file
             tagfile(fpath, album, track)
             # restore filestat
             shutil.copystat(tmpfilename, str(fpath))
@@ -352,13 +358,15 @@ def tagfile(fpath, album, track):
         fileref.save(MPEGFile.ID3v2)
         
     else:
+        fileref = FileRef(str(fpath))
+        tag = fileref.tag()
         tag.setYear(album.year)
         tag.setGenre(album.genre)
         tag.setArtist(track.artist)
         tag.setAlbum(album.title)
         tag.setTitle(track.title)
         tag.setTrack(track.number)
-        comment = footprint(album)
-        tag.setComment(comment)
+        #TODO comment
+        #tag.setComment(comment)
         fileref.save()
 
