@@ -14,6 +14,8 @@ from sys import exit
 from HTMLParser import HTMLParser
 from optparse import make_option
 
+from exceptions import *
+
 #DEBUG = False
 DEBUG = True
 
@@ -26,7 +28,7 @@ class searchparser(HTMLParser):
     album = None
     albums = []
     adr = baseurl + "freedb_search_fmt.php"
-    rexadr = re.compile(adr + "\?cat=(?P<genreid>.*)\&id=(?P<cddbid>[a-f0-9]*)")
+    rexadr = re.compile(adr + "\?cat=(?P<genreid>.+)\&id=(?P<cddbid>[a-f0-9]+)")
 
     def getalbums(self):
         return self.albums
@@ -79,7 +81,10 @@ def filterBySongCount(albums, songcount):
     retalbums = []
     for album in albums: 
         cddbid = album['cddbid']
-        cddbid = string.atoi(cddbid, 16)
+        try:
+            cddbid = string.atoi(cddbid, 16)
+        except ValueError:
+            raise NamingMuseError("cddbid in album %s is invalid" % album)
         sct = cddbid % 0x100
         #print "%s has %u songs" % (album["title"], sct)
         if sct == songcount:

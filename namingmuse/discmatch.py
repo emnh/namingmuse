@@ -64,7 +64,12 @@ def files2discid(filelist):
         secs = albumtag.getIntLength(file)
         #secs = albumtag.getFloatLength(file)
         if type(secs) is int:
-            checksum += cddb_sum(secs)
+            # i'm pretty confident this is the correct way to calculate checksum
+            # because it seems to be what both the freedb reference implementation
+            # does for CD and the "entagged" application does for MP3
+            # but i'm not sure whether it works best in practice
+            # alternatives: secs, totalsecs[x]
+            checksum += cddb_sum(totalsecs)
         elif type(secs) is float:
             floatrest += secs - roundsecs(secs)
             checksum += cddb_sum(roundsecs(secs))
@@ -76,19 +81,11 @@ def files2discid(filelist):
         totalsecs += secs
 
     # this is what the freedb reference implementation does
-    # in practice it doesn't seem to make any difference
+    # in practice it doesn't seem to make a big difference
     totalsecs -= leadin
 
     if type(totalsecs) is float:
         totalsecs = roundsecs(totalsecs)
-
-    # i'm pretty confident this is the correct way to calculate checksum
-    # because it seems to be what both the freedb reference implementation
-    # does for CD and the "entagged" application does for MP3
-    # but i'm not sure whether it works best in practice
-    checksum = 0
-    for frame in framelist:
-        checksum += cddb_sum(frame / 75)
 
     # the checksum is a 32bit integer structured as follows
     # first byte: sum(all digits in all song lengths(seconds)) mod 255

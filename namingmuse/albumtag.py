@@ -200,8 +200,7 @@ def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
         options.dryrun = True
         print NamingMuseError("binding was not exact, forcing dry run")
 
-    #XXX: skift til try value convert
-    #XXX: og legg til track
+    #XXX: legg til sjekk for missing for alle track
 
     missing = []
     try:
@@ -212,7 +211,7 @@ def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
     if genre == "":
         missing.append("genre")
     if albumname == "":
-        mising.append("albumname")
+        missing.append("albumname")
     
     if len(missing) > 0:
         exmissing = TagIncompleteWarning(string.join(missing, ", "))

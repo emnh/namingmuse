@@ -1,10 +1,11 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.5 2004/08/05 02:32:38 emh Exp $
+$Id: cddb.py,v 1.6 2004/08/05 03:14:19 emh Exp $
 """
 
 import socket,string
 import getpass
+import re
 
 defaultserver = "bash.no"
 defaultport = 1863
@@ -166,16 +167,20 @@ class CDDBP:
         prevsec = 0
         for item in cddbrecord.split("\r\n")[1:-2]:
             if readingframes:
-                if item == "#": 
+                if not re.match("^#\s*[0-9]+\s*$", item): 
                     readingframes = False
                     readingtotal = True
                 else:
                     strsec = item[1:].strip()
-                    sec = int(round((int(strsec) - prevsec) / 75.0))
+                    try:
+                        sec = int(round((int(strsec) - prevsec) / 75.0))
+                    except ValueError:
+                        print "valueerror"
+                        print item
+                        print cddbrecord
                     prevsec = int(strsec)
                     lsecs.append(sec)
             elif readingtotal:
-                import re
                 match = re.search("^# Disc length: ([0-9]*) seconds", item)
                 totsec = int(match.group(1))
                 sec = totsec - prevsec / 75
