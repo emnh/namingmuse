@@ -12,3 +12,4 @@ TODO
 * autoselect namebinder_trackorder when all tracks are numbered in sequence
 * clean up discmatch module and strip it for cddb knowledge
 * detect exact duplicate albums and warn user about it
+* --stats option reporting tagged/untagged/without genre/without year
