@@ -35,6 +35,10 @@ def getNmuseTag(filelist):
     if fpath.getFileType() == "mp3":
         fileref = MPEGFile(str(fpath))
         tag = fileref.ID3v2Tag()
+        import types
+        if type(tag) == types.StringType:
+            print "fl: ", filelist
+            print "tag: ", tag
         if not tag or tag.isEmpty():
             return None
         framelistmap = tag.frameListMap()
