@@ -16,6 +16,7 @@ from terminal import colorize
 from cddb import *
 from string import lower
 from sys import exit
+from difflib import SequenceMatcher
 
 from exceptions import *
 
@@ -71,6 +72,25 @@ def getfilelist(path, fullpath = True):
     filelist.sort()
     return filelist
 
+def getMP3Length(filename):
+    mp3info = "/usr/bin/mp3info"
+    if os.access(mp3info, os.X_OK):
+        pread,pwrite = os.pipe()
+        childid = os.fork()
+        if childid:
+            os.waitpid(childid, 0)
+        else:
+            # set stdout to pwrite 
+            os.dup2(pwrite, 1)
+            args = [ "mp3info" ]
+            args.append('-p%S\n')
+            args.append(filename)
+            os.execv(mp3info, args)
+        pread = os.fdopen(pread)
+        strlength = pread.readline()
+        pread.close()
+    return int(strlength)
+
 def getFloatLength(filename):
     import commands
     #p = os.popen("/tmp/build/mp3info-0.8.4/playtime.sh " + filename)
@@ -83,13 +103,29 @@ def getFloatLength(filename):
         os.execv("/tmp/build/mp3info-0.8.4/playtime.sh", ["playtime.sh", filename])
     pread = os.fdopen(pread)
     strlength = pread.readline()
+    pread.close()
     return float(strlength)
 
 def getIntLength(filename):
     "Get length of a music file via taglib"
-    tagfile = TagLib.FileRef(filename)
+    # XXX: make accuracy an option
+    tagfile = TagLib.FileRef(filename, True, TagLib.AudioProperties.Accurate)
     audioproperties = tagfile.audioProperties()
-    return audioproperties.length()
+    length = audioproperties.length()
+    
+    # XXX: try various fallback methods
+    if length == 0:
+        print NamingMuseWarning("using fallback: getMP3Length(%s)" % filename)
+        if string.lower(filename[-4:]) == ".mp3":
+            length = getMP3Length(filename)
+
+    # raise exception; or discid generation will fail
+    # and user doesn't know why
+    if length == 0: 
+        raise NamingMuseError("taglib audioproperties " \
+            "failed to get length of: %s" % filename)
+
+    return length
 
 
 def distwrap(a, b):
@@ -164,15 +200,24 @@ def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
 
     #XXX: skift til try value convert
     #XXX: og legg til track
+
+    missing = []
     try:
-        if year == "": raise TagIncompleteWarning("year")
-        if genre == "": raise TagIncompleteWarning("genre")
-        if albumname == "": raise TagIncompleteWarning("albumname")
-    except TagIncompleteWarning, warn:
+        year = int(year)
+    except ValueError:
+        year = 0
+        missing.append("year")
+    if genre == "":
+        missing.append("genre")
+    if albumname == "":
+        mising.append("albumname")
+    
+    if len(missing) > 0:
+        exmissing = TagIncompleteWarning(string.join(missing, ", "))
         if options.strict:
-            raise
+            raise exmissing
         else:
-            print warn, "\n"
+            print exmissing, "\n"
 
     print "Tagging album: %s, %s - %s, %s.\n" % (year, albumartist, albumname, genre)
 
@@ -190,7 +235,13 @@ def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
         fullpath = pjoin(albumdir, file)
         title = namelist[i]["title"]
         if albumartist == "Various":
-            trackartist, title = title.split("/")
+            if not "/" in title and "-" in title:
+                # workaround: this is a bug in the freedb entry
+                # (according to submission guidelines)
+                trackartist, title = title.split("-")
+                print NamingMuseWarning("bugged database entry with - instead of /")
+            else:
+                trackartist, title = title.split("/")
             trackartist, title = trackartist.strip(), title.strip()
         else:
             trackartist = albumartist

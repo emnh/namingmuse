@@ -1,6 +1,6 @@
 """ A module for naming policies """
 
-import re
+import os, re, sys, string
 
 def filename(original, ext, title, track, trackartist, albumname, year, genre, albumartist):
     if trackartist:
@@ -19,10 +19,19 @@ def filename(original, ext, title, track, trackartist, albumname, year, genre, a
 
 def albumdirname(original, artist, albumname, year, genre):
     albumname = albumname.replace("/", " ")
-    if re.search("^[0-9]{4}", year):
+    if int(year) > 1800:
         newdirname = "%s %s %s" % (artist, year, albumname)
     else:
         newdirname = "%s %s" % (artist,albumname)
     newdirname = newdirname.replace("/", " ")
     return newdirname
     # return original # no change
+
+# Overwrite global functions defined above with local ones
+home = os.getenv("HOME")
+homeconf = os.path.join(home, ".namingmuse")
+modnamingpolicy = os.path.join(homeconf, "namingpolicy.py")
+if os.access(homeconf, os.R_OK):
+    sys.path.append(homeconf)
+    if os.access(modnamingpolicy, os.R_OK):
+        from namingpolicy import *

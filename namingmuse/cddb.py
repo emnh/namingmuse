@@ -1,10 +1,16 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.1 2004/08/04 17:12:25 torh Exp $
+$Id: cddb.py,v 1.2 2004/08/04 20:39:18 emh Exp $
 """
 
 import socket,string
+import getpass
 
+defaultserver = "bash.no"
+defaultport = 1863
+#defaultserver = "freedb.freedb.org"
+#defaultport = 8880
+defaultprotocol = 6 # check locale
 version="0.20"
 
 class CDDBPException(Exception):
@@ -60,9 +66,8 @@ class SmartSocket:
 class CDDBP:
     "This class can speak the CDDBP protocol, level 6."
     
-    def __init__(self,user='nmuse',localhost='localhost'):
+    def __init__(self, user='nmuse', localhost='localhost'):
         self.sock=SmartSocket(0,128)
-        import getpass
         self.user=getpass.getuser()
         self.localhost=socket.gethostname()
         self.client="PyCDDBPlib"
@@ -70,7 +75,7 @@ class CDDBP:
     def __decode(self,resp):
         return (string.atoi(resp[:3]),resp[4:])
         
-    def connect(self,server="bash.no",port=1863):
+    def connect(self, server=defaultserver, port=defaultport):
         "Connects to the server and does the initial handshake."
         self.server=server
         self.port=port
@@ -89,7 +94,7 @@ class CDDBP:
         #set the server proto
         self.setproto()
 
-    def setproto(self,proto=5):
+    def setproto(self,proto=defaultprotocol):
         '''Sets the proto level on the server.
            5 is the goodest
            6 is the goodest with UTF8 strings
@@ -222,7 +227,7 @@ class CDDBP:
     def quit(self):
         self.sock.send("quit","\r\n")
 
-    # Missing: query, update, write, read  
+    # Missing: update, write
     
 def retry(cddb):
     reload(cddb)
