@@ -281,9 +281,6 @@ def tagfiles(albumdir, album, options):
             renamesign = "-tag->"
         if options.dryrun:
             renamesign = "-dry->" 
-        #if "manual" in comment:
-        #   renamesign = "-skip->"
-        #    renamealbum = False
         print fpath.getName()
         print "\t", colorize(renamesign), tofile.getName()
         if not options.dryrun:
@@ -336,27 +333,6 @@ def tagfiles(albumdir, album, options):
     else:
         print newalbumdir.getName()
 
-def cleanOldComment(tag):
-    # Preserve ID3v2Tag comments other than our generated ones
-    oldcommentlist = []
-    for frame in tag.frameList():
-        if frame.frameID() == "COMM":
-            cf = CommentsFrame(frame)
-            if not 'namingmuse' in cf.text() and not cf.description() \
-                    in ["namingmuse", "genreid", "cddbid", "tagprovider"] \
-                    and cf.text().strip() != "":
-                newcf = CommentsFrame()
-                newcf.setDescription(cf.description())
-                newcf.setText(cf.text())
-                oldcommentlist.append(newcf)
-
-    #remove old comment frames
-    tag.removeFrames("COMM")
-
-    # Add preserved ID3v2 comments 
-    for frame in oldcommentlist:
-        tag.addFrame(frame)
-
 def tagfile(fpath, album, track):
     """ Tag the file with metadata """
 
@@ -373,8 +349,6 @@ def tagfile(fpath, album, track):
                 oldcomment = id1tag.comment()
                 if oldcomment == "":
                     oldcomment = None
-                if oldcomment and 'namingmuse' in oldcomment:
-                    oldcomment = None
 
         # strip id3v1tag, bool freeMemory = False 
         fileref.strip(MPEGFile.ID3v1, False)
@@ -385,8 +359,6 @@ def tagfile(fpath, album, track):
         fileref = MPEGFile(str(fpath))
 
         tag = fileref.ID3v2Tag(True)
-
-        cleanOldComment(tag)
 
         # Insert old id3v1 comment in id3v2tag
         if oldcomment:
