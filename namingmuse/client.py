@@ -129,9 +129,9 @@ def cli():
 
     try:
         if options.cmd == "discmatch":
-            doDiscmatch(albumdir,options)
+            doDiscmatch(albumdir, options)
         elif options.cmd == "search":
-            searchfreedb.search(albumdir, options)
+            doFullTextSearch(albumdir, options)
         else:
             exit("error: no action option specified")
     except NamingMuseException, strerr:
@@ -140,7 +140,46 @@ def cli():
         exit(strerr)
     except NoFilesException, strerr:
         exit(strerr)
+
+#XXX: merge common stuff of fulltextsearch and discmatch
+def doFullTextSearch(albumdir, options):
+    filelist = albumtag.getfilelist(albumdir)
+    if len(filelist)== 0:
+        raise NoFilesException("Warning: %s contains no music files !" %albumdir)
+
+    if not options.words:
+        exit("error: no search words specified")
+    if options.all:
+        searchfields = searchfreedb.allfields
+    else:
+        optfilter = lambda key, options = options: eval("options." + key)
+        searchfields = filter(optfilter, searchfreedb.allfields)
+    searchwords = options.words
+
+    print "Searching for albums.."
+    if len(searchfields) > 0:
+        albums = searchfreedb.searchalbums(searchwords, searchfields)
+    else:
+        albums = searchfreedb.searchalbums(searchwords)
+
+    if len(albums) == 0:
+        raise NamingMuseError("No match for text search %s" % (searchwords))
+
+    albums = searchfreedb.filterBySongCount(albums, len(filelist))
+
+    albumdicts = []
+    for album in albums:
+        albumdicts.append(discmatch.getalbuminfo(album['genreid'],
+                                                 album['cddbid']))
     
+    albumdict = terminal.choosealbum(albumdicts, albumdir)
+
+    if not albumdict:
+        raise NamingMuseWarning('Not tagging %s' \
+                   %(albumdir))
+
+    albumtag.tagfiles(albumdir, albumdict, options, albumtag.namebinder_strapprox)
+
 def doDiscmatch(albumdir, options):
     filelist = albumtag.getfilelist(albumdir)
     if len(filelist)== 0:

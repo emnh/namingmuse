@@ -12,6 +12,7 @@ import random
 import TagLib
 import policy
 import discmatch
+import tempfile
 from terminal import colorize
 from cddb import *
 from string import lower
@@ -266,7 +267,6 @@ def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
         print "\t", colorize(renamesign), tofile
         if not (options.dryrun or str(comment) == "manual"):
             #preserve stat
-            import tempfile
             fd = tempfile.NamedTemporaryFile()
             tmpfilename = fd.name
             #fd.close()

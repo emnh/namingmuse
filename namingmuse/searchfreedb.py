@@ -75,28 +75,13 @@ def searchalbums(searchwords, searchfields = ("artist", "title")):
     albums = parser.getalbums()
     return albums
 
-def getoptions():
-    opts = []
-    opts.append(make_option("-a", "--all", action="store_true",
-                                help="enable searching of all fields (default: artist+title)"))
-    for field in allfields:
-        opts.append(make_option("", "--" + field, action="store_true",
-                                    help="enable searching of " + field + " field"))
-    return opts
-
-def search(albumdir, options):
-    if not options.words:
-        exit("error: no search words specified")
-    if options.all:
-        searchfields = allfields
-    else:
-        searchfields = filter(lambda key, options = options: eval("options." + key), allfields)
-    searchwords = options.words
-    print "Searching for albums.."
-    if searchfields != []:
-        albums = searchalbums(searchwords, searchfields)
-    else:
-        albums = searchalbums(searchwords)
-
-    album = terminal.choosealbum(albums, albumdir)
-    albumtag.tagfiles(albumdir, album, options, albumtag.namebinder_strapprox)
+def filterBySongCount(albums, songcount):
+    retalbums = []
+    for album in albums: 
+        cddbid = album['cddbid']
+        cddbid = string.atoi(cddbid, 16)
+        sct = cddbid % 0x100
+        #print "%s has %u songs" % (album["title"], sct)
+        if sct == songcount:
+            retalbums.append(album)
+    return retalbums
