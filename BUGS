@@ -1,0 +1,11 @@
+KNOWN BUGS
+
+*Full text search is filtering by song count. If the CD contained a data track,
+then it will incorrectly filter out matches that contain a data track in the
+freedb record.
+
+Song count 2        Song count 3
+Local album:        Freedb record:
+1.mp3               Baba - My Feet
+2.mp3               Kaka - My Nose
+                    Data Track
