@@ -19,3 +19,5 @@ TODO
 * manually enter freedb disc id
 * manually specify sort order of tracks for freedb lookup
 * manually specify namebinding
+* warn about invalidating albums
+* add option to disable filterBySongCount
