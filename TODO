@@ -10,3 +10,4 @@ TODO
 * support other sources for metainformation. musicbrainz is a highly relevant source.
 * clean up discmatch module and strip it for cddb knowledge
 * detect exact duplicate albums and warn user about it
+* NEVER autoselect 1 when using search
