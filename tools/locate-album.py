@@ -5,6 +5,10 @@ import os, re, sys
 import time
 from optparse import OptionParser
 
+'''
+A search tool for mp3 albums that piggy-backs on locate.
+'''
+
 STDIN_FILENO = 1
 knownfiletypes = (".mp3", ".ogg", ".flac")
 
@@ -43,6 +47,7 @@ def locatealbum(args):
     return albumlist
 
 op = OptionParser()
+op.set_usage("%prog [options] query")
 op.add_option("-p", 
               "--path",
               action = "store_true",
