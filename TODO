@@ -21,3 +21,4 @@ TODO
 * warn about invalidating albums
 * add option to disable filterBySongCount
 * fix file renaming to comply with user supplied encoding
+* check for large amount of files (playtime > max CD playtime) and warn that namingmuse is an album oriented tagger. go ahead anyway if force was given.
