@@ -11,6 +11,7 @@ QUERY_EXACT = 200
 QUERY_NONE = 202
 QUERY_MULTIPLE = 211
 SERVER_ERROR=450
+READ_OK = 210
 
 DEBUG = False
 
@@ -122,8 +123,6 @@ def getalbuminfo(genreid, cddbid):
                 title = read_info[key]
                 dict = {"track": track, "title": title}
                 namelist.append(dict)
-    elif read_stat == SERVER_ERROR:
-        raise HTTPServerError(read_info)
     else:
         raise NotImplementedException("cddb read: code " + str(read_stat))
 
@@ -152,8 +151,6 @@ def freedbTOCMatchAlbums(query):
         elif query_stat == QUERY_NONE:
             statusmsg = "no matches!"
             query_info = []
-        elif query_stat == SERVER_ERROR:
-            raise HTTPServerError(query_info)
         else:
             raise NotImplementedError("Unknown freedb status code: %d" % query_stat)
         albums = query_info
