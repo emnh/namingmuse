@@ -145,7 +145,6 @@ def readconfig(options):
         options.encoding = sys.stdout.encoding
     #from pprint import pprint
     #pprint(options.__dict__)
-    fd.close()
 
 def cli():
     op = makeOptionParser()
