@@ -10,6 +10,7 @@ from optparse import OptionParser, make_option
 from optparse import OptionGroup
 from albuminfo import *
 from filepath import FilePath
+from ConfigParser import *
 
 from exceptions import *
 import cddb
@@ -126,9 +127,28 @@ def getDoc():
     doc += DiscMatch.__doc__ + "\n"
     return doc
 
+def readconfig(options):
+    home = os.getenv("HOME")
+    homeconfdir = FilePath(home, ".namingmuse")
+    configfile = homeconfdir + "config"
+    if not os.access(str(configfile), os.R_OK):
+        return
+    fd = file(str(configfile))
+    cp = ConfigParser()
+    cp.read([str(configfile)])
+    defitems = cp.items("DEFAULT")
+    print defitems
+    for key, value in dict(defitems).items():
+        options.ensure_value(key, value)
+    #from pprint import pprint
+    #pprint(options.__dict__)
+    fd.close()
+
 def cli():
     op = makeOptionParser()
     options,args = op.parse_args()
+
+    readconfig(options)
 
     if options.doc:
         print getDoc()
@@ -136,9 +156,14 @@ def cli():
 
     if len(args) == 0:
         op.print_help()
-        exit("error: <albumdir> not specified")
-    elif not options.cmd and len(args) >= 1:
+        exit(0)
+
+    if not options.cmd and len(args) >= 1:
         options.cmd = "discmatch"
+
+    if options.cmd and len(args) == 0:
+        op.print_help()
+        exit("error: <albumdir> not specified")
 
     if options.words:
         options.cmd = "search"
