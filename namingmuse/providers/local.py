@@ -113,6 +113,7 @@ class LocalAlbumInfo(AlbumInfo):
     tagprovider = 'local'
 
     def __init__(self, albumdir):
+        super(LocalAlbumInfo, self).__init__()
         filelist = self.getfilelist(albumdir)
         for fpath in filelist:
             tr = LocalTrackInfo(fpath)
