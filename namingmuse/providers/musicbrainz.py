@@ -7,7 +7,8 @@ try:
     from tunepimp import tunepimp, metadata, track
 except ImportError, err:
     #XXX: How do we want to handle this?
-    print Disabling musicbrainz support. Missing python bindings for tunepimp.
+    #print "Disabling musicbrainz support. Missing python bindings for tunepimp."
+    pass
 
 trackStatus = [
     "Unrecognized",
