@@ -86,6 +86,8 @@ def choosealbum(albums, matchto, options, cddb):
             idx = int(raw_input())
         except ValueError:
             pass
+        except KeyboardInterrupt:
+            pass
     print
     if idx == 0: #we dont want any of the suggested
         return None

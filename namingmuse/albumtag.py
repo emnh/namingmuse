@@ -70,7 +70,7 @@ def getfilelist(path):
     """Get sorted list of files supported by taglib 
        from specified directory"""
     path = str(path)
-    rtypes = re.compile("\.(mp3|ogg|flac)$", re.I)
+    rtypes = re.compile("\.(mp3)$", re.I)
     filelist = filter(lambda x: rtypes.search(str(x)), os.listdir(path))
     filelist = map(lambda x: FilePath(path, x), filelist)
     filelist.sort()
@@ -290,6 +290,7 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
     renamesign = (renamealbum and "->" or "-skip->")
     if renamealbum and options.dryrun: renamesign = "-dry->"
     if not (options.dryrun or options.tagonly) and renamealbum:
+        try:
         os.rename(str(albumdir), str(newalbumdir))
         albumdir = newalbumdir
         if options.artistdir:
@@ -298,6 +299,8 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
                 os.mkdir(str(artistdir))
             todir = artistdir + albumdir.getName()
             shutil.move(str(albumdir), str(todir))
+        except OSError, err:
+            raise NamingMuseWarning(err)
     print "\n", albumdir.getName()
     print "\t", colorize(renamesign), todir
 
