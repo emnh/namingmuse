@@ -1,3 +1,17 @@
+2004-12-28
+	* BUGS, namingmuse/albumtag.py, namingmuse/discmatch.py,
+	  namingmuse/namingmuse.py, namingmuse/providers/local.py,
+	  namingmuse/providers/musicbrainz.py: Added -l (--local) as a new
+	  feature. It will try to read existing tags from an album and
+	  nmuse it according to the policy. This isn't bug free yet.
+	* namingmuse/providers/musicbrainz.py: Add the first tiiiny bit of
+	  musicbrainz support.
+	* namingmuse/searchfreedb.py: fix url construction bug: use space
+	  to join words (will be translated to + by urlencode)
+	* namingmuse/: albumtag.py, filepath.py, providers/albuminfo.py,
+	  providers/freedb.py, providers/local.py: pep0008: use
+	  isinstance(obj, basestring) instead of other string checks
+
 2004-10-23 (version 0.9.0)
 	* namingmuse/namingmuse.py: add autoselect default. support boolean
 	  config options.
