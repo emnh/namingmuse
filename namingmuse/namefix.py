@@ -7,17 +7,51 @@ def namefix(filename):
     name, ext = os.path.splitext(filename)
     ext = ext.lower()
 
+    
+    def wordcap(matchobj):
+        abbreviations = ("CD", "DJ")
+        lcaseword = ("for", "and", "a", "as", "at", "it", "the",
+                     "in", "of", "into", "from", "or", "us", 
+                     "are", "to", "be", "your")
+        word = matchobj.group(1)
+        tail = matchobj.group(2)
+        if word.upper() in abbreviations:
+            word = word.upper()
+        elif word.lower() in lcaseword:
+            word = word.lower()
+        else:
+            word = word[0].upper() + word[1:]
+        return word + tail
+
+    def firstupper(matchobj):
+        s = matchobj.group(0)
+        return s[0].upper() + s[1:]
+    
+    def firstlower(matchobj):
+        s = matchobj.group(0)
+        return s[0].upper() + s[1:]
+
+    def wholeupper(matchobj):
+        s = matchobj.group(0)
+        return s.upper()
+    
+    def wholelower(matchobj):
+        s = matchobj.group(0)
+        return s.lower()
+
+
     regexes = {
         "%20":            " ",         #replace %20 with space
         "^\W*":           "",          #remove non-alnum starting chars
-        #"warez":          "",          #unwanted words
         " *- *":          " - ",       #surround dash with spaces
         " *& *":          " & ",       #surround ampersand with spaces
         "^\s+":           "",          #trim left space
         "\s+$":           "",          #trim right space
         "-*$":            "",          #remove trailing dashes
         "\s+":            " ",         #remove duplicate spaces
-        #"(^|\s|\()(\w+)": "\\1\\2",    #capitalize first char in each word
+
+        "(\w+)(\W*)":     wordcap,  #capitalize first char in each word
+
         " -\s*(- )+":        " - ",    #no double dashes
         "- (\d\d) - ":    "- \\1 /",   #no dash after track numbers
         #"(\d\d)([A-Z])"$1 $2/;        #space after track numbers
@@ -43,7 +77,7 @@ def namefix(filename):
         for regex in regexes.keys():
             #print "reggie:",regex
             name = re.sub(regex,regexes[regex],name)
-
+        
     #([A-Z])\.(?![^A-Z])/$1/gx;     #R.E.M -> REM
     ##if ($nametype == $type_file) {
     #        $lastdot = rindex($_, '.');    #save position of extension dot
