@@ -14,7 +14,7 @@ authors = [
 
 name = 'namingmuse'
 author = authors[-1]['name']
-author_email = authors[-1]['mail']
+author_email = 'namingmuse-devel@lists.berlios.de'
 version = "0.9.0"
 description = "A toolkit for dealing with music tags."
 license = "GPL"

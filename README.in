@@ -15,6 +15,9 @@ the site (such as year, genre, album name, title, artist etc). It
 supports freedb disc id generation from the music file types supported
 by taglib, and full text search using a HTML-parser on the freedb website.
 
+COMMUNICATION
+Send bug reports, questions and feature requests to
+namingmuse-devel@lists.berlios.de.
 
 FEATURES
 
