@@ -20,9 +20,9 @@ def filename(original, ext, title, track, trackartist, albumname, year, genre, a
 def albumdirname(original, artist, albumname, year, genre):
     albumname = albumname.replace("/", " ")
     if int(year) > 1800:
-        newdirname = "%s %s %s" % (artist, year, albumname)
+        newdirname = "%s %s" % (year, albumname)
     else:
-        newdirname = "%s %s" % (artist,albumname)
+        newdirname = "%s" % (albumname)
     newdirname = newdirname.replace("/", " ")
     return newdirname
     # return original # no change
