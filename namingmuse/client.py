@@ -288,7 +288,10 @@ def stats(albumdir, options):
         for root, dirs, files in os.walk(str(albumdir)):
             if len(dirs) > 0:
                 for dir in dirs:
-                    stats = statistics.dirstat(FilePath(root,dir), stats)
+                    try:
+                        stats = statistics.dirstat(FilePath(root,dir), stats)
+                    except NamingMuseException, strerr:
+                        print strerr
         print stats
     else:
         print "This mode only makes sense in recursive mode (-r)"

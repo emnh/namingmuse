@@ -74,10 +74,13 @@ def getfilelist(path):
        from specified directory"""
     path = str(path)
     rtypes = re.compile("\.(mp3)$|\.(ogg)$", re.I)
-    filelist = filter(lambda x: rtypes.search(str(x)), os.listdir(path))
-    filelist = map(lambda x: FilePath(path, x), filelist)
-    filelist.sort()
-    return filelist
+    if os.access(path, os.X_OK):
+        filelist = filter(lambda x: rtypes.search(str(x)), os.listdir(path))
+        filelist = map(lambda x: FilePath(path, x), filelist)
+        filelist.sort()
+        return filelist
+    else:
+        raise NamingMuseError('Read access denied to path: %s' %path)
 
 def getMP3Length(filename):
     mp3info = "/usr/bin/mp3info"
