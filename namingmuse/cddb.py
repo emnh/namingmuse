@@ -1,7 +1,7 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.31 2004/09/18 19:26:31 emh Exp $
+$Id: cddb.py,v 1.32 2004/09/18 19:40:50 emh Exp $
 """
 
 import socket
@@ -23,6 +23,7 @@ DOTTERM = '\r\n.\r\n'
 # Socket options
 BUFFERSIZE = 8192
 FLUSHTIMEOUT = 0.5
+REPLYTIMEOUT = 10
 
 # General CDDB codes
 CDDB_CONNECTION_TIMEOUT = 530
@@ -109,7 +110,7 @@ class SmartSocket:
         """Receives a string from the server. Blocks until 'term' has been
         received."""
         data = self.restdata
-        self.sock.settimeout(5)
+        self.sock.settimeout(REPLYTIMEOUT)
         while True:
             if term in data:
                 break
