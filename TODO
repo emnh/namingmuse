@@ -7,6 +7,8 @@ TODO
 *finish namebinder_strapprox_time
 *see if improvements can be made to discid generator
 *use info from cddbid in searchfreedb to filter matches
+*argument to create artistdir if non-existing
+*move album into artistdir if existing
 
 *make a smart class for albuminfo:
     -has a CDDB member with uplink
