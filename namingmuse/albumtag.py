@@ -295,7 +295,7 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
                 artistdir = FilePath(albumdir.getParent(), album.artist)
                 if not os.path.isdir(str(artistdir)):
                     os.mkdir(str(artistdir))
-                todir = artistdir + albumdir.getName()
+                todir = os.path.basename(str(artistdir)) + "/" + albumdir.getName()
                 shutil.move(str(albumdir), str(todir))
         except OSError, err:
             raise NamingMuseWarning(str(err))
