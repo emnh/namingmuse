@@ -190,6 +190,9 @@ def cli():
     except NoFilesException, strerr:
         print strerr 
         exitstatus = 3
+    except CDDBException, strerr:
+        print strerr
+        exitstatus = 4
         
     exit(exitstatus)
 

@@ -37,12 +37,12 @@ def namefix(filename):
         "(.*-.*) - (Bke|Bmi|Bpm|Chr|Cmg|Cms|CSR|Csr|Dmg|Dps|Ego|ENT|Esc|Fnt|Fsp|Fua|Hcu|Idx|Its|Jce|Ksi|LLF|Mod|Nbd|OSi|PMS|Pms|Rev|Rns|Sdc|Sdr|Ser|Sms|Ssr|Sur|Sut|TiS|Twc|Wcr|Wlm)":    "\\.\\1\\."   #mp3 gang advertisements
         }
 
-    oldname = name
-    for regex in regexes.keys():
-        #print "reggie:",regex
-        name = re.sub(regex,regexes[regex],name)
-        if (name == oldname): break
-        oldname = name
+    oldname = "" 
+    while oldname != name:
+        for regex in regexes.keys():
+            #print "reggie:",regex
+            name = re.sub(regex,regexes[regex],name)
+            oldname = name
 
     #([A-Z])\.(?![^A-Z])/$1/gx;     #R.E.M -> REM
     ##if ($nametype == $type_file) {
