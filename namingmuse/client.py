@@ -170,7 +170,8 @@ def getDoc():
     return doc
 
 defaultconfig = {
-'encoding': 'iso-8859-15'
+'encoding': 'iso-8859-15',
+'autoselect': False
 }
 
 def readconfig(options):
@@ -182,6 +183,10 @@ def readconfig(options):
         cp.read([str(configfile)])
     defitems = cp.items("DEFAULT")
     for key, value in dict(defitems).items():
+        if value.lower() == "true":
+            value = True
+        elif value.lower() == "false":
+            value = False
         options.ensure_value(key, value)
     if options.encoding == "terminal":
         options.encoding = sys.stdout.encoding
