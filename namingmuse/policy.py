@@ -1,7 +1,10 @@
 """ 
-This module specifies the policy that namingmuse should use when renaming files and/or directories.
-Namingmuse calls these functions whenever it decides which output filename it should use. The functions are user overridable.
-Place a namingmusepolicy.py file in $(HOME)/.namingmuse which defines the two functions defined here. Namingmuse will then use those functions instead of the ones defined here.
+This module specifies the policy that namingmuse should use when renaming files
+and/or directories.  Namingmuse calls these functions whenever it decides which
+output filename it should use. The functions are user overridable.  Place a
+namingpolicy.py file in $(HOME)/.namingmuse which defines the two functions
+defined here. Namingmuse will then use those functions instead of the ones
+defined here.
 $Id: 
 """
 
