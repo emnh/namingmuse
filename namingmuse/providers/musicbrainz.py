@@ -69,6 +69,7 @@ class MusicbrainzAlbumInfo:
         return trms
 
     def getSongInfo(self, trms):
+        pass
 
 if __name__ == '__main__':
     mbi = MusicbrainzAlbumInfo('/home/xt/film/Cake/01.mp3')

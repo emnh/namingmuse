@@ -34,6 +34,13 @@ def makeOptionParser():
                   dest = "cmd",
                   help = "rename files according to predefined rules")
 
+    op.add_option("-l",
+                  "--local",
+                  action = "store_const",
+                  const = "local",
+                  dest = "cmd",
+                  help = "use locally existing metadata instead of doing remote lookup")
+
     op.add_option("-t",
                   "--tag-only",
                   action = "store_true",
@@ -235,10 +242,26 @@ def cli():
                doDiscmatch(options, albumdir, cddb)
         elif options.cmd == "search":
             doFullTextSearch(albumdir, options, cddb)
+        elif options.cmd == "local":
+            if options.recursive:
+                for root, dirs, files in os.walk(str(albumdir)):
+                    if len(dirs) > 0:
+                        for dir in dirs:
+                            try:
+                                doLocal(FilePath(root,dir),options)
+                            except NoFilesException:
+                                pass
+                            except NamingMuseInfo, err:
+                                print err
+                            except NamingMuseWarning, strerr:
+                                print strerr
+            #the recursive function doesn't run doLocal on the root
+            #so we have to do it either way
+            doLocal(albumdir, options)
         elif options.cmd == "namefix":
-            namefix(albumdir,options)
+            namefix(albumdir, options)
         elif options.cmd == "stats":
-            stats(albumdir,options)
+            stats(albumdir, options)
         else:
             exit("error: no action option specified")
     except NamingMuseException, strerr:
@@ -331,6 +354,36 @@ def namefix(albumdir, options):
     if not options.dryrun:
         os.rename(str(albumdir), str(FilePath(albumdir.getParent(), todir)))
 
+
+def doLocal(albumdir, options):
+    filelist = getFilelist(albumdir)
+    checkAlreadyTagged(albumdir, filelist, options)
+    albuminfo = LocalAlbumInfo(albumdir, encoding=options.encoding)
+    albumtag.tagfiles(albumdir, albuminfo, options)
+
+def getFilelist(albumdir):
+    filelist = albumtag.getfilelist(albumdir)
+    if len(filelist)== 0:
+        raise NoFilesException("Warning: %s contains no music files !" \
+                %albumdir)
+    return filelist
+
+def checkAlreadyTagged(albumdir, filelist, options):
+    albuminfo = None
+    if not options.force:
+        albuminfo = albumtag.getNmuseTag(filelist)
+        if albuminfo:
+            # may have used --loose to get the album
+            options = copy.copy(options)
+            options.strict = False
+    if albuminfo \
+       and albuminfo.getTagVersion() == albumtag.TAGVER \
+       and not options.updatetags: 
+        raise NamingMuseInfo(\
+                '%s already tagged with %s %s, not retagging.' \
+                   %(albumdir, "namingmuse", albumtag.TAGVER))
+
+
 #XXX: merge common stuff of fulltextsearch and discmatch
 def doFullTextSearch(albumdir, options, cddb):
     """
@@ -369,10 +422,8 @@ def doDiscmatch(options, albumdir, cddb):
     It then computes the cddb-info and queries a remote cddb server.
     Last, it renames and tags the album.
     """
-    filelist = albumtag.getfilelist(albumdir)
-    if len(filelist)== 0:
-        raise NoFilesException("Warning: %s contains no music files !" \
-                %albumdir)
+
+    filelist = getFilelist(albumdir)
     
     if options.printtoc:
         DiscMatch.printTOC(filelist)
@@ -381,20 +432,7 @@ def doDiscmatch(options, albumdir, cddb):
     cddb.encoding = options.encoding
 
     # Check/retrieve already tagged
-    albuminfo = None
-    if not options.force:
-        albuminfo = albumtag.getNmuseTag(filelist)
-        if albuminfo:
-            # may have used --loose to get the album
-            options = copy.copy(options)
-            options.strict = False
-
-    if albuminfo \
-       and albuminfo.getTagVersion() == albumtag.TAGVER \
-       and not options.updatetags: 
-        raise NamingMuseInfo(\
-                '%s already tagged with %s %s, not retagging.' \
-                   %(albumdir, "namingmuse", albumtag.TAGVER))
+    albuminfo = checkAlreadyTagged(albumdir, filelist, options) 
 
     if not albuminfo:
         query = DiscMatch.files2discid(filelist)

@@ -55,7 +55,8 @@ class DiscMatch(object):
         roundsecs = lambda x: int(x + 0.5)
 
         for filep in filelist:
-            secs = albumtag.getIntLength(filep)
+            from providers import local
+            secs = local.getIntLength(filep)
 
             # i'm pretty confident this is the correct way to calculate checksum
             # because it seems to be what both the freedb reference implementation

@@ -9,3 +9,5 @@ Local album:        Freedb record:
 1.mp3               Baba - My Feet
 2.mp3               Kaka - My Nose
                     Data Track
+
+*Reading of old tag is very broken when it has incomplete ID3v2Tag and complete ID3v1Tag

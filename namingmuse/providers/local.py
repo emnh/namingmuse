@@ -85,7 +85,9 @@ def decodeFrame(tag, getfield):
 class LocalTrackInfo(TrackInfo):
 
     _readingtag = False
+    _gettingPlayLength = False
     _tag = None
+    _gotPlayLength = False
 
     def __init__(self, fpath):
         super(TrackInfo, self).__init__()
@@ -125,8 +127,61 @@ class LocalTrackInfo(TrackInfo):
         self.number = decodeFrame(tag, 'number')
         # XXX: bind playLength property to getIntLength
         #      but move those functions over here first
+        self.playLength = getIntLength(self.fpath)
 
         return tag
+
+def getIntLength(fpath):
+    "Get length of a music file via taglib"
+    filename = str(fpath)
+    tagfile = TagLib.FileRef(filename, True, TagLib.AudioProperties.Accurate)
+    audioproperties = tagfile.audioProperties()
+    
+    if not audioproperties:
+        raise NamingMuseError("failed to get audioproperties: broken file?")
+        
+    length = audioproperties.length()
+    
+    # XXX: try various fallback methods
+    if length == 0:
+        print NamingMuseWarning("using fallback: getMP3Length(%s)" % filename)
+        if fpath.getExt().lower() == ".mp3":
+            length = getMP3Length(filename)
+
+    # raise exception; or discid generation will fail
+    # and user doesn't know why
+    if length == 0: 
+        raise NamingMuseError("taglib audioproperties " \
+            "failed to get length of: %s" % filename)
+
+    return length
+
+def getMP3Length(filename):
+    mp3info = "/usr/bin/mp3info"
+    strlength = "0"
+    if os.access(mp3info, os.X_OK):
+        pread,pwrite = os.pipe()
+        childid = os.fork()
+        if childid:
+            os.waitpid(childid, 0)
+        else:
+            # set stdout to pwrite 
+            os.dup2(pwrite, 1)
+            args = [ "mp3info" ]
+            args.append("-F")
+            args.append('-p%S\n')
+            args.append(filename)
+            os.execv(mp3info, args)
+        pread = os.fdopen(pread)
+        strlength = pread.readline()
+        pread.close()
+    try:
+        strlength = int(strlength)
+    except:
+        return 0
+    return strlength
+
+
                     
 class LocalAlbumInfo(AlbumInfo):
 
@@ -145,8 +200,10 @@ class LocalAlbumInfo(AlbumInfo):
                 self._readTagLong()
         return super(LocalAlbumInfo, self).__getattribute__(name)
 
-    def __init__(self, albumdir):
+    def __init__(self, albumdir, encoding = None):
         super(LocalAlbumInfo, self).__init__()
+        if encoding: 
+            self.encoding = encoding
         filelist = self.getfilelist(albumdir)
         for fpath in filelist:
             tr = LocalTrackInfo(fpath)
@@ -190,6 +247,11 @@ class LocalAlbumInfo(AlbumInfo):
             return filelist
         else:
             raise NamingMuseError('Read access denied to path: %s' %path)
+
+    def footprint(self):
+        footprint = {}
+        footprint["TTPR"] = self.tagprovider
+        return footprint
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

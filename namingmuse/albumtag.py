@@ -57,8 +57,12 @@ def getNmuseTag(filelist):
                 if fieldname.startswith('T'):
                     fdict[fieldname] = str(stringlist[0])
     if tagprovider:
-        providerclass = provider.lookup(tagprovider)
-        providerobj = providerclass(fdict)
+        if tagprovider == 'local':
+            providerclass = provider.lookup('none')
+            providerobj = providerclass(fdict)
+        else:
+            providerclass = provider.lookup(tagprovider)
+            providerobj = providerclass(fdict)
         return providerobj
     else:
         return None
@@ -77,56 +81,6 @@ def getfilelist(path):
     else:
         raise NamingMuseError('Read access denied to path: %s' %path)
 
-def getMP3Length(filename):
-    mp3info = "/usr/bin/mp3info"
-    strlength = "0"
-    if os.access(mp3info, os.X_OK):
-        pread,pwrite = os.pipe()
-        childid = os.fork()
-        if childid:
-            os.waitpid(childid, 0)
-        else:
-            # set stdout to pwrite 
-            os.dup2(pwrite, 1)
-            args = [ "mp3info" ]
-            args.append("-F")
-            args.append('-p%S\n')
-            args.append(filename)
-            os.execv(mp3info, args)
-        pread = os.fdopen(pread)
-        strlength = pread.readline()
-        pread.close()
-    try:
-        strlength = int(strlength)
-    except:
-        return 0
-    return strlength
-
-def getIntLength(fpath):
-    "Get length of a music file via taglib"
-    filename = str(fpath)
-    tagfile = FileRef(filename, True, AudioProperties.Accurate)
-    audioproperties = tagfile.audioProperties()
-    
-    if not audioproperties:
-        raise NamingMuseError("failed to get audioproperties: broken file?")
-        
-    length = audioproperties.length()
-    
-    # XXX: try various fallback methods
-    if length == 0:
-        print NamingMuseWarning("using fallback: getMP3Length(%s)" % filename)
-        if fpath.getExt().lower() == ".mp3":
-            length = getMP3Length(filename)
-
-    # raise exception; or discid generation will fail
-    # and user doesn't know why
-    if length == 0: 
-        raise NamingMuseError("taglib audioproperties " \
-            "failed to get length of: %s" % filename)
-
-    return length
-
 
 def distwrap(a, b):
     "Wraps a string distance function"
@@ -143,7 +97,8 @@ def namebinder_strapprox_time(filelist, tracks):
     '''
     newtracks = []
     for i in range(0, len(filelist)):
-        filePlayLength = getIntLength(filelist[i])
+        from providers import local
+        filePlayLength = local.getIntLength(filelist[i])
         file = filelist[i].getName()
         least = (distwrap(file, tracks[0].title), 0)
         for j in range(0, len(tracks)):
@@ -295,7 +250,10 @@ def tagfiles(albumdir, album, options):
             # deletes tempfile
             fd.close()
             if not options.tagonly:
-                os.rename(str(fpath), str(tofile))
+                # If str(fpath) is used python raises UnicodeErrors
+                frompath = fpath.__str__()
+                topath = tofile.__str__()
+                os.rename(frompath, topath)
                         
     # Get new albumdir name
     newalbum = policy.genalbumdirname(albumdir, album)
@@ -373,10 +331,6 @@ def tagfile(fpath, album, track):
             cf.setText(oldcomment)
             tag.addFrame(cf)
         
-        if 'UTF' in album.encoding.upper():
-            taglibencoding = String.UTF8 
-        else:
-            taglibencoding = String.Latin1
         
         # gather frame values
         framedict = {}
@@ -393,11 +347,18 @@ def tagfile(fpath, album, track):
                 "TRCK": "%s/%s" % (track.number, len(album.tracks))
                 })
 
+        if 'UTF' in album.encoding.upper():
+            taglibencoding = String.UTF8 
+        else:
+            taglibencoding = String.Latin1
+
         # append namingmuse footprint
         for key,text in framedict.items():
             tag.removeFrames(key)
             if not text == "":
                 tf = TextIdentificationFrame(key, taglibencoding)
+                if isinstance(text, unicode):
+                    text = text.encode(album.encoding)
                 tf.setText(text)
                 tag.addFrame(tf)
 
