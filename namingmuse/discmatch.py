@@ -20,8 +20,7 @@ class DiscMatch(object):
         print "album length: %us = %um %us" % (totsecs, totsecs / 60, totsecs % 60)
         oldlength = 0
         framelist.append(totsecs * 75)
-        for i in range(len(framelist)):
-            frameidx = framelist[i]
+        for i, frameidx in enumerate(framelist):
             if i == 0:
                 filep = "lead in"
                 length = frameidx / 75 - oldlength
