@@ -203,7 +203,7 @@ def cli():
         if options.cmd == "discmatch":
             discmatch = DiscMatch()
             if options.recursive:
-                def walk(top):
+                def walk(top, cddb):
                     try:
                         names = os.listdir(str(top))
                     except os.error:
@@ -214,10 +214,9 @@ def cli():
                     except CDDBPException, err:
                         if err.code == CDDB_CONNECTION_TIMEOUT:
                             print "Connection timed out, reconnecting.."
-                            cddb.retry()
+                            cddb = CDDBP()
                         else:
                             print err 
-                            del cddb
                             cddb = CDDBP()
                     except NoFilesException:
                         pass
@@ -230,8 +229,8 @@ def cli():
                         except os.error:
                             continue
                         if stat.S_ISDIR(st.st_mode):
-                            walk(name)
-                walk(albumdir)
+                            walk(name, cddb)
+                walk(albumdir, cddb)
             else:
                doDiscmatch(options, albumdir, cddb)
         elif options.cmd == "search":
@@ -312,12 +311,9 @@ def doFullTextSearch(albumdir, options, cddb):
     albuminfos, haveread = [], {}
     for album in albums:
         haveread.setdefault(album['cddbid'], [])
-        #haveread[album['cddbid']].append(album['genreid'])
         if not album['genreid'] in haveread.get(album['cddbid']):
-            freedbrecord = cddb.getRecord(album['genreid'], 
-                                                    album['cddbid'])
-            albuminfo = FreeDBAlbumInfo(cddb,
-                                        album['genreid'], album['cddbid'])
+            #freedbrecord = cddb.getRecord(album['genreid'], album['cddbid'])
+            albuminfo = FreeDBAlbumInfo(cddb, album['genreid'], album['cddbid'])
             albuminfos.append(albuminfo)
             haveread[album['cddbid']].append(album['genreid'])
 
