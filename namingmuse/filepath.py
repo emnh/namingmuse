@@ -22,6 +22,9 @@ class FilePath(object):
     def getExt(self):
         return os.path.splitext(self.fullpath)[1]
 
+    def getFileType(self):
+        return self.getExt()[1:].lower()
+
     def __add__(self, other):
         return FilePath(str(self), str(other))
         

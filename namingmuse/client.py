@@ -298,7 +298,7 @@ def doDiscmatch(options, albumdir, discmatch):
        and not options.updatetags \
        and not options.force:
         raise NamingMuseWarning('%s already tagged with %s %s, not retagging...' \
-                   %(albumdir, albumtag.tagname, albumtag.tagver))
+                   %(albumdir, "namingmuse", albumtag.TAGVER))
 
     albuminfo = None 
     cddb = discmatch.cddb

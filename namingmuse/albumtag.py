@@ -3,13 +3,12 @@ using the online music database freedb to retrieve the
 information.
 """
 
-tagname = "namingmusetag"
-tagver = "0.03"
+TAGVER = "0.03"
 
 import difflib
 import os,re,sys,string,shutil
 import random
-import TagLib
+from TagLib import *
 import policy
 import tempfile
 from terminal import colorize
@@ -23,15 +22,10 @@ from exceptions import *
 
 DEBUG = False
 
-def footprint(album):
-    footprint = tagname + ": " + tagver
-    footprint += album.footprint()
-    return footprint
-
 def getStoredCDDBId(filelist):
     'Get the cddb id stored in comment in a previous run'
     filename = filelist[0]
-    fileref = TagLib.FileRef(str(filename))
+    fileref = FileRef(str(filename))
     comment = fileref.tag().comment()
     comment = str(comment)
     del fileref
@@ -47,7 +41,7 @@ def needTag(filelist):
     Check if we need to write new tags to this album
     '''
     filename = filelist[0]
-    fileref = TagLib.FileRef(str(filename))
+    fileref = FileRef(str(filename))
     tag = fileref.tag()
     if not tag:
         return True
@@ -55,11 +49,11 @@ def needTag(filelist):
     comment = tag.comment()
     comment = str(comment)
     del fileref
-    regex = "^" + tagname + ': ([0-9\.]*)'
+    regex = "^" + "namingmuse" + ': ([0-9\.]*)'
     match = re.search(regex,comment)
     if match:
         commenttagver = match.group(1)
-        if commenttagver >= tagver: 
+        if commenttagver >= TAGVER: 
             return False
     return True
 
@@ -95,7 +89,6 @@ def getMP3Length(filename):
     return int(strlength)
 
 def getFloatLength(filename):
-    import commands
     #p = os.popen("/tmp/build/mp3info-0.8.4/playtime.sh " + filename)
     pread,pwrite = os.pipe()
     childid = os.fork()
@@ -112,7 +105,7 @@ def getFloatLength(filename):
 def getIntLength(filename):
     "Get length of a music file via taglib"
     filename = str(filename)
-    tagfile = TagLib.FileRef(filename, True, TagLib.AudioProperties.Accurate)
+    tagfile = FileRef(filename, True, AudioProperties.Accurate)
     audioproperties = tagfile.audioProperties()
     
     if not audioproperties:
@@ -255,34 +248,23 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
         tofile = FilePath(albumdir, tofile)
     
         # Tag and rename file
-        fileref = TagLib.FileRef(str(fpath))
-        tag = fileref.tag()
-        comment = tag.comment()
         renamesign = "->"
         if options.tagonly:
             renamesign = "-tag->"
         if options.dryrun:
             renamesign = "-dry->" 
-        if str(comment) == "manual":
-            renamesign = "-skip->"
-            renamealbum = False
+        #if "manual" in comment:
+        #   renamesign = "-skip->"
+        #    renamealbum = False
         print fpath.getName().ljust(longestfilename)
         print "\t", colorize(renamesign), tofile.getName()
-        if not (options.dryrun or str(comment) == "manual"):
+        if not options.dryrun:
             #preserve stat
             fd = tempfile.NamedTemporaryFile()
             tmpfilename = fd.name
             shutil.copystat(str(fpath), tmpfilename)
 
-            tag.setYear(album.year)
-            tag.setGenre(album.genre)
-            tag.setArtist(track.artist)
-            tag.setAlbum(album.title)
-            tag.setTitle(track.title)
-            tag.setTrack(track.number)
-            comment = footprint(album)
-            tag.setComment(comment)
-            fileref.save()
+            tagfile(fpath, album, track)
             # restore filestat
             shutil.copystat(tmpfilename, str(fpath))
             # deletes tempfile
@@ -304,4 +286,56 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
             shutil.move(str(albumdir), str(todir))
     print "\n", albumdir.getName()
     print "\t", colorize(renamesign), todir
+
+def tagfile(fpath, album, track):
+    """ Tag the file with metadata """
+
+    if fpath.getFileType() == 'mp3':
+        fileref = MPEGFile(str(fpath))
+        tag = fileref.ID3v2Tag(True)
+        if not tag.isEmpty():
+            oldcomment = tag.comment()
+        else:
+            oldcomment = None
+        #strip id3v1tag, bool freeMemory = False 
+        fileref.strip(MPEGFile.ID3v1,False)
+        
+        tag.setYear(album.year)
+        tag.setGenre(album.genre)
+        tag.setArtist(track.artist)
+        tag.setAlbum(album.title)
+        tag.setTitle(track.title)
+        tag.setTrack(track.number)
+        
+        # insert old comment in id3v2tag
+        if oldcomment:
+            cf = CommentsFrame()
+            cf.setText(oldcomment)
+            tag.addFrame(cf)
+
+
+        footprintdict = album.footprint()
+        footprintdict["namingmuse"] = TAGVER
+    
+        # append namingmuse footprint
+        for description,text in footprintdict.items():
+            cf = CommentsFrame()
+            cf.setDescription(description)
+            cf.setText(text)
+            tag.addFrame(cf)
+
+        #save only version 2 tag
+        fileref.save(MPEGFile.ID3v2)
+        
+        
+    else:
+        tag.setYear(album.year)
+        tag.setGenre(album.genre)
+        tag.setArtist(track.artist)
+        tag.setAlbum(album.title)
+        tag.setTitle(track.title)
+        tag.setTrack(track.number)
+        comment = footprint(album)
+        tag.setComment(comment)
+        fileref.save()
 
