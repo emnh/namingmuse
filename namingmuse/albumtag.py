@@ -4,7 +4,7 @@ information.
 """
 
 tagname = "namingmusetag"
-tagver = "0.02"
+tagver = "0.03"
 
 import difflib
 import os,re,sys,string,shutil
@@ -36,7 +36,7 @@ def getStoredCDDBId(filelist):
     comment = fileref.tag().comment()
     comment = str(comment)
     del fileref
-    regex = '\ndisc_id: (?P<disc_id>([a-f0-9]*))\ngenre: (?P<category>([a-z]*))'
+    regex = '\ncddbid: (?P<cddbdid>([a-f0-9]*))\ngenreid: (?P<genreid>([a-z]*))'
     match = re.search(regex, comment)
     if match:
         return match.groupdict()
