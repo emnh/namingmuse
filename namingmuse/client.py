@@ -150,7 +150,8 @@ def cli():
                     except os.error:
                         return
                     try:
-                        doDiscmatch(options, top, discmatch)
+                        if os.path.basename(top) != "nonalbum":
+                            doDiscmatch(options, top, discmatch)
                     except NamingMuseException,(errstr):
                         print errstr
                     for name in names:

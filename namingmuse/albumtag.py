@@ -47,10 +47,14 @@ def needTag(filelist):
     '''
     filename = filelist[0]
     fileref = TagLib.FileRef(filename)
-    comment = fileref.tag().comment()
+    tag = fileref.tag()
+    if not tag:
+        return True
+    
+    comment = tag.comment()
     comment = str(comment)
     del fileref
-    regex = "^"+tagname+': ([0-9\.]*)'
+    regex = "^" + tagname + ': ([0-9\.]*)'
     match = re.search(regex,comment)
     if match:
         commenttagver = match.group(1)
@@ -110,6 +114,10 @@ def getIntLength(filename):
     # XXX: make accuracy an option
     tagfile = TagLib.FileRef(filename, True, TagLib.AudioProperties.Accurate)
     audioproperties = tagfile.audioProperties()
+    
+    if not audioproperties:
+        raise NamingMuseError("failed to get audioproperties: broken file?")
+        
     length = audioproperties.length()
     
     # XXX: try various fallback methods
