@@ -239,6 +239,8 @@ def choosealbum(albuminfos, albumdir, options):
     # if strict, filter out albums with missing genre or year
     if options.strict:
         albuminfos = filter(lambda x: len(x.validate()) == 0 , albuminfos)
+    if len(albuminfos) == 0:
+        return None
     return terminal.choosealbum(albuminfos, albumdir)
 
 def doDiscmatch(options, albumdir, discmatch):
