@@ -13,14 +13,9 @@ def getProviders():
         obj = eval(modname)
         for subname in dir(obj):
             if '_' in subname: continue
-            try:
-                subobj = getattr(obj, subname)
-                bases = subobj.__bases__
-            except AttributeError:
-                continue
-            if AlbumInfo in bases:
+            subobj = getattr(obj, subname, None)
+            if inspect.isclass(subobj) and issubclass(subobj, AlbumInfo):
                 providerclasses[subname] = subobj
-                __import__
     return providerclasses
 
 # XXX: temporary
