@@ -292,13 +292,28 @@ def tagfile(fpath, album, track):
 
     if fpath.getFileType() == 'mp3':
         fileref = MPEGFile(str(fpath))
+
+        hadID3v2Tag = fileref.ID3v2Tag(False) and True
         tag = fileref.ID3v2Tag(True)
-        if not tag.isEmpty():
-            oldcomment = tag.comment()
-        else:
-            oldcomment = None
+        
+        oldcomment = None
+        if not hadID3v2Tag:
+            id1tag = fileref.ID3v1Tag(False)
+            if id1tag and not id1tag.isEmpty():
+                oldcomment = id1tag.comment()
+                if oldcomment == "":
+                    oldcomment = None
+                if 'namingmuse' in oldcomment:
+                    oldComment = None
+
         #strip id3v1tag, bool freeMemory = False 
         fileref.strip(MPEGFile.ID3v1,False)
+
+        commlist = tag.frameListMap()["COMM"]
+        for comm in commlist:
+            cf = CommentsFrame(comm)
+            if 'namingmuse' in cf.text():
+                tag.removeFrame(cf)
         
         tag.setYear(album.year)
         tag.setGenre(album.genre)
