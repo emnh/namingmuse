@@ -75,13 +75,17 @@ def files2discid(filelist):
         framelist.append(int(totalsecs * 75))
         totalsecs += secs
 
-    # discid howto: subtract leadin from totalsecs in chksum
-    #totalsecs -= leadin
+    # this is what the freedb reference implementation does
+    # in practice it doesn't seem to make any difference
+    totalsecs -= leadin
 
     if type(totalsecs) is float:
         totalsecs = roundsecs(totalsecs)
 
-    # testing code
+    # i'm pretty confident this is the correct way to calculate checksum
+    # because it seems to be what both the freedb reference implementation
+    # does for CD and the "entagged" application does for MP3
+    # but i'm not sure whether it works best in practice
     checksum = 0
     for frame in framelist:
         checksum += cddb_sum(frame / 75)
