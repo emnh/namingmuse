@@ -60,7 +60,7 @@ def makeOptionParser():
                   "--artistdir",
                   action = "store_true",
                   dest = "artistdir",
-                  help = "place albumdir in artist/albumdir")
+                  help = "place albumdir in artist/albumdir if not already there")
 
     op.add_option("-v",
                   "--verbose",
