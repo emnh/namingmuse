@@ -215,9 +215,11 @@ def cli():
                         if err.code == CDDB_CONNECTION_TIMEOUT:
                             print "Connection timed out, reconnecting.."
                             cddb = CDDBP()
+                            cddb.encoding = options.encoding
                         else:
                             print err 
                             cddb = CDDBP()
+                            cddb.encoding = options.encoding
                     except NoFilesException:
                         pass
                     except NamingMuseException,(errstr):
