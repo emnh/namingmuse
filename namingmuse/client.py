@@ -198,7 +198,7 @@ def cli():
                             print "Connection timed out, reconnecting.."
                             cddb.retry()
                         else:
-                            raise
+                            print err 
                     except NoFilesException:
                         pass
                     except NamingMuseException,(errstr):

@@ -46,6 +46,8 @@ def getNmuseTag(filelist):
                 if key.startswith('T'):
                     fdict[key] = str(frame)
         else: #old school
+            if not framelistmap.has_key("COMM"):
+                return None
             comms = framelistmap["COMM"]
             fdict = {}
             for comm in comms:
