@@ -51,20 +51,21 @@ def choosealbum(albums, matchto):
     mlen = max(map(lambda x: len(x["album"]), albums)) + 3
     mlen = min(mlen, cols - 30)
     #fmat = lambda x,y,z: "%10s   %-10s%s\n" % (x, y, z.rjust(mlen))
-    fmat = lambda v,w,x,y,z: "%2s%4s%6s   %-10s%s\n" % (v, w, x, y, z.rjust(mlen))
+    fmat = lambda u,v,w,x,y,z: "%3s%6s%5s %-15s%-15s%-10s\n" \
+                % (u, v, w, x, y, z)
     pagerapp = os.getenv("PAGER") or "less"
     pager = (len(albums) < rows and sys.stdout or os.popen(pagerapp, "w"))
     
     try:
         pager.write("Pick a number that matches '%s':\n" % matchto)
-        pager.write(fmat("Number", "Match", "Year", "Genre", "Title"))
-        pager.write(fmat(str(0) + ":","", "","", "Don't tag this album"))
+        pager.write(fmat("Nr", "Match", "Year", "Genre", "Artist", "Title"))
+        pager.write(fmat(str(0) + ":","", "", "","", "Don't tag this album"))
         for i in range(0, len(albums)):
             album = albums[i]
             similarity = alphadiff(album["album"], matchto)
             similarity = "%3.1f%%" % (similarity * 100)
             pager.write(fmat(str(i + 1) + ":",similarity, 
-                        album["year"], album["genre"], album["album"]))
+                        album["year"], album["genre"], album["albumartist"],album["album"]))
         if (pager != stdout): pager.close()
     except IOError, (nr, strerr):
         if strerr != "Broken pipe": 

@@ -1,3 +1,7 @@
+2004-08-09
+    * terminal: clean up output formattin
+    * namingmuse: new option -A, place album in artist/album
+
 2004-08-04
     * cddb: added seconds information
     * albumtag: rough implementation of preserving atime/mtime

@@ -33,16 +33,21 @@ def makeOptionParser():
                   action = "store_true",
                   help = "force new lookup and retagging")
     
-    op.add_option("-r",
-                  "--recursive",
-                  action = "store_true",
-                  help = "recurse directories")
-
     op.add_option("-u",
                   "--update-tags",
                   action = "store_true",
                   dest = "updatetags",
                   help = "update files already tagged, using stored discid")
+    op.add_option("-r",
+                  "--recursive",
+                  action = "store_true",
+                  help = "recurse directories")
+
+    op.add_option("-A",
+                  "--artistdir",
+                  action = "store_true",
+                  dest = "artistdir",
+                  help = "place albumdir in artist/albumdir")
 
     op.add_option("", 
                   "--strict",

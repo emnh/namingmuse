@@ -294,13 +294,20 @@ def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
             if not options.tagonly:
                 newfullpath = pjoin(albumdir, tofile)
                 os.rename(fullpath, newfullpath)
+                    
+                        
 
     # Rename album (if no "manual" mp3 files in that dir)
     renamesign = (renamealbum and "->" or "-skip->")
     if renamealbum and options.dryrun: renamesign = "-dry->"
-    print "\n", basename
-    print "\t", colorize(renamesign), todir
     if not (options.dryrun or options.tagonly) and renamealbum:
         os.rename(albumdir, newalbumdir)
         albumdir = newalbumdir
+        if options.artistdir:
+            if not os.path.isdir(albumartist):
+                os.mkdir(albumartist)
+            todir = os.path.join(albumartist, os.path.basename(albumdir))
+            shutil.move(albumdir, todir)
+    print "\n", basename
+    print "\t", colorize(renamesign), todir
 
