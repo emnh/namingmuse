@@ -314,7 +314,7 @@ def tagfiles(albumdir, album, options):
         newalbumdir = FilePath(albumdir.getParent(), newalbum)
 
     # Make parent directory of albumdir if needed
-    parent = newalbumdir.getParent()
+    parent = str(newalbumdir.getParent())
     if not os.path.isdir(parent):
         os.mkdir(parent)
 
