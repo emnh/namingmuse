@@ -16,46 +16,36 @@ from cddb import *
 from string import lower
 from difflib import SequenceMatcher
 from filepath import FilePath
+from albuminfo import *
 
 from exceptions import *
 
 
 DEBUG = False
 
-def getStoredCDDBId(filelist):
-    'Get the cddb id stored in comment in a previous run'
-    filename = filelist[0]
-    fileref = FileRef(str(filename))
-    comment = fileref.tag().comment()
-    comment = str(comment)
-    del fileref
-    regex = '\ncddbid: (?P<cddbid>([a-f0-9]*))\ngenreid: (?P<genreid>([a-z]*))'
-    match = re.search(regex, comment)
-    if match:
-        return match.groupdict()
-    else:
-        return None
+# XXX: move
+providers = [
+"freedb": FreeDBAlbumInfo
+]
 
-def needTag(filelist):
-    ''' 
-    Check if we need to write new tags to this album
-    '''
-    filename = filelist[0]
-    fileref = FileRef(str(filename))
-    tag = fileref.tag()
-    if not tag:
-        return True
-    
-    comment = tag.comment()
-    comment = str(comment)
-    del fileref
-    regex = "^" + "namingmuse" + ': ([0-9\.]*)'
-    match = re.search(regex,comment)
-    if match:
-        commenttagver = match.group(1)
-        if commenttagver >= TAGVER: 
-            return False
-    return True
+def checkTagProvider(filelist):
+    fpath = filelist[0]
+    if fpath.getFileType() == "mp3":
+        tag = MPEGFile(fpath)
+        if not tag:
+            return None
+        comms = tag.frameListMap()["COMM"]
+        commdict = {}
+        for comm in comms:
+            key = comm.description()
+            value = comm.text()
+            commdict[key] = value
+        if comm.has_key("tagprovider"):
+            tagprovider = comm["tagprovider"]
+            providerclass = providers[tagprovider]
+            providerobj = providerclass(commdict)
+            return providerobj
+    return None
 
 def getfilelist(path):
     """Get sorted list of files supported by taglib 

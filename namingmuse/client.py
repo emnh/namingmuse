@@ -294,6 +294,7 @@ def doDiscmatch(options, albumdir, discmatch):
         exit()
 
     # Check if it is already tagged
+    albuminfo = albumtag.checkT
     if not albumtag.needTag(filelist) \
        and not options.updatetags \
        and not options.force:
