@@ -15,11 +15,11 @@ import terminal
 from sys import exit
 from optparse import OptionParser, make_option
 from optparse import OptionGroup
-from albuminfo import *
+from provider import *
 from filepath import FilePath
 from ConfigParser import *
 
-from exceptions import *
+from musexceptions import *
 from cddb import CDDBP, CDDBPException, CDDB_CONNECTION_TIMEOUT
 
 def makeOptionParser():
@@ -292,7 +292,7 @@ def stats(albumdir, options):
                         stats = statistics.dirstat(FilePath(root,dir), stats)
                     except NamingMuseException, strerr:
                         print strerr
-        print stats
+        #print '\n' + str(stats)
     else:
         print "This mode only makes sense in recursive mode (-r)"
 
