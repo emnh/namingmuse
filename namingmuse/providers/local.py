@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 'Classes for getting metainfo from local albums.'
 
-import os, re, sys
+import os, re, sys, types
 import TagLib
 
 from albuminfo import *
@@ -10,7 +10,15 @@ from namingmuse.filepath import FilePath
 # XXX: move somewhere? make better bindings to do this stuff?
 def decodeFrame(tag, getfield):
     'Return unicode string (or int) representing the field'
-    id3fields = [
+    generalfunctions = [
+    ('year', 'year'), # int
+    ('genre', 'genre'),
+    ('artist', 'artist'),
+    ('album', 'albumtitle'),
+    ('title', 'tracktitle'),
+    ('track', 'number') # int
+    ]
+    id3v2fields = [
     ('TDRC', 'year'), # int
     ('TCON', 'genre'),
     ('TPE1', 'artist'),
@@ -26,17 +34,18 @@ def decodeFrame(tag, getfield):
     ('TITLE', 'tracktitle'),
     ('TRACKNUMBER', 'number')
     ]
-    id3dict = {}
-    xiphdict = {}
-    for tagfield, common_name in id3fields:
-        id3dict[common_name] = tagfield
+    funcdict, id3v2dict, xiphdict = {}, {}, {}
+    for tagfield, common_name in id3v2fields:
+        id3v2dict[common_name] = tagfield
     for tagfield, common_name in xiphfields:
         xiphdict[common_name] = tagfield
+    for funcname, common_name in generalfunctions:
+        funcdict[common_name] = funcname
     
     fval = ''
     if isinstance(tag, TagLib.ID3v2Tag):
         framelistmap = tag.frameListMap()
-        tagfield = id3dict[getfield]
+        tagfield = id3v2dict[getfield]
         if framelistmap.has_key(tagfield):
             frame = framelistmap[tagfield][0]
             frame = TagLib.TextIdentificationFrame(frame)
@@ -49,7 +58,17 @@ def decodeFrame(tag, getfield):
         tagfield = xiphdict[getfield]
         if fields.has_key(tagfield):
             frame = fields[tagfield][0]
+            # Xiph is always UTF-8
             fval = str(frame).decode('UTF-8')
+    elif isinstance(tag, TagLib.ID3v1Tag):
+        funcname = funcdict[getfield]
+        # ID3v1 is always ISO-8859-1
+        fval = str(getattr(tag, funcname)())
+        print fval
+        if isinstance(fval, types.StringTypes):
+            fval = fval.decode('ISO-8859-1')
+    else:
+        raise NamingMuseError("unsupported tag: " + str(tag))
             
     if getfield == 'year':
         try:
@@ -91,7 +110,9 @@ class LocalTrackInfo(TrackInfo):
                 fileref = TagLib.MPEGFile(str(self.fpath))
                 tag = fileref.ID3v2Tag()
                 if not tag or tag.isEmpty():
-                    return None
+                    tag = fileref.ID3v1Tag()
+                    if not tag or tag.isEmpty():
+                        return None
             elif self.fpath.getFileType() == "ogg":
                 fileref = TagLib.VorbisFile(str(self.fpath))
                 tag = fileref.tag()
