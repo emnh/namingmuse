@@ -11,3 +11,4 @@ TODO
 * support other sources for metainformation. musicbrainz is a highly relevant source.
 * autoselect namebinder_trackorder when all tracks are numbered in sequence
 * clean up discmatch module and strip it for cddb knowledge
+* detect exact duplicate albums and warn user about it
