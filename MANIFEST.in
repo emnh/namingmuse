@@ -1,5 +1,5 @@
 include Makefile
 include namingmuse.spec
 include MANIFEST.in
-include Changelog TODO README README.in
+include COPYING Changelog TODO README README.in
 include tools/*.py
