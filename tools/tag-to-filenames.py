@@ -21,7 +21,8 @@ for track in album.tracks:
     except TagIncompleteWarning, e:
         print e, "\nCan't rename", fpath.getName()
         continue
-    newfpath = fpath.getParent() + newfilename
     print fpath.getName()
     print "\t", colorize("->"), newfilename
-    os.rename(str(fpath), unicode(newfpath))
+    # Using relative path renaming to avoid encoding issues
+    os.chdir(dirname)
+    os.rename(str(fpath), newfilename)
