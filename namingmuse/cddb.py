@@ -1,7 +1,7 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.29 2004/09/16 22:17:16 emh Exp $
+$Id: cddb.py,v 1.30 2004/09/18 19:10:53 emh Exp $
 """
 
 import socket
@@ -17,6 +17,7 @@ version = '1.28'
 
 DEBUG = False
 
+NLTERM = '\r\n'
 DOTTERM = '\r\n.\r\n'
 
 # Socket options
@@ -36,22 +37,20 @@ CDDB_ERROR_401 = 401
 READ_OK = 210
 
 # CDDB query reply codes
-QUERY_NOMATCH = 202
 QUERY_EXACT = 200
+QUERY_NOMATCH = 202
 QUERY_INEXACT = 211
 
 # All message codes > 399 are errors
 ERROR_THRESHOLD = 399
 
-class CDDBPException(Exception):
+class CDDBPException(NamingMuseException):
 
     def __init__(self,code,resp):
         Exception.__init__(self)
         self.code=code
         self.resp=resp
-
-    def __str__(self):
-        return "CDDBP exception: %d %s" % (self.code, self.resp)
+        self.value = "CDDBP exception: %d %s" % (self.code, self.resp)
 
 class SmartSocket:
     """Simple socket-like class with some extra intelligence for telnet-based
@@ -62,6 +61,7 @@ class SmartSocket:
         self.recvsize = recvsize
         self.sock = None
         self.restdata = ""
+        self.lastsend = ""
 
     def connect(self, server, port):
         "Connects to the server at the given port."
@@ -96,6 +96,8 @@ class SmartSocket:
         # flush old data
         self.restdata = ""
 
+        self.lastsend = message
+
 	self.sock.send(message+"\n")
 	if self.dbg:
 	    print "Send: "+message
@@ -107,15 +109,21 @@ class SmartSocket:
         """Receives a string from the server. Blocks until 'term' has been
         received."""
         data = self.restdata
+        self.sock.settimeout(5)
         while True:
             if term in data:
                 break
-            newdata = self.sock.recv(self.recvsize)
+            try:
+                newdata = self.sock.recv(self.recvsize)
+            except socket.timeout:
+                raise CDDBPException(-1, "timed out waiting for reply, send: %s\nterm: '%s'\ndata: %s" %
+                                (self.lastsend, term, data))
             data = data + newdata
             
 	if self.dbg:
 	    print "Recv: "+data
 
+        self.sock.settimeout(None)
         data, rest = data.split(term, 1)
         self.restdata = rest
         return data
@@ -231,7 +239,10 @@ class CDDBP(object):
         if code == QUERY_NOMATCH: 
             return (code, data)
         elif code == QUERY_EXACT or code == QUERY_INEXACT:
-            albumlist = self.sock.receive(DOTTERM)
+            if code == QUERY_EXACT:
+                albumlist = self.sock.receive(NLTERM)
+            elif code == QUERY_INEXACT:
+                albumlist = self.sock.receive(DOTTERM)
             data = []
             for line in albumlist.splitlines()[1:-2]:
                 genreid, cddbid, title = line.split(" ", 2)
@@ -252,7 +263,7 @@ class CDDBP(object):
     def getRecord(self, genre, cddbid):
         'Read raw freedb record from database'
         response = self.sock.send("cddb read %s %s" \
-                %(genre, cddbid), '\r\n')
+                %(genre, cddbid), NLTERM)
 
         code, resp = self.__decode(response)
 
@@ -284,7 +295,7 @@ class CDDBP(object):
             raise CDDBPException(code,resp)
 
         res={}
-        for item in resp.split("\r\n")[1:-2]:
+        for item in resp.splitlines()[1:-2]:
             items = item.split(":")
             if len(items) >= 2:
                 item1 = items[1].strip()
@@ -295,7 +306,7 @@ class CDDBP(object):
 
     def ver(self):
         "Returns a (servername, version, copyright) tuple."
-        code, resp = self.__decode(self.sock.send("ver","\r\n"))
+        code, resp = self.__decode(self.sock.send("ver", NLTERM))
 
         if code > ERROR_THRESHOLD:
             raise CDDBPException(code,resp)
@@ -322,7 +333,7 @@ class CDDBP(object):
         return res
         
     def quit(self):
-        self.sock.send("quit","\r\n")
+        self.sock.send("quit", NLTERM)
 
     def __del__(self):
         try:
