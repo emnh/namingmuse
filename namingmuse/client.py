@@ -78,7 +78,18 @@ def makeOptionParser():
                      help = "print calculated TOC of the album, then exit")
 
     sopts = OptionGroup(op, "search options")
-    sopts.add_options(searchfreedb.getoptions())
+
+    sopts.add_option("-a", 
+                     "--all",
+                     action = "store_true",
+                     help = "enable searching of all fields (default: artist+title)")
+
+    for field in searchfreedb.allfields:
+        sopts.add_option("",
+                         "--" + field,
+                         action = "store_true",
+                         help = "enable searching of " + field + " field")
+
     op.add_option_group(sopts)
     return op
 
