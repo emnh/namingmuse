@@ -20,25 +20,8 @@ def namefix(filename):
         elif word.lower() in lcaseword:
             word = word.lower()
         else:
-            word = word[0].upper() + word[1:]
+            word = word.capitalize()
         return word + tail
-
-    def firstupper(matchobj):
-        s = matchobj.group(0)
-        return s[0].upper() + s[1:]
-    
-    def firstlower(matchobj):
-        s = matchobj.group(0)
-        return s[0].upper() + s[1:]
-
-    def wholeupper(matchobj):
-        s = matchobj.group(0)
-        return s.upper()
-    
-    def wholelower(matchobj):
-        s = matchobj.group(0)
-        return s.lower()
-
 
     regexes = {
         "%20":            " ",         #replace %20 with space

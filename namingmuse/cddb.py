@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.13 2004/08/09 21:14:40 emh Exp $
+$Id: cddb.py,v 1.14 2004/08/13 06:47:23 emh Exp $
 """
 
 import socket,string
@@ -65,10 +65,12 @@ class SmartSocket:
         while 1:
             newdata = self.sock.recv(self.recvsize)
             data = data + newdata
-            if data[-len(term):]==term or '230 ' in data:
+            if data[-len(term):]==term or data.startswith('230 ') \
+                    or data.startswith('401 '):
                 # 230 means that we did something nasty and the server is
                 # hanging up on us. It doesn't provide the needed terminator
                 # then.
+                # 401 means a CD read failed. It doesn't provide terminator.
                 break
             
 	if self.dbg:
