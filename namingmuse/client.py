@@ -228,11 +228,11 @@ def namefix(albumdir, options):
 def doFullTextSearch(albumdir, options):
     discmatch = DiscMatch()
     filelist = albumtag.getfilelist(albumdir)
-    if len(filelist)== 0:
+    if len(filelist) == 0:
         raise NoFilesException("Warning: %s contains no music files !" %albumdir)
 
     if not options.words:
-        exit("error: no search words specified")
+        raise NamingMuseError("no search words specified")
     if options.all:
         searchfields = searchfreedb.allfields
     else:
@@ -257,15 +257,13 @@ def doFullTextSearch(albumdir, options):
         if not album['genreid'] in haveread.get(album['cddbid']):
             freedbrecord = discmatch.cddb.getRecord(album['genreid'], 
                                                     album['cddbid'])
-            albuminfo = FreeDBAlbumInfo(freedbrecord)
-            albuminfo.setFreedbIdentifier(album['genreid'], 
-                                          album['cddbid']) #XXX
+            albuminfo = FreeDBAlbumInfo(discmatch.cddb,
+                                        album['genreid'], album['cddbid'])
             albuminfos.append(albuminfo)
             haveread[album['cddbid']].append(album['genreid'])
 
     if len(albuminfos) == 0:
         raise NamingMuseError("No matches in folder %s" % albumdir)
-
     
     albuminfo = choosealbum(albuminfos, albumdir, options)
 
