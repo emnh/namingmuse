@@ -75,14 +75,6 @@ def namefix(filename):
             name = re.sub(regex,regexes[regex],name)
         
     #([A-Z])\.(?![^A-Z])/$1/gx;     #R.E.M -> REM
-    ##if ($nametype == $type_file) {
-    #        $lastdot = rindex($_, '.');    #save position of extension dot
-    #} else {
-    #        $lastdot = 0;
-    #}
-    #if ($lastdot > 0) { 
-    #        substr($_, $lastdot, 1) = '.'; #restore extension dot
-    #} 
 #    
 #    if ($nametype == $type_dir) {
 #            #s/^The([^-]*)$/$1, The/;
@@ -94,12 +86,7 @@ def namefix(filename):
 #                    ;
 #            }
 #    }
-#    
-#
-#    #some case fixing stuff
-#    s/(^|\s)(Cd|Dj)(\s|\.|$)/$1\U$2$3/;      #uppercase words like CD, DJ
-#    no locale;
-#    return $_;
+
     filename = name + ext
     return filename
 
