@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.3 2004/08/05 00:28:29 emh Exp $
+$Id: cddb.py,v 1.4 2004/08/05 02:19:43 emh Exp $
 """
 
 import socket,string
@@ -157,6 +157,35 @@ class CDDBP:
                     })
 
         return code,res
+
+    def extractTrackLengths(self, cddbrecord):
+        'Parse cddb record and calculate track lengths in seconds'
+        readingframes = False
+        readingtotal = False
+        lsecs = []
+        prevsec = 0
+        for item in cddbrecord.split("\r\n")[1:-2]:
+            if readingframes:
+                if item == "#": 
+                    readingframes = False
+                    readingtotal = True
+                else:
+                    strsec = item[1:].strip()
+                    sec = int(round((int(strsec) - prevsec) / 75.0))
+                    prevsec = int(strsec)
+                    lsecs.append(sec)
+                    print "%u" % sec
+            elif readingtotal:
+                import re
+                match = re.search("^# Disc length: ([0-9]*) seconds", item)
+                totsec = int(match.group(1))
+                sec = totsec - prevsec / 75
+                lsecs.append(sec)
+                print sec
+                readingtotal = False
+            elif "# Track frame offsets:" in item:
+                readingframes = True
+        return lsecs
         
     def read(self, genre, cddbid):
         ''' 
@@ -167,12 +196,18 @@ class CDDBP:
         if code>399:
             raise CDDBPException(code,resp)
 
-        res={}
+        # Convert freedb record to dictionary
+        res = {}
         for item in resp.split("\r\n")[1:-2]:
             if not '#' == item[0]:
                 splitted = item.split('=')
                 res[splitted[0]] = string.join(splitted[1:],'=')
-                    
+
+        # Extend dictionary with track lengths in seconds
+        lsecs = self.extractTrackLengths(resp)
+        for i in range(1, len(lsecs)):
+            res["LENGTH" + str(i - 1)] = lsecs[i]
+
         return code, res
         
 

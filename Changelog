@@ -1,3 +1,7 @@
+2004-08-04
+    * searchfreedb: filter matches by song count
+    * all: consistent use of cddbid and genreid as dict keys
+
 2004-08-02 (version 0.6)
     * cddb: new module for doing freedb lookups
 
