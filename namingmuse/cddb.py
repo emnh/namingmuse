@@ -1,7 +1,7 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.27 2004/09/16 20:36:29 emh Exp $
+$Id: cddb.py,v 1.28 2004/09/16 20:40:09 emh Exp $
 """
 
 import socket
@@ -120,7 +120,7 @@ class CDDBP(object):
         self.sock = SmartSocket(DEBUG, BUFFERSIZE)
         self.user = getpass.getuser()
         self.localhost = socket.gethostname()
-        self.client = "PyCDDBPlib"
+        self.client = 'namingmuse'
         
     def __decode(self,resp):
         code = int(resp[:3])
