@@ -25,7 +25,7 @@ newrecord = lbreak.join(newrecord)
 # Setup mail values
 address = 'freedb-submit@freedb.org'
 ident = os.path.splitext(filename)[0]
-if not re.search('^[a-z0-9]{8} [a-z]+$', ident):
+if not re.search('^[a-z]+ [a-z0-9]{8}$', ident):
     sys.exit(ident + " is not a valid freedb `discid genre' pair")
 subject = "cddb %s" % ident
 

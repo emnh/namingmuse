@@ -25,7 +25,7 @@ albuminfo.setCDDBConnection(cddb)
 title = albuminfo.title
 
 #filename = title + ".cddb"
-filename = "%s %s.cddb" % (albuminfo.freedbdiscid, albuminfo.freedbgenre)
+filename = "%s %s.cddb" % (albuminfo.freedbgenre, albuminfo.freedbdiscid)
 fd = file(filename, "w")
 fd.write(albuminfo.freedbrecord)
 fd.close()
