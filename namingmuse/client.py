@@ -41,6 +41,14 @@ def makeOptionParser():
                   help = "rename files according to predefined rules"
                   )
 
+    op.add_option("",
+                  "--stats",
+                  action = "store_const",
+                  const = "stats",
+                  dest = "cmd",
+                  help = "print out statistics on local files"
+                  )
+
     op.add_option("-t",
                   "--tag-only",
                   action = "store_true",
@@ -142,6 +150,8 @@ def getDoc():
     doc += DiscMatch.__doc__ + "\n"
     doc += "NAMEFIX" + "\n"
     doc += namefix.__doc__ + "\n"
+    doc += "STATS" + "\n"
+    doc += stats.__doc__ + "\n"
     doc += "POLICY" + "\n"
     doc += policy.__doc__ + "\n"
     return doc
@@ -204,41 +214,15 @@ def cli():
         if options.cmd == "discmatch":
             discmatch = DiscMatch()
             if options.recursive:
-                def walk(top, cddb):
-                    try:
-                        names = os.listdir(str(top))
-                    except os.error:
-                        return
-                    try:
-                        if top.getName() != "nonalbum":
-                            doDiscmatch(options, top, cddb)
-                    except CDDBPException, err:
-                        if err.code == CDDB_CONNECTION_TIMEOUT:
-                            print "Connection timed out, reconnecting.."
-                            cddb.reconnect()
-                        else:
-                            print err 
-                            cddb = CDDBP()
-                            cddb.encoding = options.encoding
-                    except NoFilesException:
-                        pass
-                    except NamingMuseException,(errstr):
-                        print errstr
-                    for name in names:
-                        name = FilePath(top, name)
-                        try:
-                            st = os.lstat(str(name))
-                        except os.error:
-                            continue
-                        if stat.S_ISDIR(st.st_mode):
-                            walk(name, cddb)
-                walk(albumdir, cddb)
+                walk(albumdir, cddb, options)
             else:
                doDiscmatch(options, albumdir, cddb)
         elif options.cmd == "search":
             doFullTextSearch(albumdir, options, cddb)
         elif options.cmd == "namefix":
             namefix(albumdir,options)
+        elif options.cmd == "stats":
+            stats(albumdir,options)
         else:
             exit("error: no action option specified")
     except NamingMuseException, strerr:
@@ -255,6 +239,50 @@ def cli():
         exitstatus = 4
         
     exit(exitstatus)
+
+def walk(top, cddb, options):
+    try:
+        names = os.listdir(str(top))
+    except os.error:
+        return
+    try:
+        if top.getName() != "nonalbum":
+            doDiscmatch(options, top, cddb)
+    except CDDBPException, err:
+        if err.code == CDDB_CONNECTION_TIMEOUT:
+            print "Connection timed out, reconnecting.."
+            cddb.reconnect()
+        else:
+            print err 
+            cddb = CDDBP()
+            cddb.encoding = options.encoding
+    except NoFilesException:
+        pass
+    except NamingMuseException,(errstr):
+        print errstr
+    for name in names:
+        name = FilePath(top, name)
+        try:
+            st = os.lstat(str(name))
+        except os.error:
+            continue
+        if stat.S_ISDIR(st.st_mode):
+            walk(name, cddb, options)
+
+def stats(albumdir, options):
+    """
+    Prints out statistics.
+    """
+    import statistics
+
+    stats = statistics.Stats()
+
+    if options.recursive:
+        for root, dirs, files in os.walk(str(albumdir)):
+            if len(dirs) > 0:
+                for dir in dirs:
+                    stats = statistics.dirstat(FilePath(root,dir), stats)
+    print stats
 
 def namefix(albumdir, options):
     """

@@ -4,7 +4,6 @@ Provides a function for prettifying a string according to the tast of the naming
 Example: MOBY_--_01_-_honEY.MP3
 Becomes: Moby - 01 - Honey.mp3
 
-$Id: 
 """
 import sys,re,os
 
