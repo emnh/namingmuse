@@ -1,17 +1,18 @@
 TODO
-*proper locale support (including utf8 and protocol 6)
-*download cover art
-*namefixing
-*finish namebinder_strapprox_time
-*see if improvements can be made to discid generator
-*argument to create artistdir if non-existing
+* fix support for other filetypes than mp3
+* proper locale support (including utf8 and protocol 6)
+* download cover art
+* namefixing
+* finish namebinder_strapprox_time
+* see if improvements can be made to discid generator
+* argument to create artistdir if non-existing
 
-*searchfreedb: add option for selecting namebinder
-*searchfreedb: default to using albumdir as search words
-*improve outer namebinder approximation algorithms
-*support "manual" tags (=namingmuse shouldn't touch it)
+* searchfreedb: add option for selecting namebinder
+* searchfreedb: default to using albumdir as search words
+* improve outer namebinder approximation algorithms
+* support "manual" tags (=namingmuse shouldn't touch it)
 
-*make a smart class for albuminfo:
+* make a smart class for albuminfo:
     -has a CDDB member with uplink
     -two states: thin(cddbid,genreid,title) and thick(full read)
     -access to thick members in a thin albuminfo triggers automatic lookup
