@@ -1,9 +1,8 @@
 TODO
-* fix support for other filetypes than mp3
-* proper locale support (including utf8 and protocol 6)
+* fix support for flac/ape/mpc
 * download cover art
-* namefixing
-* finish namebinder_strapprox_time
+* do smart namefixing (knowing artist/title parts) and allow combining
+  namefix option with freedb get
 * see if improvements can be made to discid generator
 * searchfreedb: add option for selecting namebinder
 * searchfreedb: default to using albumdir as search words
