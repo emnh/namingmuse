@@ -132,6 +132,8 @@ def cli():
     except OSError, (errno, strerror):
         exit(strerror + ": " + albumdir)
 
+    exitstatus = 0
+
     try:
         if options.cmd == "discmatch":
             if options.recursive:
@@ -161,10 +163,15 @@ def cli():
             exit("error: no action option specified")
     except NamingMuseException, strerr:
         print strerr 
+        exitstatus = 1
     except NamingMuseWarning, strerr:
-        print strerr 
+        print strerr
+        exitstatus = 2
     except NoFilesException, strerr:
         print strerr 
+        exitstatus = 3
+        
+    exit(exitstatus)
 
 #XXX: merge common stuff of fulltextsearch and discmatch
 def doFullTextSearch(albumdir, options):
