@@ -39,14 +39,12 @@ def getNmuseTag(filelist):
         framelistmap = tag.frameListMap()
 
         if framelistmap.has_key("TTPR"): #new school
-            tagprovider = framelistmap["TTPR"][0]
+            tagprovider = str(framelistmap["TTPR"][0])
             fdict = {}
             for frame in tag.frameList():
-                key = frame.frameID()
+                key = str(frame.frameID())
                 if key.startswith('T'):
-                    fdict[key] = TextIdentificationFrame(frame)
-            providerclass = providers[tagprovider]
-            providerobj = providerclass(fdict)
+                    fdict[key] = str(frame)
         else: #old school
             comms = framelistmap["COMM"]
             fdict = {}
