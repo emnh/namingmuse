@@ -30,15 +30,14 @@ providers = {
 }
 
 def getNmuseTag(filelist):
+    import types
     fpath = filelist[0]
     tagprovider, fdict = None, {}
     if fpath.getFileType() == "mp3":
         fileref = MPEGFile(str(fpath))
         tag = fileref.ID3v2Tag()
-        import types
         if type(tag) == types.StringType:
-            print "fl: ", filelist
-            print "tag: ", tag
+            raise NamingMuseWarning(tag)
         if not tag or tag.isEmpty():
             return None
         framelistmap = tag.frameListMap()
@@ -52,6 +51,8 @@ def getNmuseTag(filelist):
     elif fpath.getFileType() == "ogg":
         fileref = VorbisFile(str(fpath))
         tag = fileref.tag()
+        if type(tag) == types.StringType:
+            raise NamingMuseWarning(tag)
         if not tag or tag.isEmpty():
             return None
         fields = tag.fieldListMap()
