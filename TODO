@@ -5,15 +5,7 @@ TODO
 * namefixing
 * finish namebinder_strapprox_time
 * see if improvements can be made to discid generator
-* argument to create artistdir if non-existing
-
 * searchfreedb: add option for selecting namebinder
 * searchfreedb: default to using albumdir as search words
 * improve outer namebinder approximation algorithms
 * support "manual" tags (=namingmuse shouldn't touch it)
-
-* make a smart class for albuminfo:
-    -has a CDDB member with uplink
-    -two states: thin(cddbid,genreid,title) and thick(full read)
-    -access to thick members in a thin albuminfo triggers automatic lookup
-     (use the new python property class)
