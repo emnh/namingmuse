@@ -295,7 +295,8 @@ def tagfile(fpath, album, track):
 
         hadID3v2Tag = fileref.ID3v2Tag(False) and True
         tag = fileref.ID3v2Tag(True)
-        
+       
+        # Preserve old idv1 comments
         oldcomment = None
         if not hadID3v2Tag:
             id1tag = fileref.ID3v1Tag(False)
@@ -309,12 +310,35 @@ def tagfile(fpath, album, track):
         #strip id3v1tag, bool freeMemory = False 
         fileref.strip(MPEGFile.ID3v1,False)
 
-        commlist = tag.frameListMap()["COMM"]
-        for comm in commlist:
-            cf = CommentsFrame(comm)
-            if 'namingmuse' in cf.text():
-                tag.removeFrame(cf)
         
+        #fetch footprintdict
+        footprintdict = album.footprint()
+        footprintdict["namingmuse"] = TAGVER
+
+        # Preserve ID3v2Tag comments other than our generated ones
+        oldcommentlist = []
+        for frame in tag.frameList():
+            if frame.frameID() == "COMM":
+                cf = CommentsFrame(frame)
+                if not 'namingmuse' in cf.text() and not cf.description() in footprintdict.keys():
+                    newcf = CommentsFrame()
+                    newcf.setDescription(cf.description())
+                    newcf.setText(cf.text())
+                    oldcommentlist.append(newcf)
+
+        #remove old comment frames
+        tag.removeFrames("COMM")
+
+        # Add preserved ID3v2 comments 
+        for frame in oldcommentlist:
+            tag.addFrame(frame)
+            
+        # Insert old id3v1 comment in id3v2tag
+        if oldcomment:
+            cf = CommentsFrame()
+            cf.setText(oldcomment)
+            tag.addFrame(cf)
+                    
         tag.setYear(album.year)
         tag.setGenre(album.genre)
         tag.setArtist(track.artist)
@@ -322,16 +346,6 @@ def tagfile(fpath, album, track):
         tag.setTitle(track.title)
         tag.setTrack(track.number)
         
-        # insert old comment in id3v2tag
-        if oldcomment:
-            cf = CommentsFrame()
-            cf.setText(oldcomment)
-            tag.addFrame(cf)
-
-
-        footprintdict = album.footprint()
-        footprintdict["namingmuse"] = TAGVER
-    
         # append namingmuse footprint
         for description,text in footprintdict.items():
             cf = CommentsFrame()
@@ -341,7 +355,6 @@ def tagfile(fpath, album, track):
 
         #save only version 2 tag
         fileref.save(MPEGFile.ID3v2)
-        
         
     else:
         tag.setYear(album.year)
