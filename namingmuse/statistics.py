@@ -3,24 +3,26 @@ Statistics
 """
 import sys,re,os
 import albumtag
-from exceptions import *
+from musexceptions import *
+from provider import LocalAlbumInfo
 
 def dirstat(dir, stats): 
     filelist = albumtag.getfilelist(dir)
     if len(filelist) > 0:
         stats.total += 1
-        print stats,
         nmusetag = albumtag.getNmuseTag(filelist)
         if nmusetag:
             stats.nmusetagged += 1
+            albuminfo = LocalAlbumInfo(dir)
             try:
-                year = nmusetag.year
+                year = albuminfo.year
             except NamingMuseWarning:
                 stats.missingyear += 1
             try:
-                genre = nmusetag.genre
+                genre = albuminfo.genre
             except NamingMuseWarning:
                 stats.missinggenre += 1
+        print "\r" + str(stats),
     return stats
 
 class Stats:
@@ -31,7 +33,7 @@ class Stats:
     missinggenre = 0
 
     def __str__(self):
-        return "\rAlbums: %s, " %self.total +\
+        return "Albums: %s, " %self.total +\
         "Tagged: %s, " %self.nmusetagged +\
         "Untagged: %s, " %(self.total-self.nmusetagged) +\
         "Missing year: %s, " %self.missingyear +\
