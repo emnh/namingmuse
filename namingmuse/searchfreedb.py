@@ -56,7 +56,7 @@ def searchalbums(albumdir, searchwords, searchfields, cddb):
 
     doc = baseurl + "freedb_search.php"
     query = [
-             ("words", "+".join(searchwords)),
+             ("words", " ".join(searchwords)),
              ("allcats", "YES"),
              ("grouping", "none"),
              ("x", 0),
