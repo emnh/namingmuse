@@ -1,5 +1,4 @@
 
-import types
 import os, re, sys
 from albuminfo import *
 
@@ -34,7 +33,7 @@ class FreeDBAlbumInfo(AlbumInfo):
                 return
             raise TypeError("invalid init arguments")
         else:
-            if isinstance(args[0], types.StringTypes):
+            if isinstance(args[0], basestring):
                 freedbrecord = args[0]
                 self.parseFreedbRecord(freedbrecord)
                 return

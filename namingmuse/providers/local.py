@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 'Classes for getting metainfo from local albums.'
 
-import os, re, sys, types
+import os, re, sys
 import TagLib
 
 from albuminfo import *
@@ -64,7 +64,7 @@ def decodeFrame(tag, getfield):
         funcname = funcdict[getfield]
         # ID3v1 is always ISO-8859-1
         fval = str(getattr(tag, funcname)())
-        if isinstance(fval, types.StringTypes):
+        if isinstance(fval, basestring):
             fval = fval.decode('ISO-8859-1')
     else:
         raise NamingMuseError("unsupported tag: " + str(tag))

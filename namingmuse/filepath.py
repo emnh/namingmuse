@@ -4,7 +4,6 @@ $Id:
 """
 
 import os
-from types import StringTypes
 
 class FilePath(object):
     """A class that represents a file path. 
@@ -46,7 +45,7 @@ class FilePath(object):
         return self.__str__()
     
     def __cmp__(self, other):
-        if not isinstance(other, (FilePath, StringTypes)): 
+        if not isinstance(other, (FilePath, basestring)): 
             raise TypeError(\
                     "can't compare FilePath with non-FilePath/string object")
         if isinstance(other, FilePath):

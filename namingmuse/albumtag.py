@@ -29,7 +29,7 @@ def getNmuseTag(filelist):
     if fpath.getFileType() == "mp3":
         fileref = MPEGFile(str(fpath))
         tag = fileref.ID3v2Tag()
-        if type(tag) == types.StringType:
+        if isinstance(tag, basestring): 
             raise NamingMuseError("Error, old TagLib bindings: " + tag)
         if not tag or tag.isEmpty():
             return None
@@ -44,7 +44,7 @@ def getNmuseTag(filelist):
     elif fpath.getFileType() == "ogg":
         fileref = VorbisFile(str(fpath))
         tag = fileref.tag()
-        if type(tag) == types.StringType:
+        if isinstance(tag, basestring): 
             raise NamingMuseError("Error, old TagLib bindings: " + tag)
         if not tag or tag.isEmpty():
             return None

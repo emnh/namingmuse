@@ -2,7 +2,6 @@
 An albuminfo class is a class that contains metdata about an album.
 """
 import os, re, sys
-import types
 from namingmuse.constants import TAGVER
 from namingmuse.musexceptions import *
 
@@ -35,7 +34,7 @@ class TagSafety(type):
             except AttributeError:
                 ret = getattr(self, "_%s__%s" % (bases[0].__name__, prop))
                 
-            if isinstance(ret, types.StringTypes):
+            if isinstance(ret, basestring):
                 ret = ret.strip()
             else:
                 ret = ""
