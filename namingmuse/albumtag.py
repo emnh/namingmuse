@@ -3,31 +3,24 @@ using the online music database freedb to retrieve the
 information.
 """
 
-TAGVER = "0.03"
-
 import difflib
-import os,re,sys,string,shutil
+import os, re, sys, shutil
 import random
 from TagLib import * # get this from http://namingmuse.berlios.de
 import policy
 import tempfile
+import provider
+
+from difflib import SequenceMatcher
+
 from terminal import colorize
 from cddb import *
-from string import lower
-from difflib import SequenceMatcher
 from filepath import FilePath
-from albuminfo import *
-
-from exceptions import *
+from constants import *
+from musexceptions import *
 
 
 DEBUG = False
-
-# XXX: move
-providers = {
-"default": AlbumInfo,
-"freedb": FreeDBAlbumInfo
-}
 
 def getNmuseTag(filelist):
     import types
@@ -37,7 +30,7 @@ def getNmuseTag(filelist):
         fileref = MPEGFile(str(fpath))
         tag = fileref.ID3v2Tag()
         if type(tag) == types.StringType:
-            raise NamingMuseWarning(tag)
+            raise NamingMuseError("Error, old TagLib bindings: " + tag)
         if not tag or tag.isEmpty():
             return None
         framelistmap = tag.frameListMap()
@@ -52,24 +45,25 @@ def getNmuseTag(filelist):
         fileref = VorbisFile(str(fpath))
         tag = fileref.tag()
         if type(tag) == types.StringType:
-            raise NamingMuseWarning(tag)
+            raise NamingMuseError("Error, old TagLib bindings: " + tag)
         if not tag or tag.isEmpty():
             return None
         fields = tag.fieldListMap()
         if fields.has_key("TTPR"):
             tagprovider = str(fields["TTPR"][0])
-            for fieldname,stringlist in fields.items():
+            for fieldname, stringlist in fields.items():
                 fieldname = str(fieldname)
                 # Our fields are singletons
                 if fieldname.startswith('T'):
                     fdict[fieldname] = str(stringlist[0])
     if tagprovider:
-        providerclass = providers[tagprovider]
+        providerclass = provider.lookup(tagprovider)
         providerobj = providerclass(fdict)
         return providerobj
     else:
         return None
 
+# XXX: currently duplicate, make use of local provider
 def getfilelist(path):
     """Get sorted list of files supported by taglib 
        from specified directory"""
@@ -108,23 +102,9 @@ def getMP3Length(filename):
         return 0
     return strlength
 
-def getFloatLength(filename):
-    #p = os.popen("/tmp/build/mp3info-0.8.4/playtime.sh " + filename)
-    pread,pwrite = os.pipe()
-    childid = os.fork()
-    if childid:
-        os.waitpid(childid, 0)
-    else:
-        os.dup2(pwrite, 1) #stdout
-        os.execv("/tmp/build/mp3info-0.8.4/playtime.sh", ["playtime.sh", filename])
-    pread = os.fdopen(pread)
-    strlength = pread.readline()
-    pread.close()
-    return float(strlength)
-
-def getIntLength(filename):
+def getIntLength(fpath):
     "Get length of a music file via taglib"
-    filename = str(filename)
+    filename = str(fpath)
     tagfile = FileRef(filename, True, AudioProperties.Accurate)
     audioproperties = tagfile.audioProperties()
     
@@ -136,7 +116,7 @@ def getIntLength(filename):
     # XXX: try various fallback methods
     if length == 0:
         print NamingMuseWarning("using fallback: getMP3Length(%s)" % filename)
-        if string.lower(filename[-4:]) == ".mp3":
+        if fpath.getExt().lower() == ".mp3":
             length = getMP3Length(filename)
 
     # raise exception; or discid generation will fail
@@ -151,7 +131,8 @@ def getIntLength(filename):
 def distwrap(a, b):
     "Wraps a string distance function"
     a, b = a.lower(), b.lower()
-    isjunk = lambda x: not x in string.lowercase
+    str
+    isjunk = lambda x: not x.islower()
     rat = SequenceMatcher(isjunk, a, b).ratio()
     return 1.0 - rat
 
@@ -250,7 +231,7 @@ def tagfiles(albumdir, album, options):
     missing = album.validate()
     if len(missing) > 0:
         if options.strict:
-            amiss = string.join(missing, ",")
+            amiss = ",".join(missing)
             raise TagIncompleteWarning(amiss)
         else:
             for miss in missing:
