@@ -330,9 +330,7 @@ def doFullTextSearch(albumdir, options, cddb):
         raise NamingMuseWarning('Not tagging %s' \
                    %(albumdir))
 
-    albumtag.tagfiles(albumdir, albuminfo, options, \
-            albumtag.namebinder_strapprox_time)
-
+    albumtag.tagfiles(albumdir, albuminfo, options) 
 
 def doDiscmatch(options, albumdir, cddb):
     """Takes a dir with a album inside and a cddb module.

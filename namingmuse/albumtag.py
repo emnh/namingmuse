@@ -206,7 +206,24 @@ def sortedcmp(a, b):
     b.sort(trackcmp)
     return a == b
 
-def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
+def get_namebinder(options, filelist):
+    '''Function used by tagfiles to determine which namebinding algorithm to 
+    use. In the future it will also be possible to select this by the cli.
+
+    For now it only checks if every track in the filelist has a tracknumber,
+    and they are in sequence, without gaps. If so, it chooses 
+    namebinder_trackorder. Else, namebinder_strapprox_time.
+    '''
+
+    for i, filename in enumerate(filelist):
+        if not str(i+1) in str(filename):
+            if DEBUG: print 'Using strapprox_time as namebinder'
+            return namebinder_strapprox_time
+
+    if DEBUG: print 'Using namebinder_trackorder as namebinder'
+    return namebinder_trackorder
+
+def tagfiles(albumdir, album, options):
     '''Rename and tag files using freedb information for
        the specified album.'''
 
@@ -223,6 +240,9 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
     album.ignoreMissing(True)
 
     filelist = getfilelist(albumdir)
+
+    namebinder = get_namebinder(options, filelist)
+    
     tracks = namebinder(filelist, album.tracks)
     if not sortedcmp(tracks, album.tracks): 
         options.dryrun = True
