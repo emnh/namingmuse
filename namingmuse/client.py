@@ -262,11 +262,13 @@ def namefix(albumdir, options):
     from namefix import namefix
     from terminal import colorize
     filelist = albumtag.getfilelist(albumdir)
+    
+    renamesign = "->"
+    if options.dryrun:
+        renamesign = "-dry->" 
+    
     for filepath in filelist:
         tofile = albumdir + namefix(filepath.getName())
-        renamesign = "->"
-        if options.dryrun:
-            renamesign = "-dry->" 
         print filepath
         print "\t", colorize(renamesign), tofile
         if not options.dryrun:
