@@ -8,12 +8,12 @@ QUERY_MULTIPLE_EXACT = 210 # protocol 4
 READ_OK = 210 # deleteme
 DEBUG = False
 
-class DiscMatch:
+class DiscMatch(object):
     """A module that provides some static methods relevant to converting music files to a cdrom TOC.  It generates a discid from album TOC to acquire matching metainfo for an album from freedb.
     """
     def printTOC(filelist):
         'print nicely formatted toc, mostly for debugging'
-        toc = files2discid(filelist)
+        toc = DiscMatch.files2discid(filelist)
         discid,filect,framelist,totsecs = toc[0],toc[1],toc[2:-1],toc[-1]
         print "cddbid: %08x" % discid
         print "filecount: %s" % filect
@@ -23,10 +23,10 @@ class DiscMatch:
         for i in range(len(framelist)):
             frameidx = framelist[i]
             if i == 0:
-                filen = "lead in"
+                filep = "lead in"
                 length = frameidx / 75 - oldlength
             else:
-                filep = filelist[i - 1]
+                filep = filelist[i - 1].getName()
                 length = frameidx / 75 - oldlength
                 #length = albumtag.getlength(filen)
             print "length: %4us = %2um %2us, frameidx: %8u: %s" % \
