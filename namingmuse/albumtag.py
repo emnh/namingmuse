@@ -31,6 +31,7 @@ providers = {
 
 def getNmuseTag(filelist):
     fpath = filelist[0]
+    tagprovider, fdict = None, {}
     if fpath.getFileType() == "mp3":
         fileref = MPEGFile(str(fpath))
         tag = fileref.ID3v2Tag()
@@ -38,39 +39,37 @@ def getNmuseTag(filelist):
             return None
         framelistmap = tag.frameListMap()
 
-        if framelistmap.has_key("TTPR"): #new school
+        if framelistmap.has_key("TTPR"):
             tagprovider = str(framelistmap["TTPR"][0])
-            fdict = {}
             for frame in tag.frameList():
                 key = str(frame.frameID())
                 if key.startswith('T'):
                     fdict[key] = str(frame)
-        else: #old school
-            if not framelistmap.has_key("COMM"):
-                return None
-            comms = framelistmap["COMM"]
-            fdict = {}
-            for comm in comms:
-                cf = CommentsFrame(comm)
-                key = cf.description()
-                value = cf.text()
-                fdict[key] = value
-            if not fdict.has_key("namingmuse"):
-                return None
-            if fdict.has_key("tagprovider"):
-                tagprovider = fdict["tagprovider"]
-            else:
-                tagprovider = "default"
+    elif fpath.getFileType() == "ogg":
+        fileref = VorbisFile(str(fpath))
+        tag = fileref.tag()
+        if not tag or tag.isEmpty():
+            return None
+        fields = tag.fieldListMap()
+        if fields.has_key("TTPR"):
+            tagprovider = str(fields["TTPR"][0])
+            for fieldname,stringlist in fields.items():
+                fieldname = str(fieldname)
+                # Our fields are singletons
+                if fieldname.startswith('T'):
+                    fdict[fieldname] = str(stringlist[0])
+    if tagprovider:
         providerclass = providers[tagprovider]
         providerobj = providerclass(fdict)
         return providerobj
-    return None
+    else:
+        return None
 
 def getfilelist(path):
     """Get sorted list of files supported by taglib 
        from specified directory"""
     path = str(path)
-    rtypes = re.compile("\.(mp3)$", re.I)
+    rtypes = re.compile("\.(mp3)$|\.(ogg)$", re.I)
     filelist = filter(lambda x: rtypes.search(str(x)), os.listdir(path))
     filelist = map(lambda x: FilePath(path, x), filelist)
     filelist.sort()
@@ -303,6 +302,25 @@ def tagfiles(albumdir, album, options, namebinder = namebinder_trackorder):
     print "\n", albumdir.getName()
     print "\t", colorize(renamesign), todir
 
+def cleanOldComment(tag):
+    # Preserve ID3v2Tag comments other than our generated ones
+    oldcommentlist = []
+    for frame in tag.frameList():
+        if frame.frameID() == "COMM":
+            cf = CommentsFrame(frame)
+            if not 'namingmuse' in cf.text() and not cf.description() in ["namingmuse", "genreid", "cddbid", "tagprovider"]:
+                newcf = CommentsFrame()
+                newcf.setDescription(cf.description())
+                newcf.setText(cf.text())
+                oldcommentlist.append(newcf)
+
+    #remove old comment frames
+    tag.removeFrames("COMM")
+
+    # Add preserved ID3v2 comments 
+    for frame in oldcommentlist:
+        tag.addFrame(frame)
+
 def tagfile(fpath, album, track):
     """ Tag the file with metadata """
 
@@ -323,40 +341,26 @@ def tagfile(fpath, album, track):
                 if oldcomment and 'namingmuse' in oldcomment:
                     oldComment = None
 
-        #strip id3v1tag, bool freeMemory = False 
+        # strip id3v1tag, bool freeMemory = False 
         fileref.strip(MPEGFile.ID3v1,False)
 
-        
-        #fetch footprintdict
-        footprintdict = album.footprint()
-        # Add namingmuse tag with version
-        footprintdict["TNMU"] = TAGVER 
+        cleanOldComment(tag)
 
-        # Preserve ID3v2Tag comments other than our generated ones
-        oldcommentlist = []
-        for frame in tag.frameList():
-            if frame.frameID() == "COMM":
-                cf = CommentsFrame(frame)
-                if not 'namingmuse' in cf.text() and not cf.description() in ["namingmuse", "genreid", "cddbid", "tagprovider"]:
-                    newcf = CommentsFrame()
-                    newcf.setDescription(cf.description())
-                    newcf.setText(cf.text())
-                    oldcommentlist.append(newcf)
-
-        #remove old comment frames
-        tag.removeFrames("COMM")
-
-        # Add preserved ID3v2 comments 
-        for frame in oldcommentlist:
-            tag.addFrame(frame)
-            
         # Insert old id3v1 comment in id3v2tag
         if oldcomment:
             cf = CommentsFrame()
             cf.setText(oldcomment)
             tag.addFrame(cf)
-
+        
+        if 'UTF' in album.encoding.upper():
+            taglibencoding = String.UTF8 
+        else:
+            taglibencoding = String.Latin1
+        
+        # gather frame values
         framedict = {}
+        footprintdict = album.footprint()
+        footprintdict["TNMU"] = TAGVER 
         framedict.update(footprintdict)
         del footprintdict
         framedict.update({
@@ -367,12 +371,7 @@ def tagfile(fpath, album, track):
                 "TIT2": track.title,
                 "TRCK": "%s/%s" % (track.number, len(album.tracks))
                 })
-                    
-        if 'UTF' in album.encoding.upper():
-            taglibencoding = String.UTF8 
-        else:
-            taglibencoding = String.Latin1
-        
+
         # append namingmuse footprint
         for key,text in framedict.items():
             tag.removeFrames(key)
@@ -382,6 +381,31 @@ def tagfile(fpath, album, track):
                 tag.addFrame(tf)
 
         return fileref.save()
+    elif fpath.getFileType() == 'ogg':
+        fileref = VorbisFile(str(fpath))
+        tag = fileref.tag()
+        
+        # Clean old comment
+        if 'namingmuse' in tag.comment():
+            tag.removeField("DESCRIPTION")
+
+        oggencoding = 'UTF-8'
+        fields = {
+            "DATE": str(album.year),
+            "GENRE": album.genre,
+            "ARTIST": track.artist,
+            "ALBUM": album.title,
+            "TITLE": track.title,
+            "TRACKNUMBER": str(track.number)
+        }
+        footprintdict = album.footprint()
+        footprintdict["TNMU"] = TAGVER 
+        fields.update(footprintdict)
+        for key, value in fields.items():
+            key = key.decode(album.encoding).encode(oggencoding)
+            value = value.decode(album.encoding).encode(oggencoding)
+            tag.addField(key, value, True) # replace = True
+        fileref.save()
         
     else:
         fileref = FileRef(str(fpath))
