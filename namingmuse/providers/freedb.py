@@ -11,6 +11,13 @@ class FreeDBAlbumInfo(AlbumInfo):
     __cddb = None
     __freedbdiscid = None
     __freedbgenre = None
+    
+    def getRecord(self):
+        if not self.__freedbrecord:
+            self.initRecord()
+        return self.__freedbrecord
+
+    freedbrecord = property(getRecord)
 
     def __getattribute__(self, name):
         #print "getattribute called:", name
