@@ -307,7 +307,7 @@ def doFullTextSearch(albumdir, options, cddb):
     if len(albums) == 0:
         raise NamingMuseError("No match for text search %s" % (searchwords))
 
-    #albums = searchfreedb.filterBySongCount(albums, len(filelist))
+    albums = searchfreedb.filterBySongCount(albums, len(filelist))
 
     albuminfos, haveread = [], {}
     for album in albums:
