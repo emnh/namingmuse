@@ -6,22 +6,27 @@ import albumtag
 from musexceptions import *
 from provider import LocalAlbumInfo
 
-def dirstat(dir, stats): 
+def dirstat(dir, stats, verbose = False): 
     filelist = albumtag.getfilelist(dir)
     if len(filelist) > 0:
         stats.total += 1
         nmusetag = albumtag.getNmuseTag(filelist)
         if nmusetag:
+            missing = []
             stats.nmusetagged += 1
-            albuminfo = LocalAlbumInfo(dir)
+            album = LocalAlbumInfo(dir)
             try:
-                year = albuminfo.year
+                year = album.year
             except NamingMuseWarning:
                 stats.missingyear += 1
+                missing.append('year')
             try:
-                genre = albuminfo.genre
+                genre = album.genre
             except NamingMuseWarning:
                 stats.missinggenre += 1
+                missing.append('genre')
+            if verbose and len(missing) > 0:
+                print "\n%s is missing %s" % (dir, ", ".join(missing))
         print "\r" + str(stats),
     return stats
 

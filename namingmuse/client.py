@@ -61,6 +61,11 @@ def makeOptionParser():
                   action = "store_true",
                   dest = "artistdir",
                   help = "place albumdir in artist/albumdir")
+
+    op.add_option("-v",
+                  "--verbose",
+                  action = "store_true",
+                  help = "be more verbose")
     
     op.add_option("", 
                   "--dry-run",
@@ -290,7 +295,8 @@ def stats(albumdir, options):
             if len(dirs) > 0:
                 for dir in dirs:
                     try:
-                        stats = statistics.dirstat(FilePath(root,dir), stats)
+                        stats = statistics.dirstat(FilePath(root,dir),
+                                stats, options.verbose)
                     except NamingMuseException, strerr:
                         print strerr
         #print '\n' + str(stats)
