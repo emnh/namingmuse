@@ -3,11 +3,11 @@
 """Setup script"""
 
 from distutils.core import setup
-import os, sys, re, string
+import os
 
 authors = [
            {'name': 'Tor Hveem',
-            'mail': 'torh at tinysofa dot org'},
+            'mail': 'torh at bash dot no'},
            {'name': 'Eivind Magnus Hvidevold', 
             'mail': 'emh at hvidevold dot cjb dot net'}
           ]
