@@ -39,19 +39,12 @@ class FreeDBAlbumInfo(AlbumInfo):
         return footprint
 
     def fromFootPrint(self, footprint):
-        if footprint.has_key("tagprovider"): #XXX to be removed
-            if footprint["tagprovider"] == self.tagprovider:
-                self.__freedbdiscid = footprint["cddbid"]
-                self.__freedbgenre = footprint["genreid"]
-            else:
-                raise TypeError("invalid provider footprint (wrong class)")
+        if footprint["TTPR"] == self.tagprovider:
+            self.__freedbdiscid = footprint["TCID"]
+            self.__freedbgenre = footprint["TGID"]
+            self.genre = footprint["TGID"]
         else:
-            if footprint["TTPR"] == self.tagprovider:
-                self.__freedbdiscid = footprint["TCID"]
-                self.__freedbgenre = footprint["TGID"]
-                self.genre = footprint["TGID"]
-            else:
-                raise TypeError("invalid provider footprint (wrong class)")
+            raise TypeError("invalid provider footprint (wrong class)")
 
     def setCDDBConnection(self, cddbobj):
         self.__cddb = cddbobj
