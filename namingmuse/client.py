@@ -1,6 +1,6 @@
 """Frontend for the namingmuse tools.
 """
-import sys,os
+import sys,os,stat
 import albumtag
 from discmatch import DiscMatch
 import searchfreedb
@@ -32,6 +32,11 @@ def makeOptionParser():
                   "--force",
                   action = "store_true",
                   help = "force new lookup and retagging")
+    
+    op.add_option("-r",
+                  "--recursive",
+                  action = "store_true",
+                  help = "recurse directories")
 
     op.add_option("-u",
                   "--update-tags",
@@ -129,17 +134,37 @@ def cli():
 
     try:
         if options.cmd == "discmatch":
-            doDiscmatch(albumdir, options)
+            if options.recursive:
+                def walk(top):
+                    try:
+                        names = os.listdir(top)
+                    except os.error:
+                        return
+                    try:
+                        doDiscmatch(options,top)
+                    except NamingMuseException,(errstr):
+                        print errstr
+                    for name in names:
+                        name = os.path.join(top, name)
+                        try:
+                            st = os.lstat(name)
+                        except os.error:
+                            continue
+                        if stat.S_ISDIR(st.st_mode):
+                            walk(name)
+                walk(albumdir)
+            else:
+               doDiscmatch(options,albumdir)
         elif options.cmd == "search":
             doFullTextSearch(albumdir, options)
         else:
             exit("error: no action option specified")
     except NamingMuseException, strerr:
-        exit(strerr)
+        print strerr 
     except NamingMuseWarning, strerr:
-        exit(strerr)
+        print strerr 
     except NoFilesException, strerr:
-        exit(strerr)
+        print strerr 
 
 #XXX: merge common stuff of fulltextsearch and discmatch
 def doFullTextSearch(albumdir, options):
@@ -181,7 +206,7 @@ def doFullTextSearch(albumdir, options):
 
     albumtag.tagfiles(albumdir, albumdict, options, albumtag.namebinder_strapprox)
 
-def doDiscmatch(albumdir, options):
+def doDiscmatch(options,albumdir):
     discmatch = DiscMatch()
     filelist = albumtag.getfilelist(albumdir)
     if len(filelist)== 0:
@@ -201,7 +226,10 @@ def doDiscmatch(albumdir, options):
     albumdict = None
     if options.updatetags:
         identifier = albumtag.getStoredCDDBId(filelist)
-        albumdict = discmatch.getalbuminfo(identifier['genreid'], identifier['cddbid'])
+        if identifier:
+            albumdict = discmatch.getalbuminfo(identifier['genreid'], identifier['cddbid'])
+        else:
+            raise NamingMuseError('Broken old tag found, unable to update.')
     if options.force:
         albumdict = None
     if not albumdict:
