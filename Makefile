@@ -9,7 +9,8 @@ install: all
 
 clean:
 	./setup.py clean
-	rm -rf MANIFEST build dist README *.pyc */*.pyc
+	find -iname \*.pyc -exec rm {} \;
+	rm -rf MANIFEST build dist README
 
 dist: clean
 	./setup.py sdist
