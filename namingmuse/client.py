@@ -282,7 +282,9 @@ def stats(albumdir, options):
             if len(dirs) > 0:
                 for dir in dirs:
                     stats = statistics.dirstat(FilePath(root,dir), stats)
-    print stats
+        print stats
+    else:
+        print "This mode only makes sense in recursive mode (-r)"
 
 def namefix(albumdir, options):
     """
