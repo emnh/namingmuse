@@ -3,3 +3,4 @@ include namingmuse.spec
 include MANIFEST.in
 include COPYING Changelog TODO README README.in
 include tools/*.py
+include config
