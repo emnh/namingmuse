@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.20 2004/08/17 00:24:14 emh Exp $
+$Id: cddb.py,v 1.21 2004/08/17 00:27:02 torh Exp $
 """
 
 import socket,string
@@ -47,6 +47,11 @@ class SmartSocket:
         except socket.error, (errno, errstr):
             raise NamingMuseError(errstr)
             
+
+    def flush(self):
+        flushed = self.sock.recv(self.recvsize)
+        if self.dbg:
+            print "Trashing data:",flushed
 
     def send(self, message, term):
         """Sends a string to the server, returning the response terminated
@@ -96,7 +101,7 @@ class CDDBP(object):
         self.user=getpass.getuser()
         self.localhost=socket.gethostname()
         self.client="PyCDDBPlib"
-
+        
     def __decode(self,resp):
         code = int(resp[:3])
         result = resp[4:]
@@ -242,6 +247,9 @@ class CDDBP(object):
 
         items=string.split(resp)
         return (items[0],items[1],string.join(items[2:]))
+
+    def flush(self):
+        return self.sock.flush()
 
     def whom(self):
         "Returns a list of (pid, client, user, ip) tuples."

@@ -37,7 +37,7 @@ def alphadiff(a, b):
     isjunk = lambda x: not x in string.lowercase
     return SequenceMatcher(isjunk, a, b).ratio()
 
-def choosealbum(albums, matchto, options):
+def choosealbum(albums, matchto, options, cddb):
     rows,cols = gettermsize()
 
     matchto = matchto.getName()
@@ -58,17 +58,21 @@ def choosealbum(albums, matchto, options):
     pager.write(fmat(str(0) + ":","", "", "", "Don't tag this album", ""))
     nr = 0
     newlist = []
-    for album in albums:
-        if options.strict:
-            if not len(album.validate()) == 0:
-                continue
-        nr += 1
-        newlist.append(album)
-        album.ignoreMissing(True)
-        similarity = alphadiff(album.title, matchto)
-        similarity = "%3.1f%%" % (similarity * 100)
-        pager.write(fmat(str(nr) + ":",similarity, 
-                    album.year, album.genre, album.artist,album.title))
+    try:
+        for album in albums:
+            if options.strict:
+                if not len(album.validate()) == 0:
+                    continue
+            nr += 1
+            newlist.append(album)
+            album.ignoreMissing(True)
+            similarity = alphadiff(album.title, matchto)
+            similarity = "%3.1f%%" % (similarity * 100)
+            pager.write(fmat(str(nr) + ":",similarity, 
+                        album.year, album.genre, album.artist,album.title))
+    except KeyboardInterrupt:
+        cddb.flush()
+
 
     # XXX: print all albums if none "validated"
             

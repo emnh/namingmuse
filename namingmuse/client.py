@@ -294,7 +294,7 @@ def doFullTextSearch(albumdir, options):
     if len(albuminfos) == 0:
         raise NamingMuseError("No matches in folder %s" % albumdir)
     
-    albuminfo = choosealbum(albuminfos, albumdir, options)
+    albuminfo = choosealbum(albuminfos, albumdir, options, discmatch.cddb)
 
     if not albuminfo:
         raise NamingMuseWarning('Not tagging %s' \
@@ -339,7 +339,7 @@ def doDiscmatch(options, albumdir, discmatch):
             albuminfo = FreeDBAlbumInfo(cddb, album['genreid'], album['cddbid'])
             albuminfos.append(albuminfo)
             
-        albuminfo = terminal.choosealbum(albuminfos, albumdir, options)
+        albuminfo = terminal.choosealbum(albuminfos, albumdir, options, discmatch.cddb)
         if not albuminfo:
             raise NamingMuseWarning('Not tagging %s' \
                        %(albumdir))
