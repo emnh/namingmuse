@@ -86,6 +86,7 @@ def getMP3Length(filename):
             # set stdout to pwrite 
             os.dup2(pwrite, 1)
             args = [ "mp3info" ]
+            args.append("-F")
             args.append('-p%S\n')
             args.append(filename)
             os.execv(mp3info, args)

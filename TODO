@@ -10,6 +10,8 @@ TODO
 *argument to create artistdir if non-existing
 *move album into artistdir if existing
 
+*pass all filenames around using FilePath
+
 *searchfreedb: add option for selecting namebinder
 *searchfreedb: default to using albumdir as search words
 *improve outer approximation namebinder algorithms

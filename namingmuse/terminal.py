@@ -56,6 +56,7 @@ def choosealbum(albums, matchto):
     pager = (len(albums) < rows and sys.stdout or os.popen(pagerapp, "w"))
     
     try:
+        pager.write("\n")
         pager.write("Pick a number that matches '%s':\n" % matchto)
         pager.write(fmat("Nr", "Match", "Year", "Genre", "Artist", "Title"))
         pager.write(fmat(str(0) + ":","", "", "", "Don't tag this album", ""))
