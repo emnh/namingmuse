@@ -54,20 +54,15 @@ class DiscMatch(object):
 
         roundsecs = lambda x: int(x + 0.5)
 
-        floatrest = 0
         for filep in filelist:
             secs = albumtag.getIntLength(filep)
-            #secs = albumtag.getFloatLength(filep)
-            if type(secs) is int:
-                # i'm pretty confident this is the correct way to calculate checksum
-                # because it seems to be what both the freedb reference implementation
-                # does for CD and the "entagged" application does for MP3
-                # but i'm not sure whether it works best in practice
-                # alternatives: secs, totalsecs[x]
-                checksum += DiscMatch.cddb_sum(totalsecs)
-            elif type(secs) is float:
-                floatrest += secs - roundsecs(secs)
-                checksum += DiscMatch.cddb_sum(roundsecs(secs))
+
+            # i'm pretty confident this is the correct way to calculate checksum
+            # because it seems to be what both the freedb reference implementation
+            # does for CD and the "entagged" application does for MP3
+            # but i'm not sure whether it works best in practice
+            # alternatives: secs, totalsecs[x]
+            checksum += DiscMatch.cddb_sum(totalsecs)
                 
             # on CDs an audio frame is 1/75 of a second
             # the framelist contains the offset of the songs on a CD,
@@ -79,9 +74,6 @@ class DiscMatch(object):
         # in practice it doesn't seem to make a big difference
         totalsecs -= leadin
 
-        if type(totalsecs) is float:
-            totalsecs = roundsecs(totalsecs)
-
         # the checksum is a 32bit integer structured as follows
         # first byte: sum(all digits in all song lengths(seconds)) mod 255
         # this is the one that is hardest to get right
@@ -89,9 +81,6 @@ class DiscMatch(object):
         # fourth byte: the number of songs
 
         discid = (long((checksum % 0xFF)) << 24 | totalsecs << 8 | filect)
-        if DEBUG:
-            print "floatrest: %f" % floatrest
-            print "cddbid: %08x" % discid
 
         return [discid, filect] + framelist + [totalsecs]
 
