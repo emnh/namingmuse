@@ -1,6 +1,6 @@
 """
 Simple library speaking CDDBP to CDDB servers.
-$Id: cddb.py,v 1.12 2004/08/09 20:04:41 torh Exp $
+$Id: cddb.py,v 1.13 2004/08/09 21:14:40 emh Exp $
 """
 
 import socket,string
@@ -35,6 +35,7 @@ class SmartSocket:
     def __init__(self,dbg=0,recvsize=1024):
         self.dbg=dbg
         self.recvsize=recvsize
+        self.sock = None
 
     def connect(self, server, port):
         "Connects to the server at the given port."
@@ -48,6 +49,8 @@ class SmartSocket:
     def send(self, message, term):
         """Sends a string to the server, returning the response terminated
         by 'term'."""
+        if not self.sock:
+            raise CDDBException("trying to use smartsocket with no connection")
 	self.sock.send(message+"\n")
 	if self.dbg:
 	    print "Send: "+message
@@ -75,6 +78,10 @@ class SmartSocket:
     def disconnect(self):
         "Disconnects from the remote server."
         self.sock.close()
+
+    def __del__(self):
+        if self.sock: 
+            self.disconnect()
 
 class CDDBP:
     "This class can speak the CDDBP protocol, level 6."

@@ -163,6 +163,10 @@ def cli():
                     try:
                         if os.path.basename(top) != "nonalbum":
                             doDiscmatch(options, top, discmatch)
+                    except CDDBPException, err:
+                        if err.code == CDDB_CONNECTION_TIMEOUT:
+                            print "Connection timed out, reconnecting.."
+                            discmatch.cddb.connect()
                     except NamingMuseException,(errstr):
                         print errstr
                     for name in names:
