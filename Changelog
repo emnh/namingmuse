@@ -1,24 +1,181 @@
+2004-10-23 (version 0.9.0)
+	* namingmuse/namingmuse.py: add autoselect default. support boolean
+	  config options.
+	* namingmuse/albumtag.py: adjust artistdir fuzziness
+	* namingmuse/namingmuse.py: Update -A help to reflect reality
+
+2004-10-22
+	* namingmuse/terminal.py: make auto-select an option
+	* config: add default configuration file
+	* namingmuse/providers/albuminfo.py: move isVarious from TrackInfo
+	  to AlbumInfo, where it should've been all along.
+	* namingmuse/providers/local.py: handle None from readTag() in
+	  LocalAlbumInfo
+	* namingmuse/providers/local.py: remove debug print
+	* namingmuse/filepath.py: add unicode support
+	* namingmuse/providers/local.py: add support for ID3v1
+	* namingmuse/providers/local.py: make LocalAlbumInfo properties
+	  read-on-demand. read artist from all tags for Various Artists
+	  check.
+	* namingmuse/albumtag.py: fix bug related to new getParent()
+	  behaviour
+	* namingmuse/albumtag.py: fix: getParent() should be
+	  getParent().getName()
+	* namingmuse/filepath.py: let getParent return a FilePath object
+	  instead of a string
+
+2004-10-21
+	* namingmuse/albumtag.py: Fix the print out when options.artistdir
+	  was enabled, but the album was already inside an artistdir
+
+2004-10-11
+	* namingmuse/albumtag.py: check if parent dir already matches album
+	  dir fairly well if options.artisdir is given ( -A ). If it
+	  matches, don't move album
+	* namingmuse/: namingmuse.py, statistics.py: add verbose option
+	* namingmuse/providers/freedb.py: reorder functions more
+	  systematically, add comments, move previously static variables to
+	  __init__
+	* namingmuse/providers/local.py: call super constructor in
+	  LocalAlbumInfo
+	* namingmuse/providers/albuminfo.py: make all AlbumInfo fields
+	  per-instance (which they should have been all along)
+	* namingmuse/albumtag.py: remove namingmuse comment removal code
+	* namingmuse/searchfreedb.py: use same album sort order as in html
+	  document
+	* namingmuse/: namingmuse.py, searchfreedb.py:
+	  clean up and fix bugs in freedb search
+	* namingmuse/albumtag.py: don't keep empty comments
+	* namingmuse/albumtag.py: fix removal of old namingmuse comments
+	* namingmuse/albumtag.py: fix bug: oldComment -> oldcomment
+	* namingmuse/namingmuse.py: fix import in getDoc()
+	* setup.py: add providers package
+	* namingmuse/__init__.py: update __all__
+
+2004-10-10
+	* namingmuse/albumtag.py: space
+	* namingmuse/providers/local.py: let test take commandline
+	  arguments instead of hardcode
+	* namingmuse/providers/freedb.py: add freedbdiscid and freedbgenre
+	  as properties
+
+2004-10-09
+	* namingmuse/providers/freedb.py: add freedbrecord property
+	* namingmuse/providers/freedb.py: fix bug in parsing of track
+	  framelengths
+	* namingmuse/provider.py: simplify provider search
+	* namingmuse/: namingmuse.py, provider.py, terminal.py,
+	  providers/albuminfo.py: replace eval with getattr where
+	  applicable
+	* namingmuse/providers/freedb.py: remove old footprint parsing code
+	* namingmuse/albumtag.py: no error for existing if albumdir ==
+	  newalbumdir
+	* namingmuse/constants.py: add module for global constants
+	* namingmuse/provider.py: add general loader module for providers
+	* namingmuse/albumtag.py: raise error when rename target directory
+	  exists
+	* namingmuse/cddb.py: import renamed exceptions module
+	* namingmuse/albuminfo.py: move albuminfo.py to providers/
+	* namingmuse/discmatch.py: remove float secs testing code
+	* namingmuse/namingmuse.py: import provider instead of albuminfo,
+	  rename exceptions module
+	* namingmuse/: exceptions.py, musexceptions.py: rename
+	  exceptions.py to musexceptions.py
+	* namingmuse/searchfreedb.py: rename exceptions
+	* namingmuse/statistics.py: change statistics to use
+	  LocalAlbumInfo. move '\r' out of __str__.
+	* namingmuse/providers/: __init__.py, freedb.py, local.py: split
+	  off freedb provider to freedb.py from albuminfo.py
+	* namingmuse/providers/albuminfo.py: moved albuminfo.py to
+	  providers
+	* namingmuse/albumtag.py: Get rid of some circular dependencies.
+	  Remove float mp3 length test code.  Remove usage of legacy string
+	  class.  Moved TAGVER to constants.py.  More specific error for
+	  old taglib bindings.
+
+2004-10-04
+	* namingmuse/__init__.py: update modules
+
+2004-09-28
+	* namingmuse/albumtag.py: Return error messages from taglib
+	* namingmuse/: albumtag.py, namingmuse.py: Check if we have
+	  permission to enter a directory in getfilelist.
+
+2004-09-23
+	* namingmuse/albumtag.py: debug
+	* TODO, namingmuse/albumtag.py, namingmuse/namingmuse.py: reorder
+	  options. add option for selecting namebinder.
+
+2004-09-22
+	* namingmuse/: albumtag.py, namingmuse.py: fix namebinder bug in
+	  discmatch.
+	* namingmuse/statistics.py: Actually add the statistics file
+	* namingmuse/namingmuse.py: Tell user to use -r with --stats
+	* TODO, namingmuse/albuminfo.py, namingmuse/namefix.py,
+	  namingmuse/namingmuse.py: Implement --stats. Spits out something
+	  like this: Albums: 9, Tagged: 6, Untagged: 3, Missing year: 2,
+	  Missing genre: 1
+
+2004-09-21
+	* TODO, namingmuse/albumtag.py, namingmuse/namingmuse.py: Implement
+	  get_namebinder, function used by tagfiles to determine which
+	  namebinding algorithm to use. In the future it will also be
+	  possible to select this by the cli.  For now it only checks if
+	  every track in the filelist has a tracknumber, and they are in
+	  sequence, without gaps. If so, it chooses namebinder_trackorder.
+	  Else, namebinder_strapprox_time.
+	* namingmuse/cddb.py: change reply timeout 10 -> 20 secs
+	* namingmuse/: albumtag.py, generatetrm.py, gettrm.py, terminal.py:
+	  Added the first musicbrainz code.  Removed gettermsize() If
+	  stdout isn't a tty, don't ask user to choose anything.
+	  (autochoose 0)
+	* namingmuse/exceptions.py: exception class shouldn't know which
+	  color is given to it
+
+2004-09-20
+	* namingmuse/: exceptions.py, namingmuse.py, terminal.py: Implement
+	  an Info: exception for printing out messages considered
+	  infomational. The messages are marked with a green Info:
+
+2004-09-18
+	* namingmuse/albumtag.py: bugfix: newalbumdir -> newalbumdir was
+	  printed instead of albumdir -> newalbumdir. seriously clean up
+	  directory renaming code.
+	* namingmuse/cddb.py: fix parsing of multiple exact matches
+	* namingmuse/cddb.py: increase reply timeout to 10 secs
+	* namingmuse/cddb.py: fix parsing of exact match
+	* namingmuse/cddb.py: make CDDBP Exception a subclass of
+	  NamingMuseException. add some socket timeout error detection
+	  code. try to fix handling of exact matches; they do not terminate
+	  with .
+	* namingmuse/terminal.py: add color to CDDBP Exceptions
+
+2004-09-17
+	* namingmuse/namingmuse.py: allow loose when updating
+	* setup.py: Update classifiers
+	* namingmuse/discmatch.py: Use enumerate
+
 2004-09-17 (version 0.8.3)
-    * cddb: fix socket flushing
-    * namingmuse.spec: added RPM spec file
-    
+	* cddb: fix socket flushing
+	* namingmuse.spec: added RPM spec file
+	
 2004-08-09
-    * terminal: clean up output formatting
-    * namingmuse: new option -A, place album in artist/album
-    * albuminfo: added albuminfo class and freedbalbuminfo subclass
-    * albumtag: improved namebinder heuristics using play length
-    * all: using class albuminfo instead of dictionaries
+	* terminal: clean up output formatting
+	* namingmuse: new option -A, place album in artist/album
+	* albuminfo: added albuminfo class and freedbalbuminfo subclass
+	* albumtag: improved namebinder heuristics using play length
+	* all: using class albuminfo instead of dictionaries
 
 2004-08-04
-    * cddb: added seconds information
-    * albumtag: rough implementation of preserving atime/mtime
-    * searchfreedb: filter matches by song count
-    * all: consistent use of cddbid and genreid as dict keys
+	* cddb: added seconds information
+	* albumtag: rough implementation of preserving atime/mtime
+	* searchfreedb: filter matches by song count
+	* all: consistent use of cddbid and genreid as dict keys
 
 2004-08-02 (version 0.6)
-    * cddb: new module for doing freedb lookups
+	* cddb: new module for doing freedb lookups
 
 2004-07-14 (version 0.5)
-    * initial release: freedb renaming of albums working ok
-    * discmatch: added module for generating and searching freedb using discmatch
-    * searchfreedb: fulltext search of freedb parsing the web interface
+	* initial release: freedb renaming of albums working ok
+	* discmatch: added module for generating and searching freedb using discmatch
+	* searchfreedb: fulltext search of freedb parsing the web interface
