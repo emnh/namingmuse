@@ -1,6 +1,6 @@
 """ A module for functions closely knit to terminal io """
 
-import sys, os, re, string
+import sys, os, re
 import struct, fcntl, termios
 from sys import stdout
 from difflib import SequenceMatcher
@@ -9,7 +9,7 @@ import curses
 DEBUG = False
 
 def termcolor(color, msg):
-    colornum = eval("curses.COLOR_" + string.upper(color))
+    colornum = eval("curses.COLOR_" + color.upper())
     return "\033[1;3%dm%s\033[0;39m" % (colornum, msg)
 
 def colorize(msg):
@@ -21,8 +21,8 @@ def colorize(msg):
     "-dry->": "green",
     }
     color = (msg in tr.keys() and tr[msg] or "")
-    msg = re.sub("Warning",termcolor('yellow',"Warning"),msg)
-    msg = re.sub("Error",termcolor('red',"Error"),msg)
+    msg = re.sub("^Warning",termcolor('yellow',"Warning"),msg)
+    msg = re.sub("^Error",termcolor('red',"Error"),msg)
     if color != "": msg = termcolor(color, msg)
     return msg
 
@@ -34,7 +34,7 @@ def gettermsize():
 
 def alphadiff(a, b):
     a, b = a.lower(), b.lower()
-    isjunk = lambda x: not x in string.lowercase
+    isjunk = lambda x: not x.isalnum()
     return SequenceMatcher(isjunk, a, b).ratio()
 
 def choosealbum(albums, matchto, options, cddb):
