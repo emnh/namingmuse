@@ -1,7 +1,7 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.28 2004/09/16 20:40:09 emh Exp $
+$Id: cddb.py,v 1.29 2004/09/16 22:17:16 emh Exp $
 """
 
 import socket
@@ -13,13 +13,15 @@ from exceptions import *
 defaultserver = "freedb.freedb.org"
 defaultport = 8880
 defaultprotocol = 6
-version="0.20"
+version = '1.28'
 
 DEBUG = False
 
 DOTTERM = '\r\n.\r\n'
 
+# Socket options
 BUFFERSIZE = 8192
+FLUSHTIMEOUT = 0.5
 
 # General CDDB codes
 CDDB_CONNECTION_TIMEOUT = 530
@@ -63,23 +65,37 @@ class SmartSocket:
 
     def connect(self, server, port):
         "Connects to the server at the given port."
-        self.sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self.sock.connect((server, port))
         except socket.error, (errno, errstr):
             raise NamingMuseError(errstr)
             
-
     def flush(self):
-        flushed = self.sock.recv(self.recvsize)
         if self.dbg:
-            print "Trashing data:",flushed
+            print "Trashing restdata:", self.restdata
+        self.restdata = ""
+        self.sock.settimeout(FLUSHTIMEOUT)
+        while True:
+            flushed = ""
+            try:
+                flushed = self.sock.recv(self.recvsize)
+            except socket.timeout:
+                break
+            if self.dbg:
+                print "Trashing data:", flushed
+            if flushed == "": break
+        self.sock.settimeout(None)
 
     def send(self, message, term):
         """Sends a string to the server, returning the response terminated
         by 'term'."""
         if not self.sock:
             raise CDDBPException("trying to use smartsocket with no connection")
+        
+        # flush old data
+        self.restdata = ""
+
 	self.sock.send(message+"\n")
 	if self.dbg:
 	    print "Send: "+message
