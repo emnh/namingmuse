@@ -64,7 +64,6 @@ def decodeFrame(tag, getfield):
         funcname = funcdict[getfield]
         # ID3v1 is always ISO-8859-1
         fval = str(getattr(tag, funcname)())
-        print fval
         if isinstance(fval, types.StringTypes):
             fval = fval.decode('ISO-8859-1')
     else:
