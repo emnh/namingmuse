@@ -16,8 +16,16 @@ class FreeDBAlbumInfo(AlbumInfo):
         if not self.__freedbrecord:
             self.initRecord()
         return self.__freedbrecord
+    
+    def getFreedbDiscID(self):
+        return self.__freedbdiscid
+    
+    def getFreedbGenre(self):
+        return self.__freedbgenre
 
     freedbrecord = property(getRecord)
+    freedbdiscid = property(getFreedbDiscID)
+    freedbgenre = property(getFreedbGenre)
 
     def __getattribute__(self, name):
         #print "getattribute called:", name
