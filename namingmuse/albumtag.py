@@ -25,10 +25,11 @@ DEBUG = False
 
 # XXX: move
 providers = [
+"default": AlbumInfo,
 "freedb": FreeDBAlbumInfo
 ]
 
-def checkTagProvider(filelist):
+def getNmuseTag(filelist):
     fpath = filelist[0]
     if fpath.getFileType() == "mp3":
         tag = MPEGFile(fpath)
@@ -40,11 +41,15 @@ def checkTagProvider(filelist):
             key = comm.description()
             value = comm.text()
             commdict[key] = value
+        if not commdict.has_key("namingmuse"):
+            return None
         if comm.has_key("tagprovider"):
             tagprovider = comm["tagprovider"]
-            providerclass = providers[tagprovider]
-            providerobj = providerclass(commdict)
-            return providerobj
+        else:
+            tagprovider = "default"
+        providerclass = providers[tagprovider]
+        providerobj = providerclass(commdict)
+        return providerobj
     return None
 
 def getfilelist(path):
