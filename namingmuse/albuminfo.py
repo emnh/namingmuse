@@ -97,7 +97,6 @@ class TrackInfo(object):
     __title = ""
     __number = 0
     __playLength = 0
-    __isVarious = False
     
     # XXX: generate set/get methods from dict
     def __init__(self):
@@ -136,19 +135,11 @@ class TrackInfo(object):
         
     def setNumber(self, number):
         self.__number = number
-
-    def getIsVarious(self):
-        return self.__isVarious
     
-    def setIsVarious(self, isvarious):
-        assert isinstance(isvarious, bool)
-        self.__isVarious = isvarious
-
     artist = property(getArtist, setArtist)
     title = property(getTitle, setTitle)
     playLength = property(getPlayLength, setPlayLength)
     number = property(getNumber, setNumber)
-    isVarious = property(getIsVarious, setIsVarious)
 
 class AlbumInfo(object):
     __tagversion = TAGVER
@@ -162,6 +153,7 @@ class AlbumInfo(object):
         self.__artist = ""
         self.__title = ""
         self.__tracks = []
+        self.__isVarious = False
         if footprint and footprint.has_key("TNMU"): 
             self.__tagversion = footprint["TNMU"]
 
@@ -219,9 +211,17 @@ class AlbumInfo(object):
     def getTagVersion(self):
         return self.__tagversion
         
+    def getIsVarious(self):
+        return self.__isVarious
+    
+    def setIsVarious(self, isvarious):
+        assert isinstance(isvarious, bool)
+        self.__isVarious = isvarious
+
     year = property(getYear, setYear)
     genre = property(getGenre, setGenre)
     artist = property(getArtist, setArtist)
     title = property(getTitle, setTitle)
     tracks = property(getTracks, setTracks)
     tagversion = property(getTagVersion)
+    isVarious = property(getIsVarious, setIsVarious)
