@@ -2,7 +2,7 @@
 """
 import sys,os
 import albumtag
-import discmatch
+from discmatch import DiscMatch
 import searchfreedb
 import terminal
 from sys import exit
@@ -100,7 +100,7 @@ def getDoc():
     doc += "SEARCH" + "\n"
     doc += searchfreedb.__doc__ + "\n"
     doc += "DISCMATCH" + "\n"
-    doc += discmatch.__doc__ + "\n"
+    doc += DiscMatch.__doc__ + "\n"
     return doc
 
 def cli():
@@ -143,6 +143,7 @@ def cli():
 
 #XXX: merge common stuff of fulltextsearch and discmatch
 def doFullTextSearch(albumdir, options):
+    discmatch = DiscMatch()
     filelist = albumtag.getfilelist(albumdir)
     if len(filelist)== 0:
         raise NoFilesException("Warning: %s contains no music files !" %albumdir)
@@ -181,6 +182,7 @@ def doFullTextSearch(albumdir, options):
     albumtag.tagfiles(albumdir, albumdict, options, albumtag.namebinder_strapprox)
 
 def doDiscmatch(albumdir, options):
+    discmatch = DiscMatch()
     filelist = albumtag.getfilelist(albumdir)
     if len(filelist)== 0:
         raise NoFilesException("Warning: %s contains no music files !" %albumdir)

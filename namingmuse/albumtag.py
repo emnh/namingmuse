@@ -11,7 +11,6 @@ import os,re,sys,string,shutil
 import random
 import TagLib
 import policy
-import discmatch
 import tempfile
 from terminal import colorize
 from cddb import *
@@ -300,7 +299,8 @@ def tagfiles(albumdir, albumdict, options, namebinder = namebinder_trackorder):
     # Rename album (if no "manual" mp3 files in that dir)
     renamesign = (renamealbum and "->" or "-skip->")
     if renamealbum and options.dryrun: renamesign = "-dry->"
-    print "\n", basename, colorize(renamesign), todir
+    print "\n", basename
+    print "\t", colorize(renamesign), todir
     if not (options.dryrun or options.tagonly) and renamealbum:
         os.rename(albumdir, newalbumdir)
         albumdir = newalbumdir
