@@ -327,11 +327,10 @@ def doFullTextSearch(albumdir, options, cddb):
     """
     Searches the cddb database given an albumdir and searchstrings.
     """
-    discmatch = DiscMatch()
     cddb.encoding = options.encoding
     filelist = albumtag.getfilelist(albumdir)
     if len(filelist) == 0:
-        raise NoFilesException("Warning: %s contains no music files !" %albumdir)
+        raise NoFilesException("Warning: %s contains no music files !" % albumdir)
 
     if not options.words:
         raise NamingMuseError("no search words specified")
@@ -343,29 +342,12 @@ def doFullTextSearch(albumdir, options, cddb):
     searchwords = options.words
 
     print "Searching for albums.."
-    if len(searchfields) > 0:
-        albums = searchfreedb.searchalbums(searchwords, searchfields)
-    else:
-        albums = searchfreedb.searchalbums(searchwords)
+    albums = searchfreedb.searchalbums(albumdir, searchwords, searchfields, cddb)
 
     if len(albums) == 0:
-        raise NamingMuseError("No match for text search %s" % (searchwords))
-
-    albums = searchfreedb.filterBySongCount(albums, len(filelist))
-
-    albuminfos, haveread = [], {}
-    for album in albums:
-        haveread.setdefault(album['cddbid'], [])
-        if not album['genreid'] in haveread.get(album['cddbid']):
-            #freedbrecord = cddb.getRecord(album['genreid'], album['cddbid'])
-            albuminfo = FreeDBAlbumInfo(cddb, album['genreid'], album['cddbid'])
-            albuminfos.append(albuminfo)
-            haveread[album['cddbid']].append(album['genreid'])
-
-    if len(albuminfos) == 0:
-        raise NamingMuseError("No matches in folder %s" % albumdir)
+        raise NamingMuseError("No match for search %s in %s" % (searchwords, albumdir))
     
-    albuminfo = terminal.choosealbum(albuminfos, albumdir, options, cddb)
+    albuminfo = terminal.choosealbum(albums, albumdir, options, cddb)
 
     if not albuminfo:
         raise NamingMuseWarning('Not tagging %s' \
