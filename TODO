@@ -14,10 +14,10 @@ TODO
 * don't tag albums with 1 song since the probability is very high that
   they will match only a lot of incorrect albums
 * trackorder means alphabetical order, make new function to order by track nr
-* use ENV instead of a flag in each file defining if you want DEBUG or not
 * more ~/.namingmuse/ module hooks: preprocessing, postprocessing etc..
 * manually enter freedb disc id
 * manually specify sort order of tracks for freedb lookup
 * manually specify namebinding
 * warn about invalidating albums
 * add option to disable filterBySongCount
+* fix file renaming to comply with user supplied encoding
