@@ -6,7 +6,8 @@ __all__ = [ 'discmatch',
             'albumtag', 
             'filepath',
             'terminal', 
-            'policy', 
+            'policy',
+            'coverfetcher',
             'cddb', 
             'namefix' 
           ]

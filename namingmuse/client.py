@@ -1,4 +1,10 @@
-"""Frontend for the namingmuse tools.
+"""
+CLI frontend for the various namingmuse modules.
+It has three main modes, a searcher (useful if an album doesn't match in freedb)
+, a discmatcher which tries to match an album in freedb and
+a namefixer module which just tries to prettify filenames.
+
+$Id: 
 """
 import sys,os,stat
 import albumtag
@@ -118,13 +124,25 @@ def makeOptionParser():
     return op
 
 def getDoc():
+    """ Return documentation in the various modules. """
+    import albuminfo, cddb, policy, coverfetcher
     doc = "\n"
     doc += "ALBUMTAG\n"
     doc += albumtag.__doc__ + "\n"
+    doc += "ALBUMINFO\n"
+    doc += albuminfo.__doc__ + "\n"
+    doc += "CDDB\n"
+    doc += cddb.__doc__ + "\n"
+    doc += "COVERFETCHER\n"
+    doc += coverfetcher.__doc__ + "\n"
     doc += "SEARCH" + "\n"
     doc += searchfreedb.__doc__ + "\n"
     doc += "DISCMATCH" + "\n"
     doc += DiscMatch.__doc__ + "\n"
+    doc += "NAMEFIX" + "\n"
+    doc += namefix.__doc__ + "\n"
+    doc += "POLICY" + "\n"
+    doc += policy.__doc__ + "\n"
     return doc
 
 defaultconfig = {
@@ -236,6 +254,9 @@ def cli():
     exit(exitstatus)
 
 def namefix(albumdir, options):
+    """
+    Prettifies filenames, see doc in the namefix module.
+    """
     from namefix import namefix
     from terminal import colorize
     filelist = albumtag.getfilelist(albumdir)
@@ -257,6 +278,9 @@ def namefix(albumdir, options):
 
 #XXX: merge common stuff of fulltextsearch and discmatch
 def doFullTextSearch(albumdir, options):
+    """
+    Searches the cddb database given an albumdir and searchstrings.
+    """
     discmatch = DiscMatch()
     discmatch.cddb.encoding = options.encoding
     filelist = albumtag.getfilelist(albumdir)
@@ -308,6 +332,10 @@ def doFullTextSearch(albumdir, options):
 
 
 def doDiscmatch(options, albumdir, cddb):
+    """Takes a dir with a album inside and a cddb module.
+    It then computes the cddb-info and queries a remote cddb server.
+    Last, it renames and tags the album.
+    """
     filelist = albumtag.getfilelist(albumdir)
     if len(filelist)== 0:
         raise NoFilesException("Warning: %s contains no music files !" \

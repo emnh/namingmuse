@@ -9,3 +9,4 @@ TODO
 * searchfreedb: default to using albumdir as search words
 * improve outer namebinder approximation algorithms
 * support "manual" tags (=namingmuse shouldn't touch it)
+* cache cddb files in ~/.namingmuse/cddb/genreid/cddbid/ for insane speed

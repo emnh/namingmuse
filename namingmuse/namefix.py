@@ -1,4 +1,11 @@
-#!/usr/bin/python
+"""
+Provides a function for prettifying a string according to the tast of the namingmuse developers. We don't like ugly file names, so we run every filename trough this function and this functio is in charge of un-uglify them.
+
+Example: MOBY_--_01_-_honEY.MP3
+Becomes: Moby - 01 - Honey.mp3
+
+$Id: 
+"""
 import sys,re,os
 
 def namefix(filename):

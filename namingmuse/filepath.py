@@ -1,11 +1,16 @@
-
-"Contains filepath, a path representation class"
+"""
+Contains filepath, a path representation class
+$Id: 
+"""
 
 import os
 from types import StringTypes
 
 class FilePath(object):
-    "Path representation class"
+    """A class that represents a file path. 
+       It also provides some useful and common methods regarding paths.
+       """ 
+
     def __init__(self, path, *filep):
         path = os.path.abspath(str(path))
         if len(filep) > 0:
@@ -39,5 +44,6 @@ class FilePath(object):
     
     def __cmp__(self, other):
         if not isinstance(other, (FilePath, StringTypes)): 
-            raise TypeError("can't compare FilePath with non-FilePath/string object")
+            raise TypeError(\
+                    "can't compare FilePath with non-FilePath/string object")
         return cmp(str(self), str(other))

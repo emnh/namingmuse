@@ -9,9 +9,7 @@ READ_OK = 210 # deleteme
 DEBUG = False
 
 class DiscMatch:
-    """A module for tagging and renaming files.
-    It generates a discid from album toc to acquire
-    matching metainfo for an album from freedb.
+    """A module that provides some static methods relevant to converting music files to a cdrom TOC.  It generates a discid from album TOC to acquire matching metainfo for an album from freedb.
     """
     def printTOC(filelist):
         'print nicely formatted toc, mostly for debugging'

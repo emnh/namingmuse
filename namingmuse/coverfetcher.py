@@ -1,16 +1,20 @@
-#!/usr/bin/python
-
+"""
+This module searches amazon for cover images using their xml webservices.
+It downloads the images found and returns them as binary data.
+$Id: 
+"""
 import os,re,sys,types,urllib2,urllib
 from xml.dom import minidom
 
 class CoverFetcher:
 
-    amazonLicense = "D1URM11J3F2CEH";
+    amazonLicense = "D1URM11J3F2CEH"
+    amazonSite = "xml-eu.amazon.com"
 
 
     def getCover(self, artist, album, mode="lite", size="1", albumonly="False"):
-
-        """    fetcher->getCover( artist, album, keyword, CoverFetcher::heavy, edit, 2, false );
+        """    
+        Returns binary image data given an artist and an album.
         """
 
         keyword = ""
@@ -21,7 +25,7 @@ class CoverFetcher:
             keyword = artist + " - " + album
 
         #url =  "http://xml-eu.amazon.com/onca/xml3?t=webservices-20&dev-t=%s&KeywordSearch=%s&mode=music&type=%s&page=1&f=xml" %(
-        url = "http://xml-eu.amazon.com/onca/xml3?f=xml"
+        url = "http://%s/onca/xml3?f=xml" %self.amazonSite
         url += "&t=%s" % "webservices-20"
         url += "&dev-t=%s" % self.amazonLicense
         url += "&type=%s" % mode 
