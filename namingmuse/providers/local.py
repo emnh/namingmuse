@@ -6,7 +6,7 @@ import re
 import sys
 import TagLib
 
-from namingmuse.providers.albuminfo import *
+from namingmuse.albuminfo import *
 from namingmuse.filepath import FilePath
 
 # XXX: move somewhere? make better bindings to do this stuff?
@@ -127,11 +127,13 @@ class LocalTrackInfo(TrackInfo):
         self.artist = decodeFrame(tag, 'artist')
         self.title = decodeFrame(tag, 'tracktitle')
         self.number = decodeFrame(tag, 'number')
-        # XXX: bind playLength property to getIntLength
-        #      but move those functions over here first
-        self.playLength = getIntLength(self.fpath)
-
         return tag
+
+    def _getLength(self):
+        return getIntLength(self.fpath)
+        
+    playLength = property(_getLength)
+
 
 def getIntLength(fpath):
     "Get length of a music file via taglib"
@@ -182,8 +184,6 @@ def getMP3Length(filename):
     except:
         return 0
     return strlength
-
-
                     
 class LocalAlbumInfo(AlbumInfo):
 
