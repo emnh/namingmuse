@@ -2,7 +2,7 @@
 
 Summary: A music file tagger/renamer.
 Name: namingmuse
-Version: 0.9.0
+Version: 0.9.1
 Release: 1emh
 URL: http://namingmuse.berlios.de
 Source: http://download.berlios.de/namingmuse/namingmuse-%{version}.tar.gz

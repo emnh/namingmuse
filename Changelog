@@ -1,4 +1,4 @@
-2004-12-28
+2004-12-28 (version 0.9.1)
 	* BUGS, namingmuse/albumtag.py, namingmuse/discmatch.py,
 	  namingmuse/namingmuse.py, namingmuse/providers/local.py,
 	  namingmuse/providers/musicbrainz.py: Added -l (--local) as a new
