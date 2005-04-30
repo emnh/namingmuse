@@ -148,15 +148,17 @@ class AlbumInfo(object):
 
     __metaclass__ = debugTagSafe
 
-    def __init__(self, footprint = None):
+    def __init__(self):
         self.__year = 0
         self.__genre = ""
         self.__artist = ""
         self.__title = ""
         self.__tracks = []
         self.__isVarious = False
-        if footprint and footprint.has_key("TNMU"): 
-            self.__tagversion = footprint["TNMU"]
+
+    def readFootPrint(self, localalbum):
+        'Read footprint common to all providers'
+        self.__tagversion = localalbum.footprint('TNMU')
 
     def validate(self):
         props = ("year", "genre", "artist", "title", "tracks")
