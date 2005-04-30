@@ -42,6 +42,15 @@ def lookup(tagprovider):
             return cls
     raise NamingMuseError("unknown provider: " + tagprovider)
 
+def getRemoteAlbumInfo(localalbum):
+    assert isinstance(localalbum, LocalAlbumInfo)
+    tagprovider = localalbum.tagprovider
+    if tagprovider == 'local' or tagprovider == 'none':
+        return None
+    providerclass = lookup(tagprovider)
+    providerobj = providerclass.fromFootPrint(localalbum)
+    return providerobj
+
 modules = getModules()
 providerclasses = getProviders(modules)
 globals().update(providerclasses)
