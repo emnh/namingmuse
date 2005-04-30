@@ -10,7 +10,7 @@ from namingmuse.albuminfo import *
 from namingmuse.filepath import FilePath
 
 # XXX: move somewhere? make better bindings to do this stuff?
-def decodeFrame(tag, getfield):
+def decodeFrame(tag, getfield, translate=True):
     'Return unicode string (or int) representing the field'
     generalfunctions = [
     ('year', 'year'), # int
@@ -38,18 +38,33 @@ def decodeFrame(tag, getfield):
     ('TRACKNUMBER', 'number'),
     ('TTPR', 'tagprovider')
     ]
-    funcdict, id3v2dict, xiphdict = {}, {}, {}
+    apefields = [
+    ('ALBUM', 'albumtitle'),
+    ('ARTIST', 'artist'),
+    ('GENRE', 'genre'),
+    ('TITLE', 'tracktitle'),
+    ('TRACK', 'number'),
+    ('TTPR', 'tagprovider'),
+    ('YEAR', 'year')
+    ]
+    # Build reverse dictionaries
+    funcdict, id3v2dict, xiphdict, apedict = {}, {}, {}, {}
     for tagfield, common_name in id3v2fields:
         id3v2dict[common_name] = tagfield
     for tagfield, common_name in xiphfields:
         xiphdict[common_name] = tagfield
+    for apefield, common_name in apefields:
+        apedict[common_name] = apefield
     for funcname, common_name in generalfunctions:
         funcdict[common_name] = funcname
     
     fval = ''
+    if not translate:
+        tagfield = getfield
     if isinstance(tag, TagLib.ID3v2Tag):
         framelistmap = tag.frameListMap()
-        tagfield = id3v2dict[getfield]
+        if translate:
+            tagfield = id3v2dict[getfield]
         if framelistmap.has_key(tagfield):
             frame = framelistmap[tagfield][0]
             frame = TagLib.TextIdentificationFrame(frame)
@@ -59,13 +74,25 @@ def decodeFrame(tag, getfield):
                 fval = str(frame).decode('ISO-8859-1')
     elif isinstance(tag, TagLib.XiphComment):
         fields = tag.fieldListMap()
-        tagfield = xiphdict[getfield]
+        if translate:
+            tagfield = xiphdict[getfield]
         if fields.has_key(tagfield):
             frame = fields[tagfield][0]
             # Xiph is always UTF-8
             fval = str(frame).decode('UTF-8')
+    elif isinstance(tag, TagLib.APETag):
+        fields = tag.itemListMap()
+        if translate:
+            tagfield = apedict[getfield]
+        if fields.has_key(tagfield):
+            stlist = fields[tagfield].toStringList()
+            if len(stlist) > 0:
+                frame = stlist[0]
+                # APE is always UTF-8
+                fval = str(frame).decode('UTF-8')
     elif isinstance(tag, TagLib.ID3v1Tag):
-        funcname = funcdict.get(getfield)
+        if translate:
+            funcname = funcdict.get(getfield)
         if funcname:
             # ID3v1 is always ISO-8859-1
             fval = str(getattr(tag, funcname)())
@@ -124,6 +151,13 @@ class LocalTrackInfo(TrackInfo):
                 tag = fileref.tag()
                 if not tag or tag.isEmpty():
                     return None
+            elif self.fpath.getFileType() == "mpc":
+                fileref = TagLib.MPCFile(str(self.fpath))
+                tag = fileref.APETag()
+                if not tag or tag.isEmpty():
+                    tag = fileref.ID3v1Tag()
+                    if not tag or tag.isEmpty():
+                        return None
             self._fileref = fileref # must save, or destroys tag
             self._tag = tag
 
@@ -172,8 +206,7 @@ def getMP3Length(filename):
         if childid:
             os.waitpid(childid, 0)
         else:
-            # set stdout to pwrite 
-            os.dup2(pwrite, 1)
+            os.dup2(pwrite, sys.stdout.fileno())
             args = [ "mp3info" ]
             args.append("-F")
             args.append('-p%S\n')
@@ -194,7 +227,7 @@ class LocalAlbumInfo(AlbumInfo):
     _readtaglong = False
     
     def __getattribute__(self, name):
-        if name in ('year', 'genre', 'title', 'tagprovider'):
+        if name in ('year', 'genre', 'title', 'tagprovider', 'footprint'):
             if not self._readtagshort:
                 self._readtagshort = True
                 self._readTagShort()
@@ -208,7 +241,11 @@ class LocalAlbumInfo(AlbumInfo):
         super(LocalAlbumInfo, self).__init__()
         if encoding: 
             self.encoding = encoding
-        filelist = self.getfilelist(albumdir)
+        self.albumdir = albumdir
+        filelist = self.getfilelist()
+        if len(filelist) == 0:
+            raise NoFilesException("Warning: %s contains no music files !" \
+                    %albumdir)
         for fpath in filelist:
             tr = LocalTrackInfo(fpath)
             self.tracks.append(tr)
@@ -221,9 +258,13 @@ class LocalAlbumInfo(AlbumInfo):
         self.year = decodeFrame(tag, 'year')
         self.genre = decodeFrame(tag, 'genre')
         self.title = decodeFrame(tag, 'albumtitle')
-        self.tagprovider = decodeFrame(tag, 'tagprovider')
-        if not self.tagprovider or self.tagprovider == '':
-            self.tagprovider = 'local'
+        tagprovider = decodeFrame(tag, 'tagprovider')
+        def footprint(key):
+            return decodeFrame(tag, key, translate=False)
+        self.footprint = footprint
+        if not tagprovider or tagprovider == '':
+            tagprovider = 'local'
+        self.tagprovider = tagprovider
 
     def _readTagLong(self):
         'Uses tag from all tracks to get artist/isVarious'
@@ -242,11 +283,11 @@ class LocalAlbumInfo(AlbumInfo):
                 break
             oldartist = artist
 
-    def getfilelist(self, path):
+    def getfilelist(self):
         """Get sorted list of files supported by taglib 
            from specified directory"""
-        path = str(path)
-        rtypes = re.compile("\.(mp3)$|\.(ogg)$", re.I)
+        path = str(self.albumdir)
+        rtypes = re.compile(r'\.(mp3)$|\.(ogg)$|\.(mpc)$', re.I)
         if os.access(path, os.X_OK):
             filelist = filter(lambda x: rtypes.search(str(x)), os.listdir(path))
             filelist = map(lambda x: FilePath(path, x), filelist)
