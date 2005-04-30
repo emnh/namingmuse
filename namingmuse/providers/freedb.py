@@ -7,7 +7,7 @@ class FreeDBAlbumInfo(AlbumInfo):
     'Provides metainfo from freedb.'
     tagprovider = "freedb"
     
-    def __init__(self, *args):
+    def __init__(self, cddb, genre, discid):
         '''
         Initialize FreeDBAlbumInfo.
 
@@ -16,34 +16,22 @@ class FreeDBAlbumInfo(AlbumInfo):
         @param cddb a CDDBP protocol object for communicating with server
         @genre the cddb lookup genre
         @discid the cddb lookup id
-
-        init(record)
-        For initializing from a downloaded record.
-        @param record a string representing a freedb record
         '''
         self.__freedbrecord = None
         self.__readingrecord = False
-        self.__cddb = None
-        self.__freedbdiscid = None
-        self.__freedbgenre = None
-        if len(args) > 1:
-            if len(args) == 3:
-                self.__cddb = args[0]
-                self.__freedbgenre = args[1]
-                self.__freedbdiscid  = args[2]
-                return
-            raise TypeError("invalid init arguments")
-        else:
-            if isinstance(args[0], basestring):
-                freedbrecord = args[0]
-                self.parseFreedbRecord(freedbrecord)
-                return
-            elif isinstance(args[0], dict):
-                footprint = args[0]
-                super(FreeDBAlbumInfo, self).__init__(footprint) 
-                self.fromFootPrint(footprint)
-                return
-        raise TypeError("invalid init arguments")
+        self.__cddb = cddb
+        self.__freedbgenre = genre
+        self.__freedbdiscid  = discid
+
+    def fromFootPrint(cls, localalbum):
+        if localalbum.footprint('TTPR') == cls.tagprovider:
+            discid = localalbum.footprint('TCID')
+            genre  = localalbum.footprint('TGID')
+            self = cls(None, genre, discid)
+            self.readFootPrint(localalbum)
+            return self
+        raise TypeError("invalid provider footprint (wrong class)")
+    fromFootPrint = classmethod(fromFootPrint)
 
     def getRecord(self):
         if not self.__freedbrecord:
@@ -92,19 +80,12 @@ class FreeDBAlbumInfo(AlbumInfo):
         self.parseFreedbRecord(freedbrecord)
         
     def footprint(self):
-        footprint = {}
-        footprint["TTPR"] = self.tagprovider
-        footprint["TCID"] = self.__freedbdiscid
-        footprint["TGID"] = self.__freedbgenre
+        footprint = {
+            'TTPR': self.tagprovider,
+            'TCID': self.__freedbdiscid,
+            'TGID': self.__freedbgenre
+        }
         return footprint
-
-    def fromFootPrint(self, footprint):
-        if footprint["TTPR"] == self.tagprovider:
-            self.__freedbdiscid = footprint["TCID"]
-            self.__freedbgenre = footprint["TGID"]
-            self.genre = footprint["TGID"]
-        else:
-            raise TypeError("invalid provider footprint (wrong class)")
 
     def parseFreedbRecord(self, freedbrecord):
 
