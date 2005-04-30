@@ -37,6 +37,26 @@ def oggdumptag(oggfile):
         for value in stringlist:
             print str(fieldname).ljust(20), str(value)
 
+def mpcdumptag(fname):
+    ref = MPCFile(fname)
+    if ref.ID3v1Tag(False):
+        print 'Has ID3v1Tag'
+    if ref.APETag(False):
+        print 'Has APETag'
+    tag = ref.APETag()
+    if not tag:
+        print 'no APETag'
+        return
+    fields = tag.itemListMap()
+
+    try:
+        for fieldname, item in fields.items():
+            stringlist = item.toStringList()
+            for value in stringlist:
+                print str(fieldname).ljust(20), str(value)
+    except Exception, e:
+        raise
+
 if len(sys.argv) > 1:
     for fname in sys.argv[1:]:
         if os.access(fname, os.R_OK):
@@ -50,6 +70,9 @@ if len(sys.argv) > 1:
                 print "Dumping tag for:", fname
                 oggdumptag(fname)
                 print
+            elif ext == 'mpc':
+                print 'Dumping tag for:', fname
+                mpcdumptag(fname)
         else:
             print "Error: couldn't read:", fname
 else:
