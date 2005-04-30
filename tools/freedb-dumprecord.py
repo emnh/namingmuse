@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
-import os, re, sys
-from namingmuse.filepath import FilePath
-from namingmuse.albumtag import *
+import os
+import sys
+from namingmuse import providers
 from namingmuse.cddb import CDDBP
+from namingmuse.filepath import FilePath
+from namingmuse.musexceptions import *
+from namingmuse.providers import LocalAlbumInfo
 
 if len(sys.argv) < 2:
     sys.exit("usage: %s <album>" % sys.argv[0])
@@ -12,10 +15,13 @@ if len(sys.argv) < 2:
 dirname = sys.argv[1]
 
 fpath = FilePath(dirname)
-filelist = getfilelist(fpath)
-if len(filelist) == 0:
-    sys.exit("no files")
-albuminfo = getNmuseTag(filelist)
+try:
+    localalbum = LocalAlbumInfo(fpath)
+except NoFilesException, e:
+    print e
+    sys.exit(1)
+    
+albuminfo = providers.getRemoteAlbumInfo(localalbum)
 if not albuminfo:
     sys.exit("not tagged")
 
