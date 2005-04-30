@@ -21,69 +21,9 @@ from namingmuse.constants import *
 from namingmuse.filepath import FilePath
 from namingmuse.musexceptions import *
 from namingmuse.terminal import colorize
+from namingmuse.providers import LocalAlbumInfo
 
 DEBUG = os.getenv('DEBUG')
-
-def getNmuseTag(filelist):
-    import types
-    assert isinstance(filelist, list)
-    fpath = filelist[0]
-    tagprovider, fdict = None, {}
-    if fpath.getFileType() == "mp3":
-        fileref = MPEGFile(str(fpath))
-        tag = fileref.ID3v2Tag()
-        if isinstance(tag, basestring): 
-            raise NamingMuseError("Error, old TagLib bindings: " + tag)
-        if not tag or tag.isEmpty():
-            return None
-        framelistmap = tag.frameListMap()
-
-        if framelistmap.has_key("TTPR"):
-            tagprovider = str(framelistmap["TTPR"][0])
-            for frame in tag.frameList():
-                key = str(frame.frameID())
-                if key.startswith('T'):
-                    fdict[key] = str(frame)
-    elif fpath.getFileType() == "ogg":
-        fileref = VorbisFile(str(fpath))
-        tag = fileref.tag()
-        if isinstance(tag, basestring): 
-            raise NamingMuseError("Error, old TagLib bindings: " + tag)
-        if not tag or tag.isEmpty():
-            return None
-        fields = tag.fieldListMap()
-        if fields.has_key("TTPR"):
-            tagprovider = str(fields["TTPR"][0])
-            for fieldname, stringlist in fields.items():
-                fieldname = str(fieldname)
-                # Our fields are singletons
-                if fieldname.startswith('T'):
-                    fdict[fieldname] = str(stringlist[0])
-    if tagprovider:
-        if tagprovider == 'local':
-            providerclass = providers.lookup('none')
-            providerobj = providerclass(fdict)
-        else:
-            providerclass = providers.lookup(tagprovider)
-            providerobj = providerclass(fdict)
-        return providerobj
-    else:
-        return None
-
-# XXX: currently duplicate, make use of local provider
-def getfilelist(path):
-    """Get sorted list of files supported by taglib 
-       from specified directory"""
-    path = str(path)
-    rtypes = re.compile("\.(mp3)$|\.(ogg)$", re.I)
-    if os.access(path, os.X_OK):
-        filelist = filter(lambda x: rtypes.search(str(x)), os.listdir(path))
-        filelist = map(lambda x: FilePath(path, x), filelist)
-        filelist.sort()
-        return filelist
-    else:
-        raise NamingMuseError('Read access denied to path: %s' %path)
-
 
 def distwrap(a, b):
     "Wraps a string distance function"
@@ -196,7 +136,8 @@ def tagfiles(albumdir, album, options):
             print
     album.ignoreMissing(True)
 
-    filelist = getfilelist(albumdir)
+    localalbum = LocalAlbumInfo(albumdir)
+    filelist = localalbum.getfilelist()
 
     namebinder = get_namebinder(options, filelist)
     
@@ -366,30 +307,52 @@ def tagfile(fpath, album, track):
                 tag.addFrame(tf)
 
         return fileref.save()
+
     elif fpath.getFileType() == 'ogg':
         fileref = VorbisFile(str(fpath))
         tag = fileref.tag()
         
         # Clean old comment
         if 'namingmuse' in tag.comment():
-            tag.removeField("DESCRIPTION")
+            tag.removeField('DESCRIPTION')
 
         oggencoding = 'UTF-8'
         fields = {
-            "DATE": str(album.year),
-            "GENRE": album.genre,
-            "ARTIST": track.artist,
-            "ALBUM": album.title,
-            "TITLE": track.title,
-            "TRACKNUMBER": str(track.number)
+            'ALBUM': album.title,
+            'ARTIST': track.artist,
+            'DATE': str(album.year),
+            'GENRE': album.genre,
+            'TITLE': track.title,
+            'TRACKNUMBER': str(track.number)
         }
         footprintdict = album.footprint()
-        footprintdict["TNMU"] = TAGVER 
+        footprintdict['TNMU'] = TAGVER 
         fields.update(footprintdict)
         for key, value in fields.items():
             key = key.decode(album.encoding).encode(oggencoding)
             value = value.decode(album.encoding).encode(oggencoding)
             tag.addField(key, value, True) # replace = True
+        fileref.save()
+
+    elif fpath.getFileType() == 'mpc':
+        fileref = MPCFile(str(fpath))
+        tag = fileref.APETag(True) # create = True
+        ape_encoding = 'UTF-8'
+        fields = {
+            'ALBUM': album.title,
+            'ARTIST': track.artist,
+            'GENRE': album.genre,
+            'TITLE': track.title,
+            'TRACK': str(track.number),
+            'YEAR': str(album.year)
+        }
+        footprintdict = album.footprint()
+        footprintdict['TNMU'] = TAGVER
+        fields.update(footprintdict)
+        for key, value in fields.items():
+            key = key.decode(album.encoding).encode(ape_encoding)
+            value = value.decode(album.encoding).encode(ape_encoding)
+            tag.addValue(key, value, True) # replace = True
         fileref.save()
         
     else:
