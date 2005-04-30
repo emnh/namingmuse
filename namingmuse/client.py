@@ -15,13 +15,14 @@ from optparse import OptionParser, OptionGroup, make_option
 from ConfigParser import *
 
 from namingmuse import albumtag
+from namingmuse import providers
 from namingmuse import searchfreedb
 from namingmuse import terminal
+from namingmuse.cddb import CDDBP, CDDBPException, CDDB_CONNECTION_TIMEOUT
 from namingmuse.discmatch import DiscMatch
-from namingmuse.providers import LocalAlbumInfo, FreeDBAlbumInfo
 from namingmuse.filepath import FilePath
 from namingmuse.musexceptions import *
-from namingmuse.cddb import CDDBP, CDDBPException, CDDB_CONNECTION_TIMEOUT
+from namingmuse.providers import LocalAlbumInfo, FreeDBAlbumInfo
 
 def makeOptionParser():
     op = OptionParser()
@@ -336,7 +337,7 @@ def namefix(albumdir, options):
     """
     from namefix import namefix
     from terminal import colorize
-    filelist = albumtag.getfilelist(albumdir)
+    filelist = getFilelist(albumdir)
     
     renamesign = "->"
     if options.dryrun:
@@ -355,24 +356,22 @@ def namefix(albumdir, options):
     if not options.dryrun:
         os.rename(str(albumdir), str(FilePath(albumdir.getParent(), todir)))
 
-
 def doLocal(albumdir, options):
     filelist = getFilelist(albumdir)
-    checkAlreadyTagged(albumdir, filelist, options)
+    checkAlreadyTagged(albumdir, options)
     albuminfo = LocalAlbumInfo(albumdir, encoding=options.encoding)
     albumtag.tagfiles(albumdir, albuminfo, options)
 
 def getFilelist(albumdir):
-    filelist = albumtag.getfilelist(albumdir)
-    if len(filelist)== 0:
-        raise NoFilesException("Warning: %s contains no music files !" \
-                %albumdir)
+    lalb = LocalAlbumInfo(albumdir)
+    filelist = lalb.getfilelist()
     return filelist
 
-def checkAlreadyTagged(albumdir, filelist, options):
+def checkAlreadyTagged(albumdir, options):
     albuminfo = None
     if not options.force:
-        albuminfo = albumtag.getNmuseTag(filelist)
+        localalbum = LocalAlbumInfo(albumdir)
+        albuminfo = providers.getRemoteAlbumInfo(localalbum)
         if albuminfo:
             # may have used --loose to get the album
             options = copy.copy(options)
@@ -391,9 +390,7 @@ def doFullTextSearch(albumdir, options, cddb):
     Searches the cddb database given an albumdir and searchstrings.
     """
     cddb.encoding = options.encoding
-    filelist = albumtag.getfilelist(albumdir)
-    if len(filelist) == 0:
-        raise NoFilesException("Warning: %s contains no music files !" % albumdir)
+    filelist = getFilelist(albumdir)
 
     if not options.words:
         raise NamingMuseError("no search words specified")
@@ -433,7 +430,7 @@ def doDiscmatch(options, albumdir, cddb):
     cddb.encoding = options.encoding
 
     # Check/retrieve already tagged
-    albuminfo = checkAlreadyTagged(albumdir, filelist, options) 
+    albuminfo = checkAlreadyTagged(albumdir, options) 
 
     if not albuminfo:
         query = DiscMatch.files2discid(filelist)

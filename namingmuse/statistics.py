@@ -7,17 +7,20 @@ import sys
 
 from namingmuse import albumtag
 from namingmuse.musexceptions import *
-from namingmuse.providers import LocalAlbumInfo
+from namingmuse.providers import LocalAlbumInfo, getRemoteAlbumInfo
 
-def dirstat(dir, stats, verbose = False): 
-    filelist = albumtag.getfilelist(dir)
+def dirstat(dirn, stats, verbose = False): 
+    try:
+        album = LocalAlbumInfo(dirn)
+    except NoFilesException:
+        return stats
+    filelist = album.getfilelist()
     if len(filelist) > 0:
         stats.total += 1
-        nmusetag = albumtag.getNmuseTag(filelist)
-        if nmusetag:
+        albuminfo = getRemoteAlbumInfo(album)
+        if albuminfo:
             missing = []
             stats.nmusetagged += 1
-            album = LocalAlbumInfo(dir)
             try:
                 year = album.year
             except NamingMuseWarning:
@@ -29,7 +32,7 @@ def dirstat(dir, stats, verbose = False):
                 stats.missinggenre += 1
                 missing.append('genre')
             if verbose and len(missing) > 0:
-                print "\n%s is missing %s" % (dir, ", ".join(missing))
+                print "\n%s is missing %s" % (dirn, ", ".join(missing))
         print "\r" + str(stats),
     return stats
 
