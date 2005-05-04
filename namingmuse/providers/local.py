@@ -259,9 +259,9 @@ class LocalAlbumInfo(AlbumInfo):
         self.genre = decodeFrame(tag, 'genre')
         self.title = decodeFrame(tag, 'albumtitle')
         tagprovider = decodeFrame(tag, 'tagprovider')
-        def footprint(key):
+        def tagValue(key):
             return decodeFrame(tag, key, translate=False)
-        self.footprint = footprint
+        self.tagValue = tagValue
         if not tagprovider or tagprovider == '':
             tagprovider = 'local'
         self.tagprovider = tagprovider

@@ -24,9 +24,9 @@ class FreeDBAlbumInfo(AlbumInfo):
         self.__freedbdiscid  = discid
 
     def fromFootPrint(cls, localalbum):
-        if localalbum.footprint('TTPR') == cls.tagprovider:
-            discid = localalbum.footprint('TCID')
-            genre  = localalbum.footprint('TGID')
+        if localalbum.tagValue('TTPR') == cls.tagprovider:
+            discid = localalbum.tagValue('TCID')
+            genre  = localalbum.tagValue('TGID')
             self = cls(None, genre, discid)
             self.readFootPrint(localalbum)
             return self

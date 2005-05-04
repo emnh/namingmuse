@@ -158,7 +158,7 @@ class AlbumInfo(object):
 
     def readFootPrint(self, localalbum):
         'Read footprint common to all providers'
-        self.__tagversion = localalbum.footprint('TNMU')
+        self.__tagversion = localalbum.tagValue('TNMU')
 
     def validate(self):
         props = ("year", "genre", "artist", "title", "tracks")
