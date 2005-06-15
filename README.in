@@ -19,6 +19,11 @@ COMMUNICATION
 Send bug reports, questions and feature requests to
 namingmuse-devel@lists.berlios.de.
 
+REQUIREMENTS
+python-2.3
+taglib
+python-taglib
+
 FEATURES
 
 *Using the abstract taglib API makes music format support easily extensible.
