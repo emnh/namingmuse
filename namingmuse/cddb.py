@@ -1,7 +1,7 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.36 2005/01/17 20:32:52 emh Exp $
+$Id: cddb.py,v 1.37 2006/04/24 20:07:19 emh Exp $
 """
 
 import getpass
@@ -100,9 +100,9 @@ class SmartSocket:
 
         self.lastsend = message
 
-	self.sock.send(message+"\n")
-	if self.dbg:
-	    print "Send: "+message
+        self.sock.send(message+"\n")
+        if self.dbg:
+            print "Send: "+message
 
         return self.receive(term)
 
@@ -121,9 +121,9 @@ class SmartSocket:
                 raise CDDBPException(-1, "timed out waiting for reply, send: %s\nterm: '%s'\ndata: %s" %
                                 (self.lastsend, term, data))
             data = data + newdata
-            
-	if self.dbg:
-	    print "Recv: "+data
+
+        if self.dbg:
+            print "Recv: "+data
 
         self.sock.settimeout(None)
         data, rest = data.split(term, 1)
