@@ -18,11 +18,11 @@ from namingmuse import albumtag
 from namingmuse import providers
 from namingmuse import searchfreedb
 from namingmuse import terminal
-from namingmuse.cddb import CDDBP, CDDBPException, CDDB_CONNECTION_TIMEOUT
-from namingmuse.discmatch import DiscMatch
-from namingmuse.filepath import FilePath
-from namingmuse.musexceptions import *
-from namingmuse.providers import LocalAlbumInfo, FreeDBAlbumInfo
+from cddb import CDDBP, CDDBPException, CDDB_CONNECTION_TIMEOUT
+from discmatch import DiscMatch
+from filepath import FilePath
+from musexceptions import *
+from providers import LocalAlbumInfo, FreeDBAlbumInfo
 
 def makeOptionParser():
     op = OptionParser()

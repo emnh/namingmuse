@@ -6,8 +6,8 @@ import re
 import sys
 
 from namingmuse import albumtag
-from namingmuse.musexceptions import *
-from namingmuse.providers import LocalAlbumInfo, getRemoteAlbumInfo
+from musexceptions import *
+from providers import LocalAlbumInfo, getRemoteAlbumInfo
 
 def dirstat(dirn, stats, verbose = False): 
     try:

@@ -1,14 +1,14 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.37 2006/04/24 20:07:19 emh Exp $
+$Id: cddb.py,v 1.38 2008/05/27 10:02:58 torh Exp $
 """
 
 import getpass
 import os
 import re
 import socket
-from namingmuse.musexceptions import *
+from musexceptions import *
 
 defaultserver = "freedb.freedb.org"
 defaultport = 8880
@@ -244,8 +244,10 @@ class CDDBP(object):
             if code == QUERY_EXACT:
                 albumlist = [data]
             else:
-                albumlist = self.sock.receive(DOTTERM)
-                albumlist = albumlist.splitlines()[:-2]
+                recievedalbumlist = self.sock.receive(DOTTERM)
+                albumlist = recievedalbumlist.splitlines()[:-2]
+                if not albumlist:
+                    albumlist = recievedalbumlist.splitlines()
             data = []
             for line in albumlist:
                 genreid, cddbid, title = line.split(" ", 2)

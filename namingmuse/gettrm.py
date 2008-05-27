@@ -9,7 +9,7 @@ import musicbrainz
 #so query names are shorter
 q = musicbrainz
 
-DEBUG = os.getenv('DEBUG)
+DEBUG = os.getenv('DEBUG')
 
 def main():
     mb = musicbrainz.mb()

@@ -2,9 +2,9 @@ import os
 import re
 import sys
 
-from namingmuse import albumtag
-from namingmuse import musexceptions
-from namingmuse import terminal
+import albumtag
+import musexceptions
+import terminal
 
 QUERY_EXACT = 200
 QUERY_NONE = 202
@@ -17,6 +17,7 @@ DEBUG = os.getenv('DEBUG')
 class DiscMatch(object):
     """A module that provides some static methods relevant to converting music files to a cdrom TOC.  It generates a discid from album TOC to acquire matching metainfo for an album from freedb.
     """
+    @staticmethod
     def printTOC(filelist):
         'print nicely formatted toc, mostly for debugging'
         toc = DiscMatch.files2discid(filelist)
@@ -39,6 +40,7 @@ class DiscMatch(object):
             oldlength += length
         print "nb! last frameidx not sent to server (just totsecs * 75)"
 
+    @staticmethod
     def cddb_sum(n):
         ret = 0
         
@@ -48,9 +50,10 @@ class DiscMatch(object):
 
         return ret
 
+    @staticmethod
     def files2discid(filelist):
         """Calculate discid from an _ordered_ set of files
-           Supported filetypes are those supported by TagLib"""
+           Supported filetypes are those supported by tagpy"""
 
         filect = len(filelist)
         leadin = 2
@@ -91,6 +94,7 @@ class DiscMatch(object):
 
         return [discid, filect] + framelist + [totalsecs]
 
+    @staticmethod
     def freedbTOCMatchAlbums(cddb, query):
         """Search freedb for album matches for music files in
            an album(directory) in track order, using discid
@@ -103,7 +107,7 @@ class DiscMatch(object):
             elif query_stat == QUERY_MULTIPLE_EXACT:
                 # this happens mostly on albums with very few songs
                 statusmsg = "multiple exact matches"
-            elif query_stat == QUERY_EXACT: 
+            elif query_stat == QUERY_EXACT:
                 statusmsg = "exact match!"
                 pass
             elif query_stat == QUERY_NONE:
@@ -118,7 +122,3 @@ class DiscMatch(object):
         else:
             return (None, None)
 
-    printTOC = staticmethod(printTOC)
-    cddb_sum = staticmethod(cddb_sum)
-    files2discid = staticmethod(files2discid)
-    freedbTOCMatchAlbums = staticmethod(freedbTOCMatchAlbums)

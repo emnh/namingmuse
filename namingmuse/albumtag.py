@@ -12,16 +12,19 @@ import sys
 import tempfile
 
 from difflib import SequenceMatcher
-from TagLib import * # get this from http://namingmuse.berlios.de
+import tagpy
+from tagpy import id3v2
 
-from namingmuse import policy
-from namingmuse import providers
-from namingmuse.cddb import *
-from namingmuse.constants import *
-from namingmuse.filepath import FilePath
-from namingmuse.musexceptions import *
-from namingmuse.terminal import colorize
-from namingmuse.providers import LocalAlbumInfo
+
+
+import policy
+#import providers
+from cddb import *
+from constants import *
+from filepath import FilePath
+from musexceptions import *
+from terminal import colorize
+from providers import LocalAlbumInfo
 
 DEBUG = os.getenv('DEBUG')
 
@@ -188,7 +191,9 @@ def tagfiles(albumdir, album, options):
             shutil.copystat(str(fpath), tmpfilename)
             
             # tag the file
-            tagfile(fpath, album, track)
+            if not options.cmd == 'local':
+                # dont tag if info is local (TEMP WORKAROUND FOR BROKEN TAGPY)
+                tagfile(fpath, album, track)
             # restore filestat
             shutil.copystat(tmpfilename, str(fpath))
             # deletes tempfile
@@ -216,7 +221,7 @@ def tagfiles(albumdir, album, options):
         newalbumdir = FilePath(albumdir.getParent(), newalbum)
 
     # Make parent directory of albumdir if needed
-    parent = str(newalbumdir.getParent())
+    parent = unicode(newalbumdir.getParent())
     if not os.path.isdir(parent):
         os.mkdir(parent)
 
@@ -225,12 +230,12 @@ def tagfiles(albumdir, album, options):
     if options.dryrun:
         renamesign = "-dry->"
     if not (options.dryrun or options.tagonly) and renamealbum \
-        and str(albumdir) != str(newalbumdir):
-        if os.path.exists(str(newalbumdir)):
+        and unicode(albumdir) != unicode(newalbumdir):
+        if os.path.exists(unicode(newalbumdir)):
             raise NamingMuseWarning("Directory already exists (dup album?): " +
-                  str(newalbumdir))
+                  unicode(newalbumdir))
         try:
-            os.rename(str(albumdir), str(newalbumdir))
+            os.rename(unicode(albumdir), unicode(newalbumdir))
         except OSError, err:
             raise NamingMuseWarning(str(err))
 
@@ -245,33 +250,49 @@ def tagfiles(albumdir, album, options):
 def tagfile(fpath, album, track):
     """ Tag the file with metadata """
 
-    if fpath.getFileType() == 'mp3':
-        fileref = MPEGFile(str(fpath))
+    fileref = tagpy.FileRef(str(fpath))
+    tag = fileref.tag()
+    tag.year = album.year
+    tag.genre = album.genre
+    tag.artist = track.artist
+    tag.album = album.title
+    tag.title = track.title
+    tag.track = track.number
+    #TODO comment
+    #tag.setComment(comment)
+    return fileref.save()
 
-        hadID3v2Tag = fileref.ID3v2Tag(False) and True
+
+    #FIXME: enable this code after figuring out the segfualts 
+    if fpath.getFileType() == 'mp3':
+        fileref = tagpy.FileRef(str(fpath))
+
+        hadID3v2Tag = fileref.file().ID3v2Tag()
        
         # Preserve old idv1 comments
         oldcomment = None
         if not hadID3v2Tag:
-            id1tag = fileref.ID3v1Tag(False)
+            id1tag = fileref.file().ID3v1Tag()
             if id1tag and not id1tag.isEmpty():
-                oldcomment = id1tag.comment()
+                oldcomment = id1tag.comment
                 if oldcomment == "":
                     oldcomment = None
 
         # strip id3v1tag, bool freeMemory = False 
-        fileref.strip(MPEGFile.ID3v1, False)
+        # TODO: How to strip ID3v1 in new bindings?
+#        fileref.strip()
 
-        # Have to make new fileref, since the old one still contains an ID3v1
-        # tag (in memory) which we do not want to merge into our new tag
-        del fileref
-        fileref = MPEGFile(str(fpath))
+        ## Have to make new fileref, since the old one still contains an ID3v1
+        ## tag (in memory) which we do not want to merge into our new tag
+## TODO: Is this true for new bindings?
+#        del fileref
+#        fileref = MPEGFile(str(fpath))
 
-        tag = fileref.ID3v2Tag(True)
+        tag = fileref.file().ID3v2Tag()
 
         # Insert old id3v1 comment in id3v2tag
         if oldcomment:
-            cf = CommentsFrame()
+            cf = id3v2.CommentsFrame()
             cf.setText(oldcomment)
             tag.addFrame(cf)
         
@@ -279,7 +300,7 @@ def tagfile(fpath, album, track):
         # gather frame values
         framedict = {}
         footprintdict = album.footprint()
-        footprintdict["TNMU"] = TAGVER 
+        footprintdict["TNMU"] = TAGVER
         framedict.update(footprintdict)
         del footprintdict
         framedict.update({
@@ -292,23 +313,23 @@ def tagfile(fpath, album, track):
                 })
 
         if 'UTF' in album.encoding.upper():
-            taglibencoding = String.UTF8 
-        else:
-            taglibencoding = String.Latin1
+            id3v2.FrameFactory.instance().setDefaultTextEncoding(tagpy.StringType.UTF8)
 
         # append namingmuse footprint
         for key,text in framedict.items():
             tag.removeFrames(key)
             if not text == "":
-                tf = TextIdentificationFrame(key, taglibencoding)
-                if isinstance(text, unicode):
-                    text = text.encode(album.encoding)
+                print key
+                tf = id3v2.TextIdentificationFrame()
+                #if isinstance(text, unicode):
+                #    text = text.encode(album.encoding,'ignore')
                 tf.setText(text)
                 tag.addFrame(tf)
-
-        return fileref.save()
+        retval = fileref.save()
+        return retval
 
     elif fpath.getFileType() == 'ogg':
+        raise Exception("Not converted to new code yet")
         fileref = VorbisFile(str(fpath))
         tag = fileref.tag()
         
@@ -326,7 +347,7 @@ def tagfile(fpath, album, track):
             'TRACKNUMBER': str(track.number)
         }
         footprintdict = album.footprint()
-        footprintdict['TNMU'] = TAGVER 
+        footprintdict['TNMU'] = TAGVER
         fields.update(footprintdict)
         for key, value in fields.items():
             key = key.decode(album.encoding).encode(oggencoding)
@@ -335,6 +356,7 @@ def tagfile(fpath, album, track):
         fileref.save()
 
     elif fpath.getFileType() == 'mpc':
+        raise Exception("Not converted to new code yet")
         fileref = MPCFile(str(fpath))
         tag = fileref.APETag(True) # create = True
         ape_encoding = 'UTF-8'
@@ -356,14 +378,14 @@ def tagfile(fpath, album, track):
         fileref.save()
         
     else:
-        fileref = FileRef(str(fpath))
+        fileref = tag.pyFileRef(str(fpath))
         tag = fileref.tag()
-        tag.setYear(album.year)
-        tag.setGenre(album.genre)
-        tag.setArtist(track.artist)
-        tag.setAlbum(album.title)
-        tag.setTitle(track.title)
-        tag.setTrack(track.number)
+        tag.year = album.year
+        tag.genre = album.genre
+        tag.artist = track.artist
+        tag.album = album.title
+        tag.title = track.title
+        tag.track = track.number
         #TODO comment
         #tag.setComment(comment)
         fileref.save()

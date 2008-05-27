@@ -1,5 +1,5 @@
 
-from namingmuse.terminal import colorize
+from terminal import colorize
 
 class NamingMuseException(Exception):
     "Base class for namingmuse exceptions"

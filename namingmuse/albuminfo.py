@@ -4,8 +4,8 @@ An albuminfo class is a class that contains metdata about an album.
 import os
 import re
 import sys
-from namingmuse.constants import TAGVER
-from namingmuse.musexceptions import *
+from constants import TAGVER
+from musexceptions import *
 
 #__all__ = [ 'TrackInfo', 'AlbumInfo' ]
 

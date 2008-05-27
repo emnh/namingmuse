@@ -4,7 +4,7 @@
 import os
 import re
 import sys
-import TagLib
+import tagpy
 
 from namingmuse.albuminfo import *
 from namingmuse.filepath import FilePath
@@ -80,16 +80,16 @@ def decodeFrame(tag, getfield, translate=True):
             frame = fields[tagfield][0]
             # Xiph is always UTF-8
             fval = str(frame).decode('UTF-8')
-    elif isinstance(tag, TagLib.APETag):
-        fields = tag.itemListMap()
-        if translate:
-            tagfield = apedict[getfield]
-        if fields.has_key(tagfield):
-            stlist = fields[tagfield].toStringList()
-            if len(stlist) > 0:
-                frame = stlist[0]
-                # APE is always UTF-8
-                fval = str(frame).decode('UTF-8')
+  #  elif isinstance(tag, TagLib.APETag):
+  #      fields = tag.itemListMap()
+  #      if translate:
+  #          tagfield = apedict[getfield]
+  #      if fields.has_key(tagfield):
+  #          stlist = fields[tagfield].toStringList()
+  #          if len(stlist) > 0:
+  #              frame = stlist[0]
+  #              # APE is always UTF-8
+  #              fval = str(frame).decode('UTF-8')
     elif isinstance(tag, TagLib.ID3v1Tag):
         if translate:
             funcname = funcdict.get(getfield)
@@ -138,32 +138,18 @@ class LocalTrackInfo(TrackInfo):
     def readTag(self):
         if self._tag:
             tag = self._tag
-        else:    
-            if self.fpath.getFileType() == "mp3":
-                fileref = TagLib.MPEGFile(str(self.fpath))
-                tag = fileref.ID3v2Tag()
-                if not tag or tag.isEmpty():
-                    tag = fileref.ID3v1Tag()
-                    if not tag or tag.isEmpty():
-                        return None
-            elif self.fpath.getFileType() == "ogg":
-                fileref = TagLib.VorbisFile(str(self.fpath))
-                tag = fileref.tag()
-                if not tag or tag.isEmpty():
-                    return None
-            elif self.fpath.getFileType() == "mpc":
-                fileref = TagLib.MPCFile(str(self.fpath))
-                tag = fileref.APETag()
-                if not tag or tag.isEmpty():
-                    tag = fileref.ID3v1Tag()
-                    if not tag or tag.isEmpty():
-                        return None
+        else:
+            fileref = tagpy.FileRef(str(self.fpath))
+            tag = fileref.tag()
+            if not tag or tag.isEmpty():
+                return None
+
             self._fileref = fileref # must save, or destroys tag
             self._tag = tag
 
-        self.artist = decodeFrame(tag, 'artist')
-        self.title = decodeFrame(tag, 'tracktitle')
-        self.number = decodeFrame(tag, 'number')
+        self.artist = self._tag.artist
+        self.title = self._tag.title
+        self.number = self._tag.track
         return tag
 
     def _getLength(self):
@@ -173,15 +159,16 @@ class LocalTrackInfo(TrackInfo):
 
 
 def getIntLength(fpath):
-    "Get length of a music file via taglib"
+    "Get length of a music file via tagpy"
     filename = str(fpath)
-    tagfile = TagLib.FileRef(filename, True, TagLib.AudioProperties.Accurate)
+    #tagfile = TagLib.FileRef(filename, True, TagLib.AudioProperties.Accurate)
+    tagfile = tagpy.FileRef(filename)
     audioproperties = tagfile.audioProperties()
     
     if not audioproperties:
         raise NamingMuseError("failed to get audioproperties: broken file?")
         
-    length = audioproperties.length()
+    length = audioproperties.length
     
     # XXX: try various fallback methods
     if length == 0:
@@ -191,7 +178,7 @@ def getIntLength(fpath):
 
     # raise exception; or discid generation will fail
     # and user doesn't know why
-    if length == 0: 
+    if length == 0:
         raise NamingMuseError("taglib audioproperties " \
             "failed to get length of: %s" % filename)
 
@@ -239,7 +226,7 @@ class LocalAlbumInfo(AlbumInfo):
 
     def __init__(self, albumdir, encoding = None):
         super(LocalAlbumInfo, self).__init__()
-        if encoding: 
+        if encoding:
             self.encoding = encoding
         self.albumdir = albumdir
         filelist = self.getfilelist()
@@ -255,13 +242,14 @@ class LocalAlbumInfo(AlbumInfo):
         # assume all tracks have same album info
         tag = self.tracks[0].readTag()
         if not tag: return
-        self.year = decodeFrame(tag, 'year')
-        self.genre = decodeFrame(tag, 'genre')
-        self.title = decodeFrame(tag, 'albumtitle')
-        tagprovider = decodeFrame(tag, 'tagprovider')
-        def tagValue(key):
-            return decodeFrame(tag, key, translate=False)
-        self.tagValue = tagValue
+        self.year = tag.year
+        self.genre =  tag.genre
+        self.title = tag.album
+#XXX: Fix this ? Removed after python-taglib -> tagpy transition
+        tagprovider = ""
+#        def tagValue(key):
+ #           return decodeFrame(tag, key, translate=False)
+  #      self.tagValue = tagValue
         if not tagprovider or tagprovider == '':
             tagprovider = 'local'
         self.tagprovider = tagprovider
@@ -271,12 +259,12 @@ class LocalAlbumInfo(AlbumInfo):
         # Check artist on all tracks; if they aren't all equal use Various
         tag = self.tracks[0].readTag()
         if not tag: return
-        oldartist = decodeFrame(tag, 'artist')
+        oldartist = tag.artist
         self.artist = oldartist
         self.isVarious = False
         for track in self.tracks:
             tag = track.readTag()
-            artist = decodeFrame(tag, 'artist')
+            artist = tag.artist
             if artist != oldartist:
                 self.artist = "Various"
                 self.isVarious = True

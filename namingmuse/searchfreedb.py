@@ -12,8 +12,8 @@ import terminal
 import urllib
 from HTMLParser import HTMLParser
 
-from namingmuse.providers import FreeDBAlbumInfo
-from namingmuse.providers import LocalAlbumInfo
+from providers import FreeDBAlbumInfo
+from providers import LocalAlbumInfo
 
 from musexceptions import *
 
