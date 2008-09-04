@@ -15,8 +15,6 @@ from difflib import SequenceMatcher
 import tagpy
 from tagpy import id3v2
 import tagpy.mpeg
-tagpyver = int(re.search('tagpy-0.([0-9]+)', tagpy.__file__).group(1))
-
 
 import policy
 #import providers
@@ -252,8 +250,8 @@ def tagfiles(albumdir, album, options):
 def tagfile(fpath, album, track, options):
     """ Tag the file with metadata """
 
-    if tagpyver <= 93:
-        print 'warning: using generic tagging. upgrade to tagpy 0.94 or later.'
+    if not hasattr(tagpy.FileRef, 'create'):
+        print 'warning: using generic tagging. upgrade to tagpy 0.94.5 or later.'
         fileref = tagpy.FileRef(str(fpath))
         tag = fileref.tag()
         tag.year = album.year
