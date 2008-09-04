@@ -1,7 +1,7 @@
 """
 Simple library speaking CDDBP to CDDB servers.
 This code has NOT been cleaned up yet. It's ugly.
-$Id: cddb.py,v 1.38 2008/05/27 10:02:58 torh Exp $
+$Id: cddb.py,v 1.39 2008/09/04 12:34:10 emh Exp $
 """
 
 import getpass
@@ -281,7 +281,7 @@ class CDDBP(object):
         else:
             raise NotImplementedError("cddb read: code %u" % code)
         freedbrecord = freedbrecord.decode('UTF-8')
-        freedbrecord = freedbrecord.encode(self.encoding, 'replace')
+        #freedbrecord = freedbrecord.encode(self.encoding, 'replace')
         return freedbrecord
         
     def motd(self):

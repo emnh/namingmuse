@@ -5,6 +5,11 @@ import os
 import re
 import sys
 import tagpy
+import tagpy.ogg.vorbis
+from tagpy import id3v1
+from tagpy import id3v2
+from tagpy import ogg
+from tagpy import ape
 
 from namingmuse.albuminfo import *
 from namingmuse.filepath import FilePath
@@ -61,26 +66,25 @@ def decodeFrame(tag, getfield, translate=True):
     fval = ''
     if not translate:
         tagfield = getfield
-    if isinstance(tag, TagLib.ID3v2Tag):
+    if isinstance(tag, id3v2.Tag):
         framelistmap = tag.frameListMap()
         if translate:
             tagfield = id3v2dict[getfield]
-        if framelistmap.has_key(tagfield):
+        if tagfield in framelistmap:
             frame = framelistmap[tagfield][0]
-            frame = TagLib.TextIdentificationFrame(frame)
-            if frame.textEncoding() == TagLib.String.UTF8:
-                fval = str(frame).decode('UTF-8')
-            elif frame.textEncoding() == TagLib.String.Latin1:
-                fval = str(frame).decode('ISO-8859-1')
-    elif isinstance(tag, TagLib.XiphComment):
+            if frame.textEncoding() == tagpy.StringType.UTF8:
+                fval = frame.toString().decode('UTF-8')
+            elif frame.textEncoding() == tagpy.StringType.Latin1:
+                fval = frame.toString().decode('ISO-8859-15')
+    elif isinstance(tag, ogg.XiphComment):
         fields = tag.fieldListMap()
         if translate:
             tagfield = xiphdict[getfield]
-        if fields.has_key(tagfield):
+        if tagfield in fields:
             frame = fields[tagfield][0]
             # Xiph is always UTF-8
             fval = str(frame).decode('UTF-8')
-  #  elif isinstance(tag, TagLib.APETag):
+  #  elif isinstance(tag, ape.Tag):
   #      fields = tag.itemListMap()
   #      if translate:
   #          tagfield = apedict[getfield]
@@ -90,7 +94,7 @@ def decodeFrame(tag, getfield, translate=True):
   #              frame = stlist[0]
   #              # APE is always UTF-8
   #              fval = str(frame).decode('UTF-8')
-    elif isinstance(tag, TagLib.ID3v1Tag):
+    elif isinstance(tag, id3v1.Tag):
         if translate:
             funcname = funcdict.get(getfield)
         if funcname:
@@ -139,8 +143,22 @@ class LocalTrackInfo(TrackInfo):
         if self._tag:
             tag = self._tag
         else:
-            fileref = tagpy.FileRef(str(self.fpath))
-            tag = fileref.tag()
+            fpath = str(self.fpath)
+            if fpath.lower().endswith('mp3'):
+                fileref = tagpy.mpeg.File(fpath)
+                tag = fileref.ID3v2Tag()
+                if not tag:
+                    tag = fileref.ID3v1Tag()
+            elif fpath.lower().endswith('ogg'):
+                fileref = tagpy.ogg.vorbis.File(fpath)
+                tag = fileref.tag()
+            elif fpath.lower().endswith('mpc'):
+                fileref = MPCFile(fpath)
+                tag = fileref.APETag()
+            else:
+                fileref = tagpy.FileRef(fpath)
+                tag = fileref.tag()
+
             if not tag or tag.isEmpty():
                 return None
 
@@ -224,10 +242,8 @@ class LocalAlbumInfo(AlbumInfo):
                 self._readTagLong()
         return super(LocalAlbumInfo, self).__getattribute__(name)
 
-    def __init__(self, albumdir, encoding = None):
+    def __init__(self, albumdir):
         super(LocalAlbumInfo, self).__init__()
-        if encoding:
-            self.encoding = encoding
         self.albumdir = albumdir
         filelist = self.getfilelist()
         if len(filelist) == 0:
@@ -245,11 +261,12 @@ class LocalAlbumInfo(AlbumInfo):
         self.year = tag.year
         self.genre =  tag.genre
         self.title = tag.album
-#XXX: Fix this ? Removed after python-taglib -> tagpy transition
         tagprovider = ""
-#        def tagValue(key):
- #           return decodeFrame(tag, key, translate=False)
-  #      self.tagValue = tagValue
+        def tagValue(key):
+            ret = decodeFrame(tag, key, translate=False)
+            return ret
+        self.tagValue = tagValue
+        tagprovider = tagValue('TTPR')
         if not tagprovider or tagprovider == '':
             tagprovider = 'local'
         self.tagprovider = tagprovider

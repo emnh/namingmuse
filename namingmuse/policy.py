@@ -13,7 +13,7 @@ import re
 import sys
 
 def genfilename(original, album, track):
-    ext = original.getExt()
+    ext = original.getExt().lower()
     if album.isVarious:
         # Track number first
         tofile = "%.2u %s - %s%s" % \

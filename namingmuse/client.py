@@ -190,7 +190,8 @@ def getDoc():
     return doc
 
 defaultconfig = {
-'encoding': 'iso-8859-15',
+'tagencoding': 'iso-8859-15',
+'sysencoding': 'utf-8',
 'autoselect': 'False'
 }
 
@@ -208,8 +209,10 @@ def readconfig(options):
         elif value.lower() == "false":
             value = False
         options.ensure_value(key, value)
-    if options.encoding == "terminal":
-        options.encoding = sys.stdout.encoding
+    if options.sysencoding == 'terminal':
+        options.sysencoding = sys.stdout.encoding
+    if options.tagencoding == 'terminal':
+        options.tagencoding = sys.stdout.encoding
 
 def cli():
     op = makeOptionParser()
@@ -249,7 +252,6 @@ def cli():
 
     try:
         cddb = CDDBP()
-        cddb.encoding = options.encoding
         if options.cmd == "discmatch":
             discmatch = DiscMatch()
             if options.recursive:
@@ -316,7 +318,6 @@ def walk(top, cddb, options):
         else:
             print err 
             cddb = CDDBP()
-            cddb.encoding = options.encoding
     except NoFilesException:
         pass
     except NamingMuseException,(errstr):
@@ -379,7 +380,7 @@ def namefix(albumdir, options):
 def doLocal(albumdir, options):
     filelist = getFilelist(albumdir)
     checkAlreadyTagged(albumdir, options)
-    albuminfo = LocalAlbumInfo(albumdir, encoding=options.encoding)
+    albuminfo = LocalAlbumInfo(albumdir)
     albumtag.tagfiles(albumdir, albuminfo, options)
 
 def getFilelist(albumdir):
@@ -409,7 +410,6 @@ def doFullTextSearch(albumdir, options, cddb):
     """
     Searches the cddb database given an albumdir and searchstrings.
     """
-    cddb.encoding = options.encoding
     filelist = getFilelist(albumdir)
 
     if not options.words:
@@ -447,7 +447,6 @@ def doDiscmatch(options, albumdir, cddb):
         DiscMatch.printTOC(filelist)
         exit()
 
-    cddb.encoding = options.encoding
 
     # Check/retrieve already tagged
     albuminfo = checkAlreadyTagged(albumdir, options) 

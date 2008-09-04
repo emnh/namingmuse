@@ -55,11 +55,6 @@ class FreeDBAlbumInfo(AlbumInfo):
 
     cddb = property(setCDDBConnection)
 
-    def getEncoding(self):
-        return self.__cddb.encoding
-            
-    encoding = property(getEncoding)
-
     def __getattribute__(self, name):
         if name in ("year", "genre", "artist", "title", "tracks"):
             # Read properties from freedb on demand

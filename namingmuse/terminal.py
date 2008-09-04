@@ -38,10 +38,11 @@ def alphadiff(a, b):
 def choosealbum(albums, matchto, options, cddb):
 
     matchto = matchto.getName()
+    matchtou = matchto.decode(options.sysencoding, 'ignore')
     matchto = re.sub("^[0-9]{4} ", "", matchto)
 
-    fmat = lambda u,v,w,x,y,z: "%3s%6s%5s %-17s%-15s %-10s\n" \
-                % (u, v, w, x, y, z)
+    fmat = lambda u,v,w,x,y,z: ("%3s%6s%5s %-17s%-15s %-10s\n" \
+                % (u, v, w, x, y, z)).encode(options.sysencoding)
     
     pager = sys.stdout
     pager.write("\n")
@@ -58,7 +59,7 @@ def choosealbum(albums, matchto, options, cddb):
             nr += 1
             newlist.append(album)
             album.ignoreMissing(True)
-            similarity = alphadiff(album.title, matchto)
+            similarity = alphadiff(album.title, matchtou)
             similarity = "%3.1f%%" % (similarity * 100)
             pager.write(fmat(str(nr) + ":",similarity, 
                         album.year, album.genre, album.artist,album.title))

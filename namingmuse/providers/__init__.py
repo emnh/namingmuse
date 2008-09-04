@@ -3,6 +3,7 @@ import inspect
 from glob import glob
 
 from namingmuse.albuminfo import AlbumInfo
+from namingmuse.musexceptions import NamingMuseError
 
 __all__ = []
 
