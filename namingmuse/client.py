@@ -10,6 +10,7 @@ import copy
 import os
 import stat
 import sys
+import re
 from sys import exit
 from optparse import OptionParser, OptionGroup, make_option
 from ConfigParser import *
@@ -29,6 +30,7 @@ def makeOptionParser():
     op.set_usage("%prog <actionopt> [options] <albumdir>")
 
     
+    # XXX: should be moved into actiongroup
     op.add_option("-n",
                   "--namefix",
                   action = "store_const",
@@ -36,12 +38,21 @@ def makeOptionParser():
                   dest = "cmd",
                   help = "rename files according to predefined rules")
 
+    # XXX: should be moved into actiongroup
     op.add_option("-l",
                   "--local",
                   action = "store_const",
                   const = "local",
                   dest = "cmd",
                   help = "use locally existing metadata instead of doing remote lookup")
+
+    # XXX: should be moved into actiongroup
+    op.add_option("-c",
+                  "--cddb",
+                  action = "store",
+                  dest = "cddb",
+                  help = "use explicitly specified cddb disc to name files. ex: data/7a0a2f0a")
+
 
     op.add_option("-t",
                   "--tag-only",
@@ -224,6 +235,9 @@ def cli():
     if options.words:
         options.cmd = "search"
 
+    if options.cddb:
+        options.cmd = 'cddb'
+
     albumdir = FilePath(args[0])
 
     try: 
@@ -244,6 +258,12 @@ def cli():
                doDiscmatch(options, albumdir, cddb)
         elif options.cmd == "search":
             doFullTextSearch(albumdir, options, cddb)
+        elif options.cmd == "cddb":
+            m = re.search(r'([^/]+)/([^/]+)$', options.cddb)
+            genre, discid = m.group(1), m.group(2)
+            print genre, discid
+            albuminfo = FreeDBAlbumInfo(cddb, genre, discid)
+            albumtag.tagfiles(albumdir, albuminfo, options)
         elif options.cmd == "local":
             if options.recursive:
                 for root, dirs, files in os.walk(str(albumdir)):
