@@ -115,7 +115,7 @@ def get_namebinder(options, filelist):
             raise NamingMuseError("Error: invalid namebinder: %s" % options.namebinder)
     
     for i, filename in enumerate(filelist):
-        if not str(i+1) in unicode(filename):
+        if not unicode(i+1) in unicode(filename):
             if DEBUG: print 'Using strapprox_time as namebinder'
             return namebinder_strapprox_time
 
