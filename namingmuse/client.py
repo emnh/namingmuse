@@ -263,9 +263,10 @@ def cli():
         elif options.cmd == "cddb":
             m = re.search(r'([^/]+)/([^/]+)$', options.cddb)
             genre, discid = m.group(1), m.group(2)
-            print genre, discid
-            albuminfo = FreeDBAlbumInfo(cddb, genre, discid)
-            albumtag.tagfiles(albumdir, albuminfo, options)
+            albuminfo = checkAlreadyTagged(albumdir, options) 
+            if not albuminfo:
+                albuminfo = FreeDBAlbumInfo(cddb, genre, discid)
+                albumtag.tagfiles(albumdir, albuminfo, options)
         elif options.cmd == "local":
             if options.recursive:
                 for root, dirs, files in os.walk(str(albumdir)):
