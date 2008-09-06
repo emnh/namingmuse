@@ -15,10 +15,8 @@ TODO
   they will match only a lot of incorrect albums
 * trackorder means alphabetical order, make new function to order by track nr
 * more ~/.namingmuse/ module hooks: preprocessing, postprocessing etc..
-* manually enter freedb disc id
 * manually specify sort order of tracks for freedb lookup
-* manually specify namebinding
 * warn about invalidating albums
 * add option to disable filterBySongCount
-* fix file renaming to comply with user supplied encoding
 * check for large amount of files (playtime > max CD playtime) and warn that namingmuse is an album oriented tagger. go ahead anyway if force was given.
+* album basedir for moving tagged albums to
