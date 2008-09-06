@@ -4,14 +4,21 @@
 [DEFAULT]
 
 # Set this to the encoding to be used on filenames and in
-# Tag formats that support specifying the encoding.
+# terminal IO.
+# encoding = terminal will use the same encoding as your console (e.g. set by
+# LC* variables, see locale command).
+
+sysencoding = utf-8
+
+# Set this to the encoding to be used in tag formats that support specifying
+# the encoding.
 # ID3v1 is always ISO-8859-1.
 # Xiph Comments in Ogg Vorbis is always UTF-8.
 # ID3v2 support at least ISO-8859-1 (Latin1) and UTF-8.
 # encoding = terminal will use the same encoding as your console.
 # The default is ISO-8859-15.
 
-encoding = iso-8859-15
+tagencoding = iso-8859-15
 
 # If there is only one album match, this will autoselect it
 # and rename your files automatically. This may cause a wrong
