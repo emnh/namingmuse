@@ -288,14 +288,14 @@ class LocalAlbumInfo(AlbumInfo):
                 break
             oldartist = artist
 
-    def getfilelist(self):
+    def getfilelist(self, encoding='ascii'):
         """Get sorted list of files supported by taglib 
            from specified directory"""
         path = str(self.albumdir)
         rtypes = re.compile(r'\.(mp3)$|\.(ogg)$|\.(mpc)$', re.I)
         if os.access(path, os.X_OK):
             filelist = filter(lambda x: rtypes.search(str(x)), os.listdir(path))
-            filelist = map(lambda x: FilePath(path, x), filelist)
+            filelist = map(lambda x: FilePath(path, x, encoding=encoding), filelist)
             filelist.sort()
             return filelist
         else:

@@ -17,6 +17,7 @@ def termcolor(color, msg):
 def colorize(msg):
     "All-in-one place string coloring (potentially smart)"
     tr = {
+    "<-": "red",        # red means rollback
     "->": "blue",        # blue means write
     "-tag->": "blue",
     "-skip->": "green",  # green means dry-run

@@ -4,24 +4,31 @@ $Id:
 """
 
 import os
+from musexceptions import *
 
 class FilePath(object):
     """A class that represents a file path. 
        It also provides some useful and common methods regarding paths.
        """ 
 
-    def __init__(self, path, *filep):
+    def __init__(self, path, *filep, **kwargs):
+        if 'encoding' in kwargs:
+            self.encoding = kwargs['encoding']
+        else:
+            self.encoding = 'ascii'
         if isinstance(path, FilePath):
             path = path.fullpath
         else:
             path = os.path.abspath(path)
         if len(filep) > 0:
-            for f in filep:
-                path = os.path.join(path, f)
+            path = os.path.join(path, *filep)
         self.fullpath = path
     
-    def getName(self):
-        return os.path.basename(self.fullpath)
+    def getName(self, unicode=False):
+        s = os.path.basename(self.fullpath)
+        if unicode:
+            s = self.decode(s)
+        return s
     
     def getParent(self):
         return FilePath(os.path.dirname(self.fullpath))
@@ -39,7 +46,19 @@ class FilePath(object):
         return len(self.fullpath)
         
     def __str__(self):
-        return self.fullpath
+        s = self.fullpath
+        return s
+
+    def decode(self, s):
+        try:
+            s = s.decode(self.encoding)
+        except Exception, e:
+            print NamingMuseWarning('failed to decode path %s with encoding %s' % (s, self.encoding))
+            s = s.decode(self.encoding, 'ignore')
+        return s
+
+    def __unicode__(self):
+        return self.decode(self.fullpath)
     
     def __repr__(self):
         return self.__str__()
@@ -51,3 +70,15 @@ class FilePath(object):
         if isinstance(other, FilePath):
             other = other.fullpath
         return cmp(self.fullpath, other)
+    
+    def rename(self, dst):
+        os.rename(str(self), str(dst))
+
+    def mkdir(self):
+        os.mkdir(str(self))
+
+    def rmdir(self):
+        os.rmdir(str(self))
+
+    def exists(self):
+        os.path.exists(str(self))

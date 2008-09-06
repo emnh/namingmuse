@@ -10,6 +10,7 @@ import re
 import shutil
 import sys
 import tempfile
+import trackorder
 
 from difflib import SequenceMatcher
 import tagpy
@@ -34,17 +35,18 @@ def distwrap(a, b):
     rat = SequenceMatcher(isjunk, a, b).ratio()
     return 1.0 - rat
 
-def namebinder_strapprox_time(filelist, tracks):
+def namebinder_strapprox_time(filelist, album, encoding):
     '''Bind tracks to filelist by a function of string distance
        and playlength offset. I'm not sure what the best
        function is, or what the magic numbers are. We'll
        just have to play with it until it is good.
     '''
+    tracks = album.tracks
     newtracks = []
     for i in range(0, len(filelist)):
         from namingmuse.providers import local
         filePlayLength = local.getIntLength(filelist[i])
-        file = filelist[i].getName()
+        file = filelist[i].getName(True)
         least = (distwrap(file, tracks[0].title), 0)
         for j in range(0, len(tracks)):
             
@@ -67,8 +69,9 @@ def namebinder_strapprox_time(filelist, tracks):
         newtracks.append(tracks[least[1]])
     return newtracks
 
-def namebinder_strapprox(filelist, tracks):
+def namebinder_strapprox(filelist, album, encoding):
     "Bind tracks to filelist by string approximation"
+    tracks = album.tracks
     newtracks = []
     for i in range(0, len(filelist)):
         file = filelist[i].getName()
@@ -81,10 +84,19 @@ def namebinder_strapprox(filelist, tracks):
         newtracks.append(tracks[least[1]])
     return newtracks
 
-def namebinder_trackorder(filelist, tracks):
+def namebinder_trackorder(filelist, album, encoding):
     "Bind tracks to filelist by track order"
+    tracks = album.tracks
     tracks.sort(lambda a,b:cmp(a.number, b.number))
     return tracks
+
+def namebinder_manual(filelist, album, encoding):
+    tracks = album.tracks
+
+    tracks = trackorder.display(filelist, album, encoding)
+    
+    return tracks
+
 
 def sortedcmp(a, b):
     a = a[:]
@@ -106,7 +118,8 @@ def get_namebinder(options, filelist):
     bindfunctions = {
     'trackorder': namebinder_trackorder,
     'filenames+time': namebinder_strapprox_time,
-    'filenames': namebinder_strapprox
+    'filenames': namebinder_strapprox,
+    'manual': namebinder_manual
     }
     if options.namebinder:
         if bindfunctions.has_key(options.namebinder):
@@ -139,12 +152,11 @@ def tagfiles(albumdir, album, options):
     album.ignoreMissing(True)
 
     localalbum = LocalAlbumInfo(albumdir)
-    filelist = localalbum.getfilelist()
-    cmpfilelist = [FilePath(str(x).decode(options.sysencoding, 'ignore')) for x in filelist]
+    filelist = localalbum.getfilelist(options.sysencoding)
 
-    namebinder = get_namebinder(options, cmpfilelist)
+    namebinder = get_namebinder(options, filelist)
     
-    tracks = namebinder(cmpfilelist, album.tracks)
+    tracks = namebinder(filelist, album, options.sysencoding)
     if not sortedcmp(tracks, album.tracks): 
         options.dryrun = True
         print NamingMuseError("binding was not exact, forcing dry run")
@@ -155,53 +167,98 @@ def tagfiles(albumdir, album, options):
     # Process files
     renamealbum = True
 
-    for i in range(0, len(filelist)):
-        fpath = filelist[i]
-        ext = fpath.getExt()
-        # XXX: move bug check to freedbalbuminfo parser
+    renameTempDir = FilePath(albumdir, 'rename-tmp')
 
-        #if album.isVarious:
-        #    if not "/" in title and "-" in title:
-        #        # workaround: this is a bug in the freedb entry
-        #        # (according to submission guidelines)
-        #        trackartist, title = title.split("-")
-        #        print NamingMuseWarning("bugged database entry with - instead of /")
-        #    else:
-        #        trackartist, title = title.split("/")
-        #    trackartist, title = trackartist.strip(), title.strip()
-        #else:
-        #    trackartist = albumartist
-        track = tracks[i]
+    if renameTempDir.exists():
+        raise NamingMuseError('%s exists!' % renameTempDir)
 
-        tofile = policy.genfilename(fpath, album, track)
-        tofile = tofile.encode(options.sysencoding)
-        tofile = FilePath(albumdir, tofile)
-    
-        # Tag and rename file
-        renamesign = "->"
-        if options.tagonly:
-            renamesign = "-tag->"
-        if options.dryrun:
-            renamesign = "-dry->" 
-        print fpath.getName()
-        print "\t", colorize(renamesign), tofile.getName()
-        if not options.dryrun:
-            #preserve stat
-            fd = tempfile.NamedTemporaryFile()
-            tmpfilename = fd.name
-            shutil.copystat(str(fpath), tmpfilename)
-            
-            # tag the file
-            tagfile(fpath, album, track, options)
-            # restore filestat
-            shutil.copystat(tmpfilename, str(fpath))
-            # deletes tempfile
-            fd.close()
-            if not options.tagonly:
-                # If str(fpath) is used python raises UnicodeErrors
-                frompath = fpath.__str__()
-                topath = tofile.__str__()
-                os.rename(frompath, topath)
+    renameTempDir.mkdir()
+
+    # a list of tuples (from, to)
+    # we use temporary renames to avoid filename collision on filename swaps
+    # this holds the list of final renames to be executed
+    finalrenames = []
+
+    # a list of tuples (from, to)
+    # used to rollback renames in case of error
+    rollback = []
+
+    renamesign = "->"
+    rollbacksign = '<-'
+    if options.tagonly:
+        renamesign = "-tag->"
+    if options.dryrun:
+        renamesign = "-dry->" 
+
+    try:
+        for i in range(0, len(filelist)):
+            fpath = filelist[i]
+            # XXX: move bug check to freedbalbuminfo parser
+
+            #if album.isVarious:
+            #    if not "/" in title and "-" in title:
+            #        # workaround: this is a bug in the freedb entry
+            #        # (according to submission guidelines)
+            #        trackartist, title = title.split("-")
+            #        print NamingMuseWarning("bugged database entry with - instead of /")
+            #    else:
+            #        trackartist, title = title.split("/")
+            #    trackartist, title = trackartist.strip(), title.strip()
+            #else:
+            #    trackartist = albumartist
+            track = tracks[i]
+
+            tofile = policy.genfilename(filelist[i], album, track)
+            tofile = tofile.encode(options.sysencoding)
+            totmpfile = FilePath(renameTempDir, tofile, encoding=options.sysencoding)
+            tofinalfile = FilePath(albumdir, tofile, encoding=options.sysencoding)
+        
+            # Tag and rename file
+            print fpath.getName()
+            print "\t", colorize(renamesign), tofinalfile.getName()
+
+            if not options.dryrun:
+
+                # Tag file
+
+                #preserve stat
+                fd = tempfile.NamedTemporaryFile()
+                tmpfilename = fd.name
+                shutil.copystat(str(fpath), tmpfilename)
+                
+                # tag the file
+                tagfile(fpath, album, track, options)
+
+                # restore filestat
+                shutil.copystat(tmpfilename, str(fpath))
+
+                # deletes tempfile
+                fd.close()
+
+                # Rename file to temporary name
+                
+                if not options.tagonly:
+                    if totmpfile.exists():
+                        raise NamingMuseError('tried to rename file over existing: %s' % str(totmpfile))
+                    if fpath != totmpfile:
+                        fpath.rename(totmpfile)
+                        rollback.append((fpath, totmpfile))
+                        finalrenames.append((totmpfile, tofinalfile))
+
+    except Exception, e:
+        print
+        print colorize('Error: an error occurred. rolling back %d renames.' % len(rollback))
+        for frompath, topath in reversed(rollback):
+            print frompath.getName()
+            print "\t", colorize(rollbacksign), topath.getName()
+            topath.rename(frompath)
+        renameTempDir.rmdir()
+        raise e
+
+    # Rename files to final names
+    for frompath, topath in finalrenames:
+        frompath.rename(topath)
+    renameTempDir.rmdir()
                         
     # Get new albumdir name
     newalbum = policy.genalbumdirname(albumdir, album)
@@ -216,9 +273,9 @@ def tagfiles(albumdir, album, options):
     needartistdirmove = options.artistdir and \
             (artistdirdiff > 0.25) #XXX sane value?
     if needartistdirmove: 
-        newalbumdir = FilePath(albumdir.getParent(), album.artist.encode(options.sysencoding), newalbum)
+        newalbumdir = FilePath(albumdir.getParent(), album.artist.encode(options.sysencoding), newalbum, encoding=options.sysencoding)
     else:
-        newalbumdir = FilePath(albumdir.getParent(), newalbum)
+        newalbumdir = FilePath(albumdir.getParent(), newalbum, encoding=options.sysencoding)
 
     # Make parent directory of albumdir if needed
     parent = str(newalbumdir.getParent())
@@ -226,8 +283,9 @@ def tagfiles(albumdir, album, options):
         os.mkdir(parent)
 
     # Rename album (if no "manual" mp3 files in that dir)
+    rollbacksign = '<-'
     renamesign = "->"
-    if options.dryrun:
+    if options.dryrun or options.tagonly:
         renamesign = "-dry->"
     if not (options.dryrun or options.tagonly) and renamealbum \
         and str(albumdir) != str(newalbumdir):

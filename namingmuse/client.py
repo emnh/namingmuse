@@ -110,7 +110,7 @@ def makeOptionParser():
                   action = "store",
                   dest = "namebinder",
                   help = "select namebinder: trackorder/filenames/" +
-                         "filenames+time")
+                         "filenames+time/manual")
 
     actionopts = OptionGroup(op,
                              "action options",
