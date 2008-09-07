@@ -9,9 +9,20 @@ from musexceptions import *
 class FilePath(object):
     """A class that represents a file path. 
        It also provides some useful and common methods regarding paths.
+
+       We pass around paths as encoded strings (not unicode) by default because
+       then we can work with files with unknown encoding.
        """ 
 
     def __init__(self, path, *filep, **kwargs):
+        '''
+        Pass in unicode keyword to set encoding for returning unicode strings on
+        unicode(fp) or getName(unicode=True).
+        '''
+        assert not isinstance(path, unicode), 'FilePaths should be passed around encoded'
+        for p in filep:
+            assert not isinstance(p, unicode), 'FilePaths should be passed around encoded'
+
         if 'encoding' in kwargs:
             self.encoding = kwargs['encoding']
         else:

@@ -290,14 +290,17 @@ def tagfiles(albumdir, album, options):
     needartistdirmove = options.artistdir and \
             (artistdirdiff > 0.25) #XXX sane value?
     if needartistdirmove:
-        newalbumdir = FilePath(albumdir.getParent(), album.artist.encode(options.sysencoding), newalbum, encoding=options.sysencoding)
+        newalbumdir = FilePath(albumdir.getParent(),
+                album.artist.encode(options.sysencoding),
+                newalbum, encoding=options.sysencoding)
     else:
-        newalbumdir = FilePath(albumdir.getParent(), newalbum, encoding=options.sysencoding)
+        newalbumdir = FilePath(albumdir.getParent(), newalbum, \
+                encoding=options.sysencoding)
 
     # Make parent directory of albumdir if needed
-    parent = str(newalbumdir.getParent())
-    if not os.path.isdir(parent):
-        os.mkdir(parent)
+    parent = newalbumdir.getParent()
+    if not parent.isdir():
+        parent.mkdir()
 
     # Rename album (if no "manual" mp3 files in that dir)
     rollbacksign = '<-'
@@ -306,11 +309,11 @@ def tagfiles(albumdir, album, options):
         renamesign = "-dry->"
     if not (options.dryrun or options.tagonly) and renamealbum \
         and str(albumdir) != str(newalbumdir):
-        if os.path.exists(str(newalbumdir)):
+        if newalbumdir.exists():
             raise NamingMuseWarning("Directory already exists (dup album?): " +
                   str(newalbumdir))
         try:
-            os.rename(str(albumdir), str(newalbumdir))
+            albumdir.rename(newalbumdir)
         except OSError, err:
             raise NamingMuseWarning(str(err))
 
@@ -318,7 +321,7 @@ def tagfiles(albumdir, album, options):
     print "\n", albumdir.getName()
     print "\t", colorize(renamesign),
     if needartistdirmove:
-        print os.path.join(unicode(album.artist), unicode(newalbumdir.getName()))
+        print FilePath(album.artist.encode(options.sysencoding), newalbumdir.getName())
     else:
         print newalbumdir.getName()
 
