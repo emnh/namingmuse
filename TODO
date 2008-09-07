@@ -22,3 +22,4 @@ TODO
 * album basedir for moving tagged albums to
 * make CDDBP class a singleton
 * musicbrainz can know the namebinding exactly even for unordered albums. take advantage of this
+* don't require pyofa if musicbrainz isn't used, or urwid if namebinder_manual isn't used

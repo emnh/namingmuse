@@ -33,11 +33,12 @@ python >= 2.5
 taglib >= 1.5
 python-tagpy >= 0.94.5
 urwid >= 0.9.8.1
+pyofa >= mercurial(2008-09-07)
 
 FEATURES
 
 *Using the abstract taglib API makes music format support easily extensible.
-*Local charset support (including UTF-8) (not done)
+*Local charset support (including UTF-8)
 *Written in python
 
 TODO
