@@ -71,13 +71,13 @@ def makeOptionParser():
                   action = "store_true",
                   help = "be more verbose")
     
-    op.add_option("", 
+    op.add_option("",
                   "--dry-run",
                   action = "store_true",
                   dest = "dryrun",
                   help= "don't modify anything, just pretend")
 
-    op.add_option("", 
+    op.add_option("",
                   "--loose",
                   dest = "strict",
                   action = "store_false",
@@ -178,7 +178,7 @@ def makeOptionParser():
 
     sopts = OptionGroup(op, "search options")
 
-    sopts.add_option("-a", 
+    sopts.add_option("-a",
                      "--all",
                      action = "store_true",
                      help = "enable searching of all fields (default: artist+title)")
@@ -278,7 +278,7 @@ def cli():
 
     albumdir = FilePath(args[0])
 
-    try: 
+    try:
         os.listdir(str(albumdir))
     except OSError, (errno, strerror):
         exit(strerror + ": " + str(albumdir))
@@ -298,7 +298,7 @@ def cli():
         elif options.cmd == "cddb":
             m = re.search(r'([^/]+)/([^/]+)$', options.cddb)
             genre, discid = m.group(1), m.group(2)
-            albuminfo = checkAlreadyTagged(albumdir, options) 
+            albuminfo = checkAlreadyTagged(albumdir, options)
             if not albuminfo:
                 albuminfo = FreeDBAlbumInfo(cddb, genre, discid)
                 albumtag.tagfiles(albumdir, albuminfo, options)
@@ -333,13 +333,13 @@ def cli():
         else:
             exit("error: no action option specified")
     except NamingMuseException, strerr:
-        print strerr 
+        print strerr
         exitstatus = 1
     except NamingMuseWarning, strerr:
         print strerr
         exitstatus = 2
     except NoFilesException, strerr:
-        print strerr 
+        print strerr
         exitstatus = 3
     except CDDBPException, strerr:
         print strerr
@@ -383,7 +383,7 @@ def walk(top, cddb, options):
             print "Connection timed out, reconnecting.."
             cddb.reconnect()
         else:
-            print err 
+            print err
             cddb = CDDBP()
     except NoFilesException:
         pass
@@ -472,7 +472,7 @@ def checkAlreadyTagged(albumdir, options):
             options.strict = False
     if albuminfo \
        and albuminfo.getTagVersion() == albumtag.TAGVER \
-       and not options.updatetags: 
+       and not options.updatetags:
         raise NamingMuseInfo(\
                 '%s already tagged with %s %s, not retagging.' \
                    %(albumdir, "namingmuse", albumtag.TAGVER))
@@ -506,7 +506,7 @@ def doFullTextSearch(albumdir, options, cddb):
         raise NamingMuseWarning('Not tagging %s' \
                    %(albumdir))
 
-    albumtag.tagfiles(albumdir, albuminfo, options) 
+    albumtag.tagfiles(albumdir, albuminfo, options)
 
 def doMusicbrainz(options, albumdir):
     
@@ -554,7 +554,7 @@ def doDiscmatch(options, albumdir, cddb):
 
 
     # Check/retrieve already tagged
-    albuminfo = checkAlreadyTagged(albumdir, options) 
+    albuminfo = checkAlreadyTagged(albumdir, options)
 
     if not albuminfo:
         query = DiscMatch.files2discid(filelist)

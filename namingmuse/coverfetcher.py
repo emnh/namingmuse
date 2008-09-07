@@ -34,7 +34,7 @@ class CoverFetcher:
         url = "http://%s/onca/xml3?f=xml" %self.amazonSite
         url += "&t=%s" % "webservices-20"
         url += "&dev-t=%s" % self.amazonLicense
-        url += "&type=%s" % mode 
+        url += "&type=%s" % mode
         #if _supportedLocales[locale][0]:
         #url += "&locale=%s" % _supportedLocales[locale][0]
         #if page:

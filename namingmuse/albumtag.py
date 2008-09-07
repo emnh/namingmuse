@@ -177,7 +177,7 @@ def tagfiles(albumdir, album, options):
     namebinder = get_namebinder(options, filelist)
     
     tracks = namebinder(filelist, album, options.sysencoding)
-    if not sortedcmp(tracks, album.tracks): 
+    if not sortedcmp(tracks, album.tracks):
         options.dryrun = True
         print NamingMuseError("binding was not exact, forcing dry run")
 
@@ -292,7 +292,7 @@ def tagfiles(albumdir, album, options):
             %(parent, album.artist, artistdirdiff)
     needartistdirmove = options.artistdir and \
             (artistdirdiff > 0.25) #XXX sane value?
-    if needartistdirmove: 
+    if needartistdirmove:
         newalbumdir = FilePath(albumdir.getParent(), album.artist.encode(options.sysencoding), newalbum, encoding=options.sysencoding)
     else:
         newalbumdir = FilePath(albumdir.getParent(), newalbum, encoding=options.sysencoding)
@@ -320,8 +320,8 @@ def tagfiles(albumdir, album, options):
     # Print rename message
     print "\n", albumdir.getName()
     print "\t", colorize(renamesign),
-    if needartistdirmove: 
-        print os.path.join(album.artist, newalbumdir.getName())
+    if needartistdirmove:
+        print os.path.join(unicode(album.artist), unicode(newalbumdir.getName()))
     else:
         print newalbumdir.getName()
 

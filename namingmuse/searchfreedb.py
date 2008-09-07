@@ -35,7 +35,7 @@ class FreedbSearchParser(HTMLParser):
         self.rexadr = re.compile(adr + r'(?P<genreid>[a-z]+)/(?P<cddbid>[a-f0-9]+)')
 
     def handle_starttag(self, tag, attrs):
-        if tag == "a": 
+        if tag == "a":
             dattrs = dict(attrs)
             if 'href' in dattrs:
                 match = self.rexadr.match(dattrs["href"])
@@ -61,7 +61,7 @@ def searchalbums(albumdir, searchwords, searchfields, cddb):
              ("grouping", "none"),
              ("x", 0),
              ("y", 0)
-            ] + [ 
+            ] + [
              ("fields", f) for f in searchfields
             ]
     querystr = urllib.urlencode(query)
@@ -88,7 +88,7 @@ def searchalbums(albumdir, searchwords, searchfields, cddb):
 
 def filterBySongCount(albums, songcount):
     retalbums = []
-    for album in albums: 
+    for album in albums:
         genre, cddbid = album
         try:
             cddbid = int(cddbid, 16)

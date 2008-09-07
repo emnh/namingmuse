@@ -76,7 +76,6 @@ def choosealbum(albums, matchto, options, cleanupCallback):
             for album in albums:
                 nr += 1
                 showAlbum(album, nr)
-
     except KeyboardInterrupt:
         if cleanupCallback != None:
             cleanupCallback()

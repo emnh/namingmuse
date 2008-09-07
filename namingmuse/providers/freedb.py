@@ -106,7 +106,7 @@ class FreeDBAlbumInfo(AlbumInfo):
         self.genre = dbdict["DGENRE"] # not limited to the 11 cddb genres
         if " / " in dbdict["DTITLE"]:
             self.artist, self.title = dbdict["DTITLE"].split(" / ", 1)
-        else: 
+        else:
             self.title = self.artist = dbdict["DTITLE"]
             
         # Set track fields from dbdict
@@ -123,12 +123,12 @@ class FreeDBAlbumInfo(AlbumInfo):
                 t.playLength = secs[number]
                 if " / " in title:
                     self.isVarious = True
-                    t.artist, t.title = title.split(" / ", 1) 
+                    t.artist, t.title = title.split(" / ", 1)
                 else:
                     # inherit track artist from album
                     t.artist = self.artist
                     t.title = title
-                tracks.append(t) 
+                tracks.append(t)
         self.tracks = tracks
 
     def extractTrackLengths(self, cddbrecord):
