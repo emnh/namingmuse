@@ -72,13 +72,23 @@ class FilePath(object):
         return cmp(self.fullpath, other)
     
     def rename(self, dst):
-        os.rename(str(self), str(dst))
+        return os.rename(str(self), str(dst))
 
     def mkdir(self):
-        os.mkdir(str(self))
+        return os.mkdir(str(self))
 
     def rmdir(self):
-        os.rmdir(str(self))
+        return os.rmdir(str(self))
 
     def exists(self):
-        os.path.exists(str(self))
+        return os.path.exists(str(self))
+
+    def isdir(self):
+        return os.path.isdir(str(self))
+
+    def listdir(self):
+        return os.listdir(str(self))
+
+    def walk(self):
+        for x in os.walk(str(self)):
+            yield x

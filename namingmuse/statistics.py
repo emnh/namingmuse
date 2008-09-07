@@ -33,7 +33,13 @@ def dirstat(dirn, stats, verbose = False):
                 missing.append('genre')
             if verbose and len(missing) > 0:
                 print "\n%s is missing %s" % (dirn, ", ".join(missing))
-        print "\r" + str(stats),
+        else:
+            if verbose:
+                print "\n%s is untagged" % (dirn)
+        if verbose:
+            print str(stats)
+        else:
+            print "\r" + str(stats),
     return stats
 
 class Stats:

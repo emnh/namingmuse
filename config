@@ -27,3 +27,8 @@ tagencoding = iso-8859-15
 # The default is False.
 
 autoselect = False
+
+# A regular expression denoting directories to ignore.
+# Currently effective for discmatch and stats.
+
+ignore = nonalbum

@@ -51,6 +51,12 @@ def makeOptionParser():
                   "--recursive",
                   action = "store_true",
                   help = "recurse directories")
+    
+    op.add_option("",
+                  "--ignore",
+                  action = "append",
+                  dest = 'ignore',
+                  help = "ignore paths matching regex. useful with -r")
 
     op.add_option("-A",
                   "--artistdir",
@@ -190,7 +196,8 @@ def getDoc():
 defaultconfig = {
 'tagencoding': 'iso-8859-15',
 'sysencoding': 'utf-8',
-'autoselect': 'False'
+'autoselect': 'False',
+'ignore': []
 }
 
 def readconfig(options):
@@ -202,15 +209,17 @@ def readconfig(options):
         cp.read([str(configfile)])
     defitems = cp.items("DEFAULT")
     for key, value in dict(defitems).items():
-        if value.lower() == "true":
+        if str(value).lower() == "true":
             value = True
-        elif value.lower() == "false":
+        elif str(value).lower() == "false":
             value = False
         options.ensure_value(key, value)
     if options.sysencoding == 'terminal':
         options.sysencoding = sys.stdout.encoding
     if options.tagencoding == 'terminal':
         options.tagencoding = sys.stdout.encoding
+    if isinstance(options.ignore, basestring):
+        options.ignore = [options.ignore]
 
 def cli():
     op = makeOptionParser()
@@ -267,7 +276,7 @@ def cli():
                 albumtag.tagfiles(albumdir, albuminfo, options)
         elif options.cmd == "local":
             if options.recursive:
-                for root, dirs, files in os.walk(str(albumdir)):
+                for root, dirs, files in albumdir.walk():
                     if len(dirs) > 0:
                         for dir in dirs:
                             try:
@@ -303,12 +312,15 @@ def cli():
     exit(exitstatus)
 
 def walk(top, cddb, options):
+    ''''I assume this walk method is here (as opposed to using os.walk) because
+    we modify the directory tree by renaming directories?'''
+
     try:
         names = os.listdir(str(top))
     except os.error:
         return
     try:
-        if top.getName() != "nonalbum":
+        if not isIgnored(options, top):
             doDiscmatch(options, top, cddb)
     except CDDBPException, err:
         if err.code == CDDB_CONNECTION_TIMEOUT:
@@ -323,12 +335,16 @@ def walk(top, cddb, options):
         print errstr
     for name in names:
         name = FilePath(top, name)
-        try:
-            st = os.lstat(str(name))
-        except os.error:
-            continue
-        if stat.S_ISDIR(st.st_mode):
+        if name.isdir():
             walk(name, cddb, options)
+
+def isIgnored(options, fp):
+    ignoreThis = False
+    for ign in options.ignore:
+        if re.search(ign, str(fp)):
+            ignoreThis = True
+            break
+    return ignoreThis
 
 def stats(albumdir, options):
     """
@@ -339,12 +355,14 @@ def stats(albumdir, options):
     stats = statistics.Stats()
 
     if options.recursive:
-        for root, dirs, files in os.walk(str(albumdir)):
+        for root, dirs, files in albumdir.walk():
             if len(dirs) > 0:
                 for dir in dirs:
+                    fp = FilePath(root, dir)
+                    if isIgnored(options, fp):
+                        continue
                     try:
-                        stats = statistics.dirstat(FilePath(root,dir),
-                                stats, options.verbose)
+                        stats = statistics.dirstat(fp, stats, options.verbose)
                     except NamingMuseException, strerr:
                         print strerr
         #print '\n' + str(stats)
