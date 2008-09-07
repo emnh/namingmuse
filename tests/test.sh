@@ -55,3 +55,5 @@ done
 # TODO more tests:
 # namebinders
 # recursion
+# read back tags and verify
+# verify that tags are encoded as specified by the user
