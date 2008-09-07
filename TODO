@@ -20,3 +20,5 @@ TODO
 * add option to disable filterBySongCount
 * check for large amount of files (playtime > max CD playtime) and warn that namingmuse is an album oriented tagger. go ahead anyway if force was given.
 * album basedir for moving tagged albums to
+* make CDDBP class a singleton
+* musicbrainz can know the namebinding exactly even for unordered albums. take advantage of this
