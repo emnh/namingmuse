@@ -64,7 +64,7 @@ def makeOptionParser():
                   "--artistdir",
                   action = "store_true",
                   dest = "artistdir",
-                  help = "place albumdir in artist/albumdir if not already there")
+              help = "place albumdir in artist/albumdir if not already there")
 
     op.add_option("-v",
                   "--verbose",
@@ -156,7 +156,7 @@ def makeOptionParser():
                   action = "store_const",
                   const = "local",
                   dest = "cmd",
-                  help = "use locally existing metadata instead of doing remote lookup")
+          help = "use locally existing metadata instead of doing remote lookup")
 
     actionopts.add_option("",
                           "--stats",
@@ -181,7 +181,7 @@ def makeOptionParser():
     sopts.add_option("-a",
                      "--all",
                      action = "store_true",
-                     help = "enable searching of all fields (default: artist+title)")
+             help = "enable searching of all fields (default: artist+title)")
 
     for field in searchfreedb.allfields:
         sopts.add_option("",
@@ -248,7 +248,7 @@ def readconfig(options):
 
 def cli():
     op = makeOptionParser()
-    options,args = op.parse_args()
+    options, args = op.parse_args()
 
     readconfig(options)
 
@@ -292,12 +292,12 @@ def cli():
             if options.recursive:
                 walk(albumdir, cddb, options)
             else:
-               doDiscmatch(options, albumdir, cddb)
+                doDiscmatch(options, albumdir, cddb)
         elif options.cmd == "search":
             doFullTextSearch(albumdir, options, cddb)
         elif options.cmd == "cddb":
-            m = re.search(r'([^/]+)/([^/]+)$', options.cddb)
-            genre, discid = m.group(1), m.group(2)
+            match = re.search(r'([^/]+)/([^/]+)$', options.cddb)
+            genre, discid = match.group(1), match.group(2)
             albuminfo = checkAlreadyTagged(albumdir, options)
             if not albuminfo:
                 albuminfo = FreeDBAlbumInfo(cddb, genre, discid)
@@ -316,7 +316,7 @@ def cli():
                     if len(dirs) > 0:
                         for dir in dirs:
                             try:
-                                doLocal(FilePath(root,dir),options)
+                                doLocal(FilePath(root, dir), options)
                             except NoFilesException:
                                 pass
                             except NamingMuseInfo, err:
@@ -495,10 +495,12 @@ def doFullTextSearch(albumdir, options, cddb):
     searchwords = options.words
 
     print "Searching for albums.."
-    albums = searchfreedb.searchalbums(albumdir, searchwords, searchfields, cddb)
+    albums = searchfreedb.searchalbums(\
+            albumdir, searchwords, searchfields, cddb)
 
     if len(albums) == 0:
-        raise NamingMuseError("No match for search %s in %s" % (searchwords, albumdir))
+        raise NamingMuseError(\
+                "No match for search %s in %s" % (searchwords, albumdir))
     
     albuminfo = terminal.choosealbum(albums, albumdir, options, lambda: cddb.flush())
 

@@ -3,12 +3,8 @@ using the online music database freedb to retrieve the
 information.
 """
 
-import difflib
 import os
-import random
-import re
 import shutil
-import sys
 import tempfile
 import trackorder
 
@@ -87,7 +83,7 @@ def namebinder_strapprox(filelist, album, encoding):
 def namebinder_trackorder(filelist, album, encoding):
     "Bind tracks to filelist by track order"
     tracks = album.tracks
-    tracks.sort(lambda a,b:cmp(a.number, b.number))
+    tracks.sort(lambda a, b:cmp(a.number, b.number))
     return tracks
 
 def namebinder_local(filelist, album, encoding):
@@ -352,7 +348,6 @@ def tagfile(fpath, album, track, options):
         oldcomment = None
         if not hadID3v2Tag:
             id1tag = fileref.ID3v1Tag()
-            print 'id1tag:', id1tag
             if id1tag and not id1tag.isEmpty():
                 oldcomment = id1tag.comment
                 if oldcomment == "":
@@ -398,7 +393,7 @@ def tagfile(fpath, album, track, options):
         id3v2.FrameFactory.instance().setDefaultTextEncoding(tagpyenc)
 
         # append namingmuse footprint
-        for key,text in framedict.items():
+        for key, text in framedict.items():
             tag.removeFrames(key)
             if not text == "":
                 #if isinstance(text, unicode):

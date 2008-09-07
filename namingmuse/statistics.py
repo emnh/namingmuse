@@ -1,10 +1,6 @@
 """
 Statistics
 """
-import os
-import re
-import sys
-
 from namingmuse import albumtag
 from musexceptions import *
 from providers import LocalAlbumInfo, getRemoteAlbumInfo
