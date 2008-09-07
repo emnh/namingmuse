@@ -14,6 +14,11 @@ function die {
     exit 1
 }
 
+if [ ! -e "$PWD/test.sh" ]; then
+    echo run the test script from the directory where it resides
+    exit 1
+fi
+
 nmuse=$PWD/../nmuse
 prefix=$PWD/testdir
 testfname=$PWD/test
