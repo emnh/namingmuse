@@ -145,6 +145,7 @@ class LocalTrackInfo(TrackInfo):
             tag = self._tag
         else:
             fpath = str(self.fpath)
+            oldcode = """
             if fpath.lower().endswith('mp3'):
                 fileref = tagpy.mpeg.File(fpath)
                 tag = fileref.ID3v2Tag()
@@ -158,7 +159,10 @@ class LocalTrackInfo(TrackInfo):
                 tag = fileref.APETag()
             else:
                 fileref = tagpy.FileRef(fpath)
-                tag = fileref.tag()
+                tag = fileref.tag()"""
+
+            fileref = tagpy.FileRef(fpath)
+            tag = fileref.tag()
 
             if not tag or tag.isEmpty():
                 return None
