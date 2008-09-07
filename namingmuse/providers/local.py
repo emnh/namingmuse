@@ -11,94 +11,38 @@ from tagpy import id3v1
 from tagpy import id3v2
 from tagpy import ogg
 from tagpy import ape
+from tagpy import flac
 from tagpy import _tagpy
 
 from namingmuse.albuminfo import *
 from namingmuse.filepath import FilePath
 
-# XXX: move somewhere? make better bindings to do this stuff?
-def decodeFrame(tag, getfield, translate=True):
-    'Return unicode string (or int) representing the field'
-    generalfunctions = [
-    ('year', 'year'), # int
-    ('genre', 'genre'),
-    ('artist', 'artist'),
-    ('album', 'albumtitle'),
-    ('title', 'tracktitle'),
-    ('track', 'number') # int
-    ]
-    id3v2fields = [
-    ('TDRC', 'year'), # int
-    ('TCON', 'genre'),
-    ('TPE1', 'artist'),
-    ('TALB', 'albumtitle'),
-    ('TIT2', 'tracktitle'),
-    ('TRCK', 'number'), # int
-    ('TTPR', 'tagprovider')
-    ]
-    xiphfields = [
-    ('DATE', 'year'),
-    ('GENRE', 'genre'),
-    ('ARTIST', 'artist'),
-    ('ALBUM', 'albumtitle'),
-    ('TITLE', 'tracktitle'),
-    ('TRACKNUMBER', 'number'),
-    ('TTPR', 'tagprovider')
-    ]
-    apefields = [
-    ('ALBUM', 'albumtitle'),
-    ('ARTIST', 'artist'),
-    ('GENRE', 'genre'),
-    ('TITLE', 'tracktitle'),
-    ('TRACK', 'number'),
-    ('TTPR', 'tagprovider'),
-    ('YEAR', 'year')
-    ]
-    # Build reverse dictionaries
-    funcdict, id3v2dict, xiphdict, apedict = {}, {}, {}, {}
-    for tagfield, common_name in id3v2fields:
-        id3v2dict[common_name] = tagfield
-    for tagfield, common_name in xiphfields:
-        xiphdict[common_name] = tagfield
-    for apefield, common_name in apefields:
-        apedict[common_name] = apefield
-    for funcname, common_name in generalfunctions:
-        funcdict[common_name] = funcname
-    
+def decodeFrame(tag, getfield):
     fval = ''
-    if not translate:
-        tagfield = getfield
     if isinstance(tag, id3v2.Tag):
         framelistmap = tag.frameListMap()
-        if translate:
-            tagfield = id3v2dict[getfield]
-        if tagfield in framelistmap:
-            frame = framelistmap[tagfield][0]
+        if getfield in framelistmap:
+            frame = framelistmap[getfield][0]
             if frame.textEncoding() == tagpy.StringType.UTF8:
                 fval = frame.toString().decode('UTF-8')
             elif frame.textEncoding() == tagpy.StringType.Latin1:
                 fval = frame.toString().decode('ISO-8859-15')
     elif isinstance(tag, ogg.XiphComment):
         fields = tag.fieldListMap()
-        if translate:
-            tagfield = xiphdict[getfield]
-        if tagfield in fields:
-            frame = fields[tagfield][0]
+        if getfield in fields:
+            frame = fields[getfield][0]
             # Xiph is always UTF-8
             fval = str(frame).decode('UTF-8')
-  #  elif isinstance(tag, ape.Tag):
-  #      fields = tag.itemListMap()
-  #      if translate:
-  #          tagfield = apedict[getfield]
-  #      if fields.has_key(tagfield):
-  #          stlist = fields[tagfield].toStringList()
-  #          if len(stlist) > 0:
-  #              frame = stlist[0]
-  #              # APE is always UTF-8
-  #              fval = str(frame).decode('UTF-8')
-    elif isinstance(tag, _tagpy.id3v1_Tag):
-        if translate:
-            funcname = funcdict.get(getfield)
+    #elif isinstance(tag, ape.Tag):
+    #    fields = tag.itemListMap()
+    #    if fields.has_key(getfield):
+    #        stlist = fields[getfield].toStringList()
+    #        if len(stlist) > 0:
+    #            frame = stlist[0]
+    #            # APE is always UTF-8
+    #            fval = str(frame).decode('UTF-8')
+    # XXX: replace _tagpy.id3v1_Tag by good name once available
+    elif isinstance(tag, _tagpy.id3v1_Tag): 
         if funcname:
             # ID3v1 is always ISO-8859-1
             fval = str(getattr(tag, funcname)())
@@ -107,17 +51,6 @@ def decodeFrame(tag, getfield, translate=True):
     else:
         raise NamingMuseError("unsupported tag: " + str(tag))
             
-    if getfield == 'year':
-        try:
-            fval = int(fval)
-        except ValueError:
-            fval = 0
-    elif getfield == 'number':
-        try:
-            fval = int(fval.split("/")[0])
-        except ValueError:
-            fval = 0
-    
     return fval
 
 class LocalTrackInfo(TrackInfo):
@@ -146,7 +79,7 @@ class LocalTrackInfo(TrackInfo):
             tag = self._tag
         else:
             fpath = str(self.fpath)
-            oldcode = """
+
             if fpath.lower().endswith('mp3'):
                 fileref = tagpy.mpeg.File(fpath)
                 tag = fileref.ID3v2Tag()
@@ -155,15 +88,18 @@ class LocalTrackInfo(TrackInfo):
             elif fpath.lower().endswith('ogg'):
                 fileref = tagpy.ogg.vorbis.File(fpath)
                 tag = fileref.tag()
+            #elif fpath.lower().endswith('ape'):
+            #    fileref = MPCFile(fpath)
+            #    tag = fileref.APETag()
             elif fpath.lower().endswith('mpc'):
                 fileref = MPCFile(fpath)
                 tag = fileref.APETag()
             else:
                 fileref = tagpy.FileRef(fpath)
-                tag = fileref.tag()"""
+                tag = fileref.tag()
 
-            fileref = tagpy.FileRef(fpath)
-            tag = fileref.tag()
+            #fileref = tagpy.FileRef(fpath)
+            #tag = fileref.tag()
 
             if not tag or tag.isEmpty():
                 return None
@@ -269,7 +205,7 @@ class LocalAlbumInfo(AlbumInfo):
         self.title = tag.album
         tagprovider = ""
         def tagValue(key):
-            ret = decodeFrame(tag, key, translate=False)
+            ret = decodeFrame(tag, key)
             return ret
         self.tagValue = tagValue
         tagprovider = tagValue('TTPR')
