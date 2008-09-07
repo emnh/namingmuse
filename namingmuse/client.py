@@ -30,30 +30,6 @@ def makeOptionParser():
     op.set_usage("%prog <actionopt> [options] <albumdir>")
 
     
-    # XXX: should be moved into actiongroup
-    op.add_option("-n",
-                  "--namefix",
-                  action = "store_const",
-                  const = "namefix",
-                  dest = "cmd",
-                  help = "rename files according to predefined rules")
-
-    # XXX: should be moved into actiongroup
-    op.add_option("-l",
-                  "--local",
-                  action = "store_const",
-                  const = "local",
-                  dest = "cmd",
-                  help = "use locally existing metadata instead of doing remote lookup")
-
-    # XXX: should be moved into actiongroup
-    op.add_option("-c",
-                  "--cddb",
-                  action = "store",
-                  dest = "cddb",
-                  help = "use explicitly specified cddb disc to name files. ex: data/7a0a2f0a")
-
-
     op.add_option("-t",
                   "--tag-only",
                   action = "store_true",
@@ -126,11 +102,31 @@ def makeOptionParser():
                           help = "tag and rename files using discid" +
                                  " toc match (default)")
                                 
+    actionopts.add_option("-c",
+                  "--cddb",
+                  action = "store",
+                  dest = "cddb",
+                  help = "use explicitly specified cddb disc to name files. ex: data/7a0a2f0a")
+
     actionopts.add_option("-s", 
                           "--search",
                           action = "append",
                           dest = "words",
                           help = "tag and rename files using fulltext search")
+
+    actionopts.add_option("-n",
+                  "--namefix",
+                  action = "store_const",
+                  const = "namefix",
+                  dest = "cmd",
+                  help = "rename files according to predefined rules")
+
+    actionopts.add_option("-l",
+                  "--local",
+                  action = "store_const",
+                  const = "local",
+                  dest = "cmd",
+                  help = "use locally existing metadata instead of doing remote lookup")
 
     actionopts.add_option("",
                           "--stats",
@@ -139,6 +135,8 @@ def makeOptionParser():
                           dest = "cmd",
                           help = "print out statistics on local files"
                          )
+    
+       
 
     dopts = OptionGroup(op, "discmatch options")
     op.add_option_group(dopts)
