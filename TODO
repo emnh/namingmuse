@@ -23,3 +23,5 @@ TODO
 * make CDDBP class a singleton
 * musicbrainz can know the namebinding exactly even for unordered albums. take advantage of this
 * don't require pyofa if musicbrainz isn't used, or urwid if namebinder_manual isn't used
+* fix bug when reading same record twice. could happen if user has duplicate albums
+* add freedb record cache

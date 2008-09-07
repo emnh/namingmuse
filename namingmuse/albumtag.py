@@ -270,7 +270,7 @@ def tagfiles(albumdir, album, options):
             print "\t", colorize(rollbacksign), topath.getName()
             topath.rename(frompath)
         renameTempDir.rmdir()
-        raise e
+        raise
 
     # Rename files to final names
     for frompath, topath in finalrenames:
@@ -451,8 +451,8 @@ def tagfile(fpath, album, track, options):
         footprintdict['TNMU'] = TAGVER
         fields.update(footprintdict)
         for key, value in fields.items():
-            key = key.encode(tagencoding)
-            value = value.encode(tagencoding)
+            #key = key.encode(tagencoding)
+            #value = value.encode(tagencoding)
             if ftype in ('ogg', 'flac'):
                 tag.addField(key, value, True) # replace = True
             elif ftype == 'mpc':

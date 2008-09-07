@@ -63,7 +63,7 @@ class LocalTrackInfo(TrackInfo):
     _gotPlayLength = False
 
     def __init__(self, fpath):
-        super(TrackInfo, self).__init__()
+        super(LocalTrackInfo, self).__init__()
         if not os.access(str(fpath), os.R_OK):
             raise NamingMuseError('Read access denied to path: %s' % str(fpath))
         self.fpath = fpath
