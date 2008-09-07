@@ -301,7 +301,7 @@ def tagfiles(albumdir, album, options):
     print "\n", albumdir.getName()
     print "\t", colorize(renamesign),
     if needartistdirmove:
-        print os.path.join(album.artist, newalbumdir.getName())
+        print os.path.join(unicode(album.artist), unicode(newalbumdir.getName()))
     else:
         print newalbumdir.getName()
 
