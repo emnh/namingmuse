@@ -6,11 +6,14 @@ import tagpy.mpeg
 import tagpy.ogg
 import tagpy.ogg.vorbis
 import tagpy.mpc
+import tagpy.ogg.flac
+import tagpy.flac
 from sys import exit
 
 MPEGFile = tagpy.mpeg.File
 VorbisFile = tagpy.ogg.vorbis.File
 MPCFile = tagpy.mpc.File
+FlacFile = tagpy.flac.File
 
 def mp3dumptag(mpfile):
     ref = MPEGFile(mpfile)
@@ -34,6 +37,18 @@ def mp3dumptag(mpfile):
         else:
             print i, frame.frameID() + ":", frame.toString()
             i += 1
+
+def flacdumptag(flacfile):
+    ref = FlacFile(flacfile)
+    tag = ref.xiphComment()
+    if not tag or tag.isEmpty():
+        print "empty tag"
+        return
+    fields = tag.fieldListMap()
+    for fieldname, stringlist in zip(fields.keys(), 
+            [fields[x] for x in fields.keys()]):
+        for value in stringlist:
+            print str(fieldname).ljust(20), str(value)
 
 def oggdumptag(oggfile):
     ref = VorbisFile(oggfile)
@@ -82,6 +97,11 @@ if len(sys.argv) > 1:
             elif ext == 'mpc':
                 print 'Dumping tag for:', fname
                 mpcdumptag(fname)
+                print
+            elif ext == 'flac':
+                print 'Dumping tag for:', fname
+                flacdumptag(fname)
+                print
         else:
             print "Error: couldn't read:", fname
 else:

@@ -338,7 +338,8 @@ def tagfile(fpath, album, track, options):
         #tag.setComment(comment)
         return fileref.save()
 
-    if fpath.getFileType() == 'mp3':
+    ftype = fpath.getFileType()
+    if ftype == 'mp3':
         #fileref = tagpy.FileRef(str(fpath))
         fileref = tagpy.mpeg.File(str(fpath))
 
@@ -410,9 +411,13 @@ def tagfile(fpath, album, track, options):
             print NamingMuseWarning('Failed to save tag in %s' % fpath)
         return retval
 
-    elif fpath.getFileType() == 'ogg':
-        fileref = tagpy.ogg.vorbis.File(str(fpath))
-        tag = fileref.tag()
+    elif ftype in ('ogg', 'flac'):
+        if ftype == 'ogg':
+            fileref = tagpy.ogg.vorbis.File(str(fpath))
+            tag = fileref.tag()
+        elif ftype == 'flac':
+            fileref = tagpy.flac.File(str(fpath))
+            tag = fileref.xiphComment()
         
         # Clean old comment
         if 'namingmuse' in tag.comment:
@@ -457,9 +462,9 @@ def tagfile(fpath, album, track, options):
             value = value.decode(album.encoding).encode(ape_encoding)
             tag.addValue(key, value, True) # replace = True
         fileref.save()
-        
+
     else:
-        fileref = tag.pyFileRef(str(fpath))
+        fileref = tagpy.FileRef(str(fpath))
         tag = fileref.tag()
         tag.year = album.year
         tag.genre = album.genre

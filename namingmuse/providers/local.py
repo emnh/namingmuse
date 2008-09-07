@@ -13,6 +13,7 @@ from tagpy import ogg
 from tagpy import ape
 from tagpy import flac
 from tagpy import _tagpy
+import tagpy.ogg.flac
 
 from namingmuse.albuminfo import *
 from namingmuse.filepath import FilePath
@@ -91,6 +92,10 @@ class LocalTrackInfo(TrackInfo):
             #elif fpath.lower().endswith('ape'):
             #    fileref = MPCFile(fpath)
             #    tag = fileref.APETag()
+            #
+            elif fpath.lower().endswith('flac'):
+                fileref = flac.File(fpath)
+                tag = fileref.xiphComment()
             elif fpath.lower().endswith('mpc'):
                 fileref = MPCFile(fpath)
                 tag = fileref.APETag()
@@ -234,7 +239,7 @@ class LocalAlbumInfo(AlbumInfo):
         """Get sorted list of files supported by taglib 
            from specified directory"""
         path = str(self.albumdir)
-        rtypes = re.compile(r'\.(mp3)$|\.(ogg)$|\.(mpc)$', re.I)
+        rtypes = re.compile(r'\.((mp3)|(ogg)|(mpc)|(flac))$', re.I)
         if os.access(path, os.X_OK):
             filelist = filter(lambda x: rtypes.search(str(x)), os.listdir(path))
             filelist = map(lambda x: FilePath(path, x, encoding=encoding), filelist)
