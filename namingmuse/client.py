@@ -11,6 +11,7 @@ import os
 import stat
 import sys
 import re
+import time
 from sys import exit
 from optparse import OptionParser, OptionGroup, make_option
 from ConfigParser import *
@@ -23,7 +24,8 @@ from cddb import CDDBP, CDDBPException, CDDB_CONNECTION_TIMEOUT
 from discmatch import DiscMatch
 from filepath import FilePath
 from musexceptions import *
-from providers import LocalAlbumInfo, FreeDBAlbumInfo
+from providers import LocalAlbumInfo, FreeDBAlbumInfo, MusicBrainz2AlbumInfo
+from providers.mbrainz2 import searchMBAlbum
 
 def makeOptionParser():
     op = OptionParser()
@@ -93,6 +95,13 @@ def makeOptionParser():
                   dest = "namebinder",
                   help = "select namebinder: trackorder/filenames/" +
                          "filenames+time/manual")
+    op.add_option("",
+                  "--mb-accurate",
+                  action = "store_false",
+                  dest = 'mb_fast',
+                  help = '''default is to speed up musicbrainz search by assuming that the first track is on the right album.
+                            use this option to look up album for all tracks.
+                          ''')
 
     actionopts = OptionGroup(op,
                              "action options",
@@ -112,8 +121,23 @@ def makeOptionParser():
                   "--cddb",
                   action = "store",
                   dest = "cddb",
-                  help = "use explicitly specified cddb disc to name files. ex: data/7a0a2f0a")
+                  help = "use explicitly specified cddb disc to name files." + 
+                         " ex: data/7a0a2f0a")
 
+    actionopts.add_option("-m",
+                          "--musicbrainz2",
+                          const = "musicbrainz2",
+                          action = "store_const",
+                          dest = "cmd",
+                          help = "tag and rename files using musicbrainz")
+
+    actionopts.add_option("",
+                  "--mb-album",
+                  action = "store",
+                  dest = "releaseid",
+                  help = "use explicitly specified musicbrainz release id to name files. " +
+                         "ex: 77d9e53d-f6d3-4a13-bf39-fb63d02a7f94")
+     
     actionopts.add_option("-s", 
                           "--search",
                           action = "append",
@@ -197,6 +221,7 @@ defaultconfig = {
 'tagencoding': 'iso-8859-15',
 'sysencoding': 'utf-8',
 'autoselect': 'False',
+'mb_fast': 'True',
 'ignore': []
 }
 
@@ -248,6 +273,9 @@ def cli():
     if options.cddb:
         options.cmd = 'cddb'
 
+    if options.releaseid:
+        options.cmd = 'releaseid'
+
     albumdir = FilePath(args[0])
 
     try: 
@@ -274,6 +302,14 @@ def cli():
             if not albuminfo:
                 albuminfo = FreeDBAlbumInfo(cddb, genre, discid)
                 albumtag.tagfiles(albumdir, albuminfo, options)
+        elif options.cmd == 'musicbrainz2':
+            if options.recursive:
+                walk2(albumdir, options)
+            else:
+               doMusicbrainz(options, albumdir)
+        elif options.cmd == 'releaseid':
+            albuminfo = MusicBrainz2AlbumInfo(options.releaseid)
+            albumtag.tagfiles(albumdir, albuminfo, options)
         elif options.cmd == "local":
             if options.recursive:
                 for root, dirs, files in albumdir.walk():
@@ -310,6 +346,26 @@ def cli():
         exitstatus = 4
         
     exit(exitstatus)
+
+def walk2(top, options):
+    ''''I assume this walk method is here (as opposed to using os.walk) because
+    we modify the directory tree by renaming directories?'''
+
+    try:
+        names = os.listdir(str(top))
+    except os.error:
+        return
+    try:
+        if not isIgnored(options, top):
+            doMusicbrainz(options, top)
+    except NoFilesException:
+        pass
+    except NamingMuseException,(errstr):
+        print errstr
+    for name in names:
+        name = FilePath(top, name)
+        if name.isdir():
+            walk2(name, options)
 
 def walk(top, cddb, options):
     ''''I assume this walk method is here (as opposed to using os.walk) because
@@ -444,13 +500,45 @@ def doFullTextSearch(albumdir, options, cddb):
     if len(albums) == 0:
         raise NamingMuseError("No match for search %s in %s" % (searchwords, albumdir))
     
-    albuminfo = terminal.choosealbum(albums, albumdir, options, cddb)
+    albuminfo = terminal.choosealbum(albums, albumdir, options, lambda: cddb.flush())
 
     if not albuminfo:
         raise NamingMuseWarning('Not tagging %s' \
                    %(albumdir))
 
     albumtag.tagfiles(albumdir, albuminfo, options) 
+
+def doMusicbrainz(options, albumdir):
+    
+    filelist = getFilelist(albumdir)
+
+    albuminfo = checkAlreadyTagged(albumdir, options)
+
+    if not albuminfo:
+        # search
+        releases = searchMBAlbum(albumdir, options.mb_fast)
+        albuminfos = []
+        ok = True
+        if releases:
+            for release in releases:
+                mb = MusicBrainz2AlbumInfo(release)
+                if len(getFilelist(albumdir)) == len(mb.tracks):
+                    albuminfos.append(mb)
+
+            if albuminfos:
+                albuminfo = terminal.choosealbum(albuminfos, albumdir, options, None )
+
+                if not albuminfo:
+                    raise NamingMuseWarning('Not tagging %s' \
+                               %(albumdir))
+            else:
+                ok = False
+        else:
+            ok = False
+        if not ok:
+            raise NamingMuseError("No musicbrainz album match for folder %s" % (albumdir))
+        albumtag.tagfiles(albumdir, albuminfo, options)
+
 
 def doDiscmatch(options, albumdir, cddb):
     """Takes a dir with a album inside and a cddb module.
@@ -479,7 +567,7 @@ def doDiscmatch(options, albumdir, cddb):
             albuminfo = FreeDBAlbumInfo(cddb, album['genreid'], album['cddbid'])
             albuminfos.append(albuminfo)
             
-        albuminfo = terminal.choosealbum(albuminfos, albumdir, options, cddb)
+        albuminfo = terminal.choosealbum(albuminfos, albumdir, options, lambda: cddb.flush())
         if not albuminfo:
             raise NamingMuseWarning('Not tagging %s' \
                        %(albumdir))

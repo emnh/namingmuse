@@ -7,6 +7,7 @@ import struct
 import sys
 from difflib import SequenceMatcher
 from sys import stdout
+import musexceptions
 
 DEBUG = os.getenv('DEBUG')
 
@@ -36,7 +37,7 @@ def alphadiff(a, b):
     isjunk = lambda x: not x.isalnum()
     return SequenceMatcher(isjunk, a, b).ratio()
 
-def choosealbum(albums, matchto, options, cddb):
+def choosealbum(albums, matchto, options, cleanupCallback):
 
     matchto = matchto.getName()
     matchtou = matchto.decode(options.sysencoding, 'ignore')
@@ -50,22 +51,35 @@ def choosealbum(albums, matchto, options, cddb):
     pager.write("Pick a number that matches '%s':\n" % matchto)
     pager.write(fmat("Nr", "Match", "Year", "Genre", "Artist", "Title"))
     pager.write(fmat(str(0) + ":","", "", "", "Don't tag this album", ""))
-    nr = 0
     newlist = []
+
+    def showAlbum(album, nr):
+        newlist.append(album)
+        album.ignoreMissing(True)
+        similarity = alphadiff(album.title, matchtou)
+        similarity = "%3.1f%%" % (similarity * 100)
+        pager.write(fmat(str(nr) + ":",similarity, 
+                    album.year, album.genre, album.artist,album.title))
     try:
+        nr = 0
         for album in albums:
             if options.strict:
                 if not len(album.validate()) == 0:
                     continue
             nr += 1
-            newlist.append(album)
-            album.ignoreMissing(True)
-            similarity = alphadiff(album.title, matchtou)
-            similarity = "%3.1f%%" % (similarity * 100)
-            pager.write(fmat(str(nr) + ":",similarity, 
-                        album.year, album.genre, album.artist,album.title))
+            showAlbum(album, nr)
+        if not newlist:
+            # XXX: solve this problem for recursive mode too
+            if not options.recursive:
+                options.strict = False
+            print musexceptions.NamingMuseWarning('no albums satisfy strict requirements, showing all')
+            for album in albums:
+                nr += 1
+                showAlbum(album, nr)
+
     except KeyboardInterrupt:
-        cddb.flush()
+        if cleanupCallback != None:
+            cleanupCallback()
 
     # XXX: print all albums if none "validated"
             

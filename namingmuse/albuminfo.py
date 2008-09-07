@@ -94,19 +94,18 @@ class TrackInfo(object):
 
     __metaclass__ = debugTagSafe
     
-    __artist = ""
-    __title = ""
-    __number = 0
-    __playLength = 0
-    
     # XXX: generate set/get methods from dict
     def __init__(self):
+        self.__artist = ""
+        self.__title = ""
+        self.__number = 0
+        self.__playLength = 0
+        self.validateProps = ["artist", "title", "number", "playLength"]
         return
 
     def validate(self):
-        props = "artist", "title", "number", "playLength"
         missing = []
-        for prop in props:
+        for prop in self.validateProps:
             try:
                 getattr(self, prop)
             except TagIncompleteWarning, warn:
@@ -155,13 +154,14 @@ class AlbumInfo(object):
         self.__title = ""
         self.__tracks = []
         self.__isVarious = False
+        self.validateProps = ["year", "genre", "artist", "title", "tracks"]
 
     def readFootPrint(self, localalbum):
         'Read footprint common to all providers'
         self.__tagversion = localalbum.tagValue('TNMU')
 
     def validate(self):
-        props = ("year", "genre", "artist", "title", "tracks")
+        props = self.validateProps
         self.ignoreMissing(False)
         missing = []
         for prop in props:

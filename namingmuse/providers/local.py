@@ -5,6 +5,7 @@ import os
 import re
 import sys
 import tagpy
+import tagpy.mpeg
 import tagpy.ogg.vorbis
 from tagpy import id3v1
 from tagpy import id3v2

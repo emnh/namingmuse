@@ -168,6 +168,11 @@ def tagfiles(albumdir, album, options):
 
     localalbum = LocalAlbumInfo(albumdir)
     filelist = localalbum.getfilelist(options.sysencoding)
+    
+    a = len(album.tracks)
+    b = len(filelist)
+    if a != b:
+        raise NamingMuseError('there are %d files, but %d metainfo tracks' % (b,a))
 
     namebinder = get_namebinder(options, filelist)
     

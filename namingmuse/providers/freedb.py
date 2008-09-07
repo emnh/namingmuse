@@ -17,6 +17,7 @@ class FreeDBAlbumInfo(AlbumInfo):
         @genre the cddb lookup genre
         @discid the cddb lookup id
         '''
+        super(FreeDBAlbumInfo, self).__init__()
         self.__freedbrecord = None
         self.__readingrecord = False
         self.__cddb = cddb
