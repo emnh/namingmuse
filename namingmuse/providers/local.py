@@ -12,6 +12,7 @@ from tagpy import id3v2
 from tagpy import ogg
 from tagpy import ape
 from tagpy import flac
+from tagpy import mpc
 from tagpy import _tagpy
 import tagpy.ogg.flac
 
@@ -34,14 +35,14 @@ def decodeFrame(tag, getfield):
             frame = fields[getfield][0]
             # Xiph is always UTF-8
             fval = str(frame).decode('UTF-8')
-    #elif isinstance(tag, ape.Tag):
-    #    fields = tag.itemListMap()
-    #    if fields.has_key(getfield):
-    #        stlist = fields[getfield].toStringList()
-    #        if len(stlist) > 0:
-    #            frame = stlist[0]
-    #            # APE is always UTF-8
-    #            fval = str(frame).decode('UTF-8')
+    elif isinstance(tag, ape.Tag):
+        fields = tag.itemListMap()
+        if getfield in fields:
+            stlist = fields[getfield].toStringList()
+            if len(stlist) > 0:
+                frame = stlist[0]
+                # APE is always UTF-8
+                fval = str(frame).decode('UTF-8')
     # XXX: replace _tagpy.id3v1_Tag by good name once available
     elif isinstance(tag, _tagpy.id3v1_Tag): 
         if funcname:
@@ -89,15 +90,11 @@ class LocalTrackInfo(TrackInfo):
             elif fpath.lower().endswith('ogg'):
                 fileref = tagpy.ogg.vorbis.File(fpath)
                 tag = fileref.tag()
-            #elif fpath.lower().endswith('ape'):
-            #    fileref = MPCFile(fpath)
-            #    tag = fileref.APETag()
-            #
             elif fpath.lower().endswith('flac'):
                 fileref = flac.File(fpath)
                 tag = fileref.xiphComment()
             elif fpath.lower().endswith('mpc'):
-                fileref = MPCFile(fpath)
+                fileref = mpc.File(fpath)
                 tag = fileref.APETag()
             else:
                 fileref = tagpy.FileRef(fpath)

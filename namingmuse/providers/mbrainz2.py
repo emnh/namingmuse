@@ -49,7 +49,7 @@ from namingmuse.albuminfo import *
 
 musicdns_key = '3d9af7bb4f9ed16dbb80b03a94a2735e'
 
-valid_extensions = ('.mp3', '.m4a', '.m4p', '.ogg', '.wav', '.flac')
+valid_extensions = ('.mp3', '.ogg', '.wav', '.flac', '.mpc')
 
 # XXX: should be in more general module
 def commonPrefix(strs):

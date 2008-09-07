@@ -12,6 +12,7 @@ from difflib import SequenceMatcher
 import tagpy
 from tagpy import id3v2
 import tagpy.mpeg
+import tagpy.mpc
 
 import policy
 #import providers
@@ -411,49 +412,56 @@ def tagfile(fpath, album, track, options):
             print NamingMuseWarning('Failed to save tag in %s' % fpath)
         return retval
 
-    elif ftype in ('ogg', 'flac'):
+    elif ftype in ('ogg', 'flac', 'mpc'):
         if ftype == 'ogg':
             fileref = tagpy.ogg.vorbis.File(str(fpath))
             tag = fileref.tag()
         elif ftype == 'flac':
             fileref = tagpy.flac.File(str(fpath))
             tag = fileref.xiphComment()
+        elif ftype == 'mpc':
+            fileref = tagpy.mpc.File(str(fpath))
+            tag = fileref.APETag(True)
         
-        # Clean old comment
-        if 'namingmuse' in tag.comment:
-            tag.removeField('DESCRIPTION')
+        tagencoding = 'UTF-8'
 
-        oggencoding = 'UTF-8'
-        fields = {
-            'ALBUM': album.title,
-            'ARTIST': track.artist,
-            'DATE': str(album.year),
-            'GENRE': album.genre,
-            'TITLE': track.title,
-            'TRACKNUMBER': str(track.number)
-        }
+        if ftype in ('ogg', 'flac'):
+            fields = {
+                'ALBUM': album.title,
+                'ARTIST': track.artist,
+                'DATE': str(album.year),
+                'GENRE': album.genre,
+                'TITLE': track.title,
+                'TRACKNUMBER': str(track.number)
+            }
+        elif ftype == 'mpc':
+            fields = {
+                'ALBUM': album.title,
+                'ARTIST': track.artist,
+                'GENRE': album.genre,
+                'TITLE': track.title,
+                'TRACK': str(track.number),
+                'YEAR': str(album.year)
+            }
+
         footprintdict = album.footprint()
         footprintdict['TNMU'] = TAGVER
         fields.update(footprintdict)
         for key, value in fields.items():
-            key = key.encode(oggencoding)
-            value = value.encode(oggencoding)
-            tag.addField(key, value, True) # replace = True
+            key = key.encode(tagencoding)
+            value = value.encode(tagencoding)
+            if ftype in ('ogg', 'flac'):
+                tag.addField(key, value, True) # replace = True
+            elif ftype == 'mpc':
+                tag.addValue(key, value, True) # replace = True
         fileref.save()
 
-    elif fpath.getFileType() == 'mpc':
+    elif fpath.getFileType() == 'mpcold':
         raise Exception("Not converted to new code yet")
-        fileref = MPCFile(str(fpath))
+        fileref = tagpy.mpc.File(str(fpath))
         tag = fileref.APETag(True) # create = True
         ape_encoding = 'UTF-8'
-        fields = {
-            'ALBUM': album.title,
-            'ARTIST': track.artist,
-            'GENRE': album.genre,
-            'TITLE': track.title,
-            'TRACK': str(track.number),
-            'YEAR': str(album.year)
-        }
+        
         footprintdict = album.footprint()
         footprintdict['TNMU'] = TAGVER
         fields.update(footprintdict)

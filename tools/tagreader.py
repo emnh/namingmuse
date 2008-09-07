@@ -57,7 +57,8 @@ def oggdumptag(oggfile):
         print "empty tag"
         return
     fields = tag.fieldListMap()
-    for fieldname, stringlist in fields.items():
+    for fieldname, stringlist in zip(fields.keys(), 
+            [fields[x] for x in fields.keys()]):
         for value in stringlist:
             print str(fieldname).ljust(20), str(value)
 
@@ -72,14 +73,9 @@ def mpcdumptag(fname):
         print 'no APETag'
         return
     fields = tag.itemListMap()
-
-    try:
-        for fieldname, item in fields.items():
-            stringlist = item.toStringList()
-            for value in stringlist:
-                print str(fieldname).ljust(20), str(value)
-    except Exception, e:
-        raise
+    for fieldname, value in zip(fields.keys(), 
+            [fields[x] for x in fields.keys()]):
+        print str(fieldname).ljust(20), value.toString()
 
 if len(sys.argv) > 1:
     for fname in sys.argv[1:]:
