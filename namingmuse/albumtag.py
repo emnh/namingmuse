@@ -90,6 +90,10 @@ def namebinder_trackorder(filelist, album, encoding):
     tracks.sort(lambda a,b:cmp(a.number, b.number))
     return tracks
 
+def namebinder_local(filelist, album, encoding):
+    'use same order as local files'
+    return album.tracks
+
 def namebinder_manual(filelist, album, encoding):
     tracks = album.tracks
 
@@ -119,21 +123,32 @@ def get_namebinder(options, filelist):
     'trackorder': namebinder_trackorder,
     'filenames+time': namebinder_strapprox_time,
     'filenames': namebinder_strapprox,
-    'manual': namebinder_manual
+    'manual': namebinder_manual,
+    'local': namebinder_local
     }
+    namebinder = namebinder_trackorder
+
     if options.namebinder:
         if bindfunctions.has_key(options.namebinder):
-            return bindfunctions[options.namebinder]
+            namebinder = bindfunctions[options.namebinder]
         else:
             raise NamingMuseError("Error: invalid namebinder: %s" % options.namebinder)
     
-    for i, filename in enumerate(filelist):
-        if not unicode(i+1) in unicode(filename):
-            if DEBUG: print 'Using strapprox_time as namebinder'
-            return namebinder_strapprox_time
+    else:
+        isOrdered = True
+        for i, filename in enumerate(filelist):
+            if not unicode(i+1) in unicode(filename):
+                isOrdered = False
+                break
 
-    if DEBUG: print 'Using namebinder_trackorder as namebinder'
-    return namebinder_trackorder
+        if not isOrdered:
+            namebinder = namebinder_strapprox_time
+
+        if options.cmd == 'local':
+            namebinder = namebinder_local
+
+    if DEBUG: print 'Using %s as namebinder' % namebinder
+    return namebinder
 
 def tagfiles(albumdir, album, options):
     '''Rename and tag files using freedb information for
