@@ -1,3 +1,17 @@
+2008-09-07 (version 0.9.3)
+	* Add musicbrainz support with puid.
+	* Fix mpc and flac support.
+	* Add ncurses interface for manual namebinding.
+	* Add rollback support for incomplete renames.
+	* Add ignore option for ignoring directories in recursive mode.
+	* Documentation updates.
+
+2008-09-07 (version 0.9.2)
+	* Fix html parser for updated freedb web interface.
+	* Ported to tagpy
+	* Added -c option for explicitly specifying freedb discid
+	* Bug fixes
+
 2004-12-28 (version 0.9.1)
 	* BUGS, namingmuse/albumtag.py, namingmuse/discmatch.py,
 	  namingmuse/namingmuse.py, namingmuse/providers/local.py,
