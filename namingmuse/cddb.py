@@ -135,7 +135,7 @@ class SmartSocket:
         self.sock.close()
 
     def __del__(self):
-        if self.sock: 
+        if self.sock:
             self.disconnect()
 
 class CDDBP(object):
@@ -154,7 +154,7 @@ class CDDBP(object):
         return (code,result)
 
     def __getattribute__(self, name):
-        if name in ("lscat", "sites", "query", "setproto", 
+        if name in ("lscat", "sites", "query", "setproto",
                     "getRecord", "motd", "stat", "ver", "whom"):
             if not self.__connected:
                 self.connect()
@@ -212,7 +212,7 @@ class CDDBP(object):
         code, resp = self.__decode(self.sock.send("sites", DOTTERM))
 
         if code > ERROR_THRESHOLD:
-            raise CDDBPException(code,resp)       
+            raise CDDBPException(code,resp)
 
         res = []
         for item in resp.splitlines()[1:-2]:
@@ -238,7 +238,7 @@ class CDDBP(object):
         response = self.sock.send("cddb query %s" % query_str, "\r\n")
         code, data = self.__decode(response)
 
-        if code == QUERY_NOMATCH: 
+        if code == QUERY_NOMATCH:
             return (code, data)
         elif code in (QUERY_EXACT, QUERY_INEXACT, QUERY_MULTIPLE_EXACT):
             if code == QUERY_EXACT:

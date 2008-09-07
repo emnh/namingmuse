@@ -19,7 +19,7 @@ def namefix(filename):
         '''Fix capitalization of words.'''
         abbreviations = ("CD", "DJ")
         lcaseword = ("for", "and", "a", "as", "at", "it", "the",
-                     "in", "of", "into", "from", "or", "us", 
+                     "in", "of", "into", "from", "or", "us",
                      "are", "to", "be", "your")
         word = matchobj.group(1)
         tail = matchobj.group(2)

@@ -9,7 +9,7 @@ from namingmuse import albumtag
 from musexceptions import *
 from providers import LocalAlbumInfo, getRemoteAlbumInfo
 
-def dirstat(dirn, stats, verbose = False): 
+def dirstat(dirn, stats, verbose = False):
     try:
         album = LocalAlbumInfo(dirn)
     except NoFilesException:

@@ -187,7 +187,7 @@ class OrderTracks(object):
         for k in keys:
             if urwid.is_mouse_event(k):
                 event, button, col, row = k
-                self.view.mouse_event( size, event, 
+                self.view.mouse_event( size, event,
                     button, col, row, focus=True )
             elif k != 'window resize':
                 self.view.keypress( size, k )

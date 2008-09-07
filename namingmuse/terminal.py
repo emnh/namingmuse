@@ -62,7 +62,7 @@ def choosealbum(albums, matchto, options, cddb):
             album.ignoreMissing(True)
             similarity = alphadiff(album.title, matchtou)
             similarity = "%3.1f%%" % (similarity * 100)
-            pager.write(fmat(str(nr) + ":",similarity, 
+            pager.write(fmat(str(nr) + ":",similarity,
                         album.year, album.genre, album.artist,album.title))
     except KeyboardInterrupt:
         cddb.flush()

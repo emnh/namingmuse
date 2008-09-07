@@ -28,10 +28,10 @@ def main():
 
     for ii in range(1, numTracks+1):
         # Start at the top of the query and work our way down
-        mb.Select(q.MBS_Rewind)  
+        mb.Select(q.MBS_Rewind)
 
         # Select the ith artist
-        mb.Select1(q.MBS_SelectTrack, ii)  
+        mb.Select1(q.MBS_SelectTrack, ii)
 
         # Extract the artist name from the ith track
         print "    Artist: %r" % mb.GetResultData(q.MBE_TrackGetArtistName)
@@ -53,7 +53,7 @@ def main():
 
         for jj in range(1, numAlbums+1):
             # Select the jth album in the album list
-            mb.Select1(q.MBS_SelectAlbum, jj)  
+            mb.Select1(q.MBS_SelectAlbum, jj)
 
             # Extract the album name 
             print "     Album: %r" % mb.GetResultData(q.MBE_AlbumGetAlbumName),
@@ -65,7 +65,7 @@ def main():
             print "has %s tracks" % mb.GetResultInt(q.MBE_AlbumGetNumTracks)
             
             # Back up one level and go back to the artist level 
-            mb.Select(q.MBS_Back)  
+            mb.Select(q.MBS_Back)
 
             print ""
 
