@@ -33,7 +33,7 @@ title = albuminfo.title
 #filename = title + ".cddb"
 filename = "%s %s.cddb" % (albuminfo.freedbgenre, albuminfo.freedbdiscid)
 fd = file(filename, "w")
-fd.write(albuminfo.freedbrecord)
+fd.write(albuminfo.freedbrecord.encode('UTF-8'))
 fd.close()
 print "Wrote " + filename
 print "This filename is needed when submitting with freedb-submit.py"

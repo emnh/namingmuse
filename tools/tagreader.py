@@ -1,8 +1,16 @@
 #!/usr/bin/python
 
 import os, re, sys
-from TagLib import *
+import tagpy
+import tagpy.mpeg
+import tagpy.ogg
+import tagpy.ogg.vorbis
+import tagpy.mpc
 from sys import exit
+
+MPEGFile = tagpy.mpeg.File
+VorbisFile = tagpy.ogg.vorbis.File
+MPCFile = tagpy.mpc.File
 
 def mp3dumptag(mpfile):
     ref = MPEGFile(mpfile)
@@ -19,11 +27,12 @@ def mp3dumptag(mpfile):
     i = 0
     for frame in frames:
         if frame.frameID() == "COMM":
-            cd = CommentsFrame(frame)
+            #cd = CommentsFrame(frame)
+            cd = frame
             print "Comment Description:", cd.description()
-            print "Comment:", cd
+            print "Comment:", cd.toString()
         else:
-            print i, frame.frameID() + ":", frame
+            print i, frame.frameID() + ":", frame.toString()
             i += 1
 
 def oggdumptag(oggfile):
