@@ -5,11 +5,9 @@ output filename it should use. The functions are user overridable.  Place a
 namingpolicy.py file in $(HOME)/.namingmuse which defines the two functions
 defined here. Namingmuse will then use those functions instead of the ones
 defined here.
-$Id: 
 """
 
 import os
-import re
 import sys
 
 def genfilename(original, album, track):
@@ -40,4 +38,4 @@ modnamingpolicy = os.path.join(homeconf, "namingpolicy.py")
 if os.access(homeconf, os.R_OK):
     sys.path.append(homeconf)
     if os.access(modnamingpolicy, os.R_OK):
-        from namingpolicy import *
+        from namingpolicy import genfilename, genalbumdirname

@@ -10,6 +10,7 @@ from tagpy import id3v1
 from tagpy import id3v2
 from tagpy import ogg
 from tagpy import ape
+from tagpy import _tagpy
 
 from namingmuse.albuminfo import *
 from namingmuse.filepath import FilePath
@@ -94,7 +95,7 @@ def decodeFrame(tag, getfield, translate=True):
   #              frame = stlist[0]
   #              # APE is always UTF-8
   #              fval = str(frame).decode('UTF-8')
-    elif isinstance(tag, id3v1.Tag):
+    elif isinstance(tag, _tagpy.id3v1_Tag):
         if translate:
             funcname = funcdict.get(getfield)
         if funcname:
