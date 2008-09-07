@@ -539,7 +539,6 @@ def doMusicbrainz(options, albumdir):
             raise NamingMuseError("No musicbrainz album match for folder %s" % (albumdir))
         albumtag.tagfiles(albumdir, albuminfo, options)
 
-
 def doDiscmatch(options, albumdir, cddb):
     """Takes a dir with a album inside and a cddb module.
     It then computes the cddb-info and queries a remote cddb server.
