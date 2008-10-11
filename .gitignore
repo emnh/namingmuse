@@ -1,0 +1,6 @@
+# generated from MANIFEST.in
+/MANIFEST
+# generated py distutils
+/dist
+# compiled python files
+*.pyc
