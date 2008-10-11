@@ -20,7 +20,8 @@ from namingmuse import albumtag
 from namingmuse import providers
 from namingmuse import searchfreedb
 from namingmuse import terminal
-from cddb import CDDBP, CDDBPException, CDDB_CONNECTION_TIMEOUT
+from cddb import CDDBP, CDDBPException, CDDB_CONNECTION_TIMEOUT, \
+        CDDB_ALREADY_READ
 from discmatch import DiscMatch
 from filepath import FilePath
 from musexceptions import *
@@ -381,6 +382,12 @@ def walk(top, cddb, options):
     except CDDBPException, err:
         if err.code == CDDB_CONNECTION_TIMEOUT:
             print "Connection timed out, reconnecting.."
+            cddb.reconnect()
+        elif err.code == CDDB_ALREADY_READ:
+            print '%s: %s is probably a duplicate album' % (str(err), top)
+            # freedb shuts us down if we try to reread a record
+            # XXX: this only happens on duplicate albums AFAIK, but we should
+            # probably cache the records anyway.
             cddb.reconnect()
         else:
             print err
