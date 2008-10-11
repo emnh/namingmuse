@@ -573,7 +573,10 @@ def doDiscmatch(options, albumdir, cddb):
             raise NamingMuseWarning('Not tagging %s' \
                        %(albumdir))
     else:
-        albuminfo.setCDDBConnection(cddb)
+        # update
+        # we might be updating musicbrainz album
+        if hasattr(albuminfo, 'setCDDBConnection'):
+            albuminfo.setCDDBConnection(cddb)
 
     # Trackorder is the only one that makes sense here
     # (if they weren't in track order we wouldn't have matched)
