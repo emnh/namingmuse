@@ -45,11 +45,14 @@ def decodeFrame(tag, getfield):
                 fval = str(frame).decode('UTF-8')
     # XXX: replace _tagpy.id3v1_Tag by good name once available
     elif isinstance(tag, _tagpy.id3v1_Tag): 
-        if funcname:
-            # ID3v1 is always ISO-8859-1
-            fval = str(getattr(tag, funcname)())
-            if isinstance(fval, basestring):
-                fval = fval.decode('ISO-8859-1')
+        # this function is only used for fingerprint
+        # fingerprint is not supported in ID3v1
+        pass
+        #if funcname:
+        #    # ID3v1 is always ISO-8859-1
+        #    fval = str(getattr(tag, funcname)())
+        #    if isinstance(fval, basestring):
+        #        fval = fval.decode('ISO-8859-1')
     else:
         raise NamingMuseError("unsupported tag: " + str(tag))
             
